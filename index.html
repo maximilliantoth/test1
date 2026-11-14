@@ -449,6 +449,11 @@
         </div>
         <button id="closeShopBtn" class="text-yellow-300 hover:text-white font-bold text-base px-2">✕</button>
       </div>
+      <div id="shopPageTabs" class="grid grid-cols-3 gap-1.5 shrink-0">
+        <button type="button" data-shop-page="suit" class="shop-tab-btn py-1.5 px-1 text-[9px] pixel-font border-2 border-yellow-400 bg-yellow-500/20 text-yellow-200">1. SKINY</button>
+        <button type="button" data-shop-page="hat" class="shop-tab-btn py-1.5 px-1 text-[9px] pixel-font border-2 border-slate-700 bg-slate-900 text-slate-400 hover:text-white">2. NA HLAVU</button>
+        <button type="button" data-shop-page="trail" class="shop-tab-btn py-1.5 px-1 text-[9px] pixel-font border-2 border-slate-700 bg-slate-900 text-slate-400 hover:text-white">3. JETPACK</button>
+      </div>
       <div id="shopItemsGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y pr-1.5 py-1"></div>
       <p class="text-[10px] text-slate-400 leading-snug border-t border-slate-800 pt-2 shrink-0">
         Tip: Kredity získavaš za správne odpovede (+10 🪙), Pointless (+40 🪙) a dokončenie hry (+25 🪙).
@@ -617,15 +622,44 @@
       saveShopState();
     }
 
+    let currentShopPage = 'suit';
+
+    function updateShopPageTabs() {
+      document.querySelectorAll('.shop-tab-btn').forEach(btn => {
+        const isActive = btn.dataset.shopPage === currentShopPage;
+        btn.className = `shop-tab-btn py-1.5 px-1 text-[9px] pixel-font border-2 transition-colors ${
+          isActive
+            ? 'border-yellow-400 bg-yellow-500/20 text-yellow-200'
+            : 'border-slate-700 bg-slate-900 text-slate-400 hover:text-white hover:border-slate-500'
+        }`;
+      });
+    }
+
+    document.querySelectorAll('.shop-tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        currentShopPage = btn.dataset.shopPage;
+        updateShopPageTabs();
+        renderShopItems();
+        const grid = document.getElementById('shopItemsGrid');
+        if (grid) grid.scrollTop = 0;
+      });
+    });
+
     function renderShopItems() {
       const grid = document.getElementById('shopItemsGrid');
       if (!grid) return;
+      updateShopPageTabs();
       grid.innerHTML = '';
       if (SHOP_ITEMS.length === 0) {
         grid.innerHTML = '<div class="col-span-full text-center text-xs text-slate-400 py-6">Nepodarilo sa načítať položky obchodu zo súboru shop.js.</div>';
         return;
       }
-      SHOP_ITEMS.forEach(item => {
+      const pageItems = SHOP_ITEMS.filter(item => item.slot === currentShopPage);
+      if (pageItems.length === 0) {
+        grid.innerHTML = '<div class="col-span-full text-center text-xs text-slate-400 py-6">V tejto kategórii zatiaľ nie sú žiadne položky.</div>';
+        return;
+      }
+      pageItems.forEach(item => {
         const isOwned = ownedItems.includes(item.id);
         const isEquipped = equippedCosmetics[item.slot] === item.id;
         const canAfford = playerCoins >= item.price;
