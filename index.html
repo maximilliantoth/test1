@@ -3,18 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
-  <title>POINTLESS: Cesta do vesmíru</title>
+  <title>POINTLESS: Cesta do vesmíru (Solo & Multiplayer)</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
   <style>
     * {
       box-sizing: border-box;
       -webkit-tap-highlight-color: transparent;
       user-select: none;
     }
-    input {
+    input, select {
       user-select: text !important;
     }
     html, body {
@@ -39,7 +40,7 @@
         inset -4px -4px 0px 0px #0284c7, 
         inset 4px 4px 0px 0px #bae6fd, 
         0px 0px 0px 4px #0c4a6e,
-        0 10px 25px -5px rgba(0, 0, 0, 0.7);
+        0 10px 25px -5px rgba(0, 0, 0, 0.75);
     }
     .pixel-btn {
       font-family: 'Press Start 2P', monospace;
@@ -54,7 +55,7 @@
       transition: all 0.08s ease;
       cursor: pointer;
     }
-    .pixel-btn:hover {
+    .pixel-btn:hover:not(:disabled) {
       background-color: #0369a1;
       transform: translateY(-1px);
       box-shadow: 
@@ -62,12 +63,16 @@
         inset 3px 3px 0px 0px #bae6fd, 
         0px 5px 0px 0px #082f49;
     }
-    .pixel-btn:active {
+    .pixel-btn:active:not(:disabled) {
       transform: translateY(3px);
       box-shadow: 
         inset -2px -2px 0px 0px #075985, 
         inset 2px 2px 0px 0px #bae6fd, 
         0px 1px 0px 0px #082f49;
+    }
+    .pixel-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
     }
     .timer-alert {
       color: #ef4444 !important;
@@ -103,21 +108,24 @@
 
   <!-- Subtle altitude indicator & Weather badge -->
   <div class="fixed top-14 right-4 z-30 flex flex-col items-end gap-1 pointer-events-none select-none">
-    <div id="altitudeText" class="text-[11px] font-mono tracking-widest text-white/60">
+    <div id="altitudeText" class="text-[11px] font-mono tracking-widest text-white/70">
       0 m
     </div>
-    <div id="weatherBadge" class="text-[9px] font-mono tracking-wide text-sky-300/60 uppercase">
+    <div id="weatherBadge" class="text-[9px] font-mono tracking-wide text-sky-300/70 uppercase">
       ☀️ SLNEČNO
     </div>
   </div>
 
   <!-- Header -->
-  <header class="relative z-20 flex justify-between items-center px-3 sm:px-4 py-3 bg-slate-950/70 backdrop-blur-md border-b-2 border-sky-900/60 shadow-lg shrink-0">
+  <header class="relative z-20 flex justify-between items-center px-3 sm:px-4 py-3 bg-slate-950/75 backdrop-blur-md border-b-2 border-sky-900/60 shadow-lg shrink-0">
     <div class="flex items-center gap-2 sm:gap-3">
       <div class="w-7 h-7 bg-sky-500 pixel-box flex items-center justify-center text-slate-950 font-black text-xs">P</div>
       <span class="pixel-font text-xs sm:text-sm text-sky-400 tracking-wider drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">POINTLESS</span>
+      <span id="lobbyBadge" class="hidden text-[9px] pixel-font bg-purple-950/90 text-purple-300 border border-purple-500/50 px-2 py-1">
+        KÓD: <span id="headerRoomCode">----</span>
+      </span>
     </div>
-    <div class="flex items-center gap-2 sm:gap-3">
+    <div class="flex items-center gap-2">
       <div id="headerScore" class="hidden text-[10px] sm:text-xs pixel-font text-emerald-400 bg-slate-900/90 px-2.5 py-1.5 rounded border border-emerald-500/40">
         <span id="scoreVal">0</span> b
       </div>
@@ -127,24 +135,21 @@
       <button id="rulesBtn" class="text-[10px] pixel-font text-sky-300 hover:text-white bg-sky-950/80 px-2.5 py-1.5 rounded border border-sky-500/40">
         ?
       </button>
-      <button id="soundToggle" class="text-xs text-sky-400 hover:text-white px-2 py-1 bg-slate-900/80 rounded border border-sky-800">
-        🔊
-      </button>
     </div>
   </header>
 
   <!-- Main Viewport -->
   <main class="relative z-20 flex-1 flex flex-col items-center justify-center p-3 sm:p-4 overflow-hidden">
     
-    <!-- Screen 0: API Key Setup (shown if no key saved or when user clicks KĽÚČ) -->
-    <div id="apiKeyScreen" class="w-full max-w-md pixel-box bg-slate-950/90 backdrop-blur-md p-6 sm:p-7 text-center flex flex-col items-center gap-4 rounded-none hidden">
+    <!-- Screen 0: API Key Setup -->
+    <div id="apiKeyScreen" class="w-full max-w-md pixel-box bg-slate-950/90 backdrop-blur-md p-6 text-center flex flex-col items-center gap-4 rounded-none hidden">
       <div class="space-y-1.5">
         <div class="text-2xl">🔑</div>
-        <h2 class="pixel-font text-sm sm:text-base text-sky-400 leading-snug">
+        <h2 class="pixel-font text-sm text-sky-400 leading-snug">
           GEMINI API KĽÚČ
         </h2>
         <p class="text-xs text-slate-300 leading-relaxed">
-          Pre vyhodnocovanie odpovedí cez AI zadaj svoj bezplatný kľúč z <b>Google AI Studio</b>. Kľúč sa uloží iba lokálne v tvojom prehliadači.
+          Potrebný pre <b>Solo</b> režim alebo ak <b>zakladáš Multiplayer lobby</b> (pripojení hráči kľúč nepotrebujú).
         </p>
       </div>
 
@@ -158,7 +163,7 @@
         >
         <div id="apiKeyError" class="text-[11px] text-red-400 font-semibold hidden"></div>
         <button type="submit" class="pixel-btn w-full py-3 text-xs tracking-wider">
-          ULOŽIŤ A POKRAČOVAŤ ▶
+          ULOŽIŤ KĽÚČ ▶
         </button>
       </form>
 
@@ -166,43 +171,119 @@
         <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer" class="text-sky-400 hover:text-sky-300 underline">
           Získať kľúč zadarmo ↗
         </a>
-        <button id="clearKeyBtn" type="button" class="text-slate-400 hover:text-red-400">
-          Vymazať uložený kľúč
+        <button id="skipKeyBtn" type="button" class="text-slate-300 hover:text-white underline">
+          Pripájam sa do lobby (bez kľúča) →
         </button>
       </div>
     </div>
 
-    <!-- Screen 1: Start -->
-    <div id="startScreen" class="w-full max-w-md pixel-box bg-slate-950/85 backdrop-blur-md p-6 sm:p-8 text-center flex flex-col items-center gap-6 rounded-none hidden">
-      <div class="space-y-2">
-        <h1 class="pixel-font text-2xl sm:text-3xl text-sky-400 drop-shadow-[0_4px_0_#0369a1] leading-tight">
+    <!-- Screen 1: Mode Selection (Solo / Create Lobby / Join Lobby) -->
+    <div id="modeScreen" class="w-full max-w-md pixel-box bg-slate-950/85 backdrop-blur-md p-5 sm:p-6 text-center flex flex-col items-center gap-4 rounded-none hidden">
+      <div class="space-y-1">
+        <h1 class="pixel-font text-xl sm:text-2xl text-sky-400 drop-shadow-[0_3px_0_#0369a1]">
           POINTLESS
         </h1>
-        <p class="text-xs text-sky-200/80 font-medium">
-          Čím menej ľudí, tým viac bodov a vyšší vzlet.
+        <p class="text-[11px] text-sky-200/80">
+          Čím menej ľudí, tým vyšší vzlet do vesmíru!
         </p>
       </div>
 
-      <div class="w-full py-4 px-3 bg-sky-950/50 border border-sky-500/30 text-xs text-sky-200 text-left space-y-1.5">
-        <div class="flex items-center gap-2"><span>👨‍🚀</span> <span>Sleduj <b>pixelového kozmonauta</b> pri vzlete</span></div>
-        <div class="flex items-center gap-2"><span>🌦️</span> <span><b>Náhodné počasie</b> v atmosfére pod 1000m</span></div>
-        <div class="flex items-center gap-2"><span>🎯</span> <span><b>7 kôl</b>, max. 700 bodov & 7 000 m</span></div>
-        <div class="flex items-center gap-2"><span>⏱️</span> <span><b>30 sekúnd</b> na každú otázku</span></div>
+      <!-- Player Nickname -->
+      <div class="w-full text-left">
+        <label class="text-[10px] pixel-font text-sky-300 block mb-1">TVOJA PREZÝVKA:</label>
+        <input 
+          type="text" 
+          id="nicknameInput" 
+          maxlength="12"
+          placeholder="Napr. Kozmonaut" 
+          class="w-full bg-slate-900 border-2 border-sky-500/60 px-3 py-2 text-white text-xs font-bold focus:outline-none focus:border-sky-400 rounded-none"
+        >
       </div>
 
-      <button id="startBtn" class="pixel-btn w-full py-4 text-sm sm:text-base tracking-widest">
-        POĎ HRAŤ ▶
+      <!-- SOLO BUTTON -->
+      <button id="soloStartBtn" class="pixel-btn w-full py-3.5 text-xs tracking-wider bg-sky-600">
+        🚀 HRAŤ SOLO (1 HRÁČ)
+      </button>
+
+      <div class="w-full border-t border-sky-800/70 pt-3 flex flex-col gap-2.5">
+        <div class="text-[10px] pixel-font text-purple-300">MULTIPLAYER (2 – 6 HRÁČOV)</div>
+        
+        <!-- Create Lobby row -->
+        <div class="flex gap-2">
+          <select id="maxPlayersSelect" class="bg-slate-900 border-2 border-purple-500/60 text-white text-xs font-bold px-2.5 py-2.5 focus:outline-none">
+            <option value="2">2 hráči</option>
+            <option value="3">3 hráči</option>
+            <option value="4">4 hráči</option>
+            <option value="5" selected>5 hráčov</option>
+            <option value="6">6 hráčov</option>
+          </select>
+          <button id="createLobbyBtn" class="pixel-btn flex-1 py-2.5 text-[10px] sm:text-xs bg-purple-700 border-purple-400">
+            VYTVORIŤ LOBBY
+          </button>
+        </div>
+
+        <!-- Join Lobby row -->
+        <div class="flex gap-2">
+          <input 
+            type="text" 
+            id="joinCodeInput" 
+            maxlength="4" 
+            inputmode="numeric"
+            placeholder="KÓD (4 čísla)" 
+            class="w-32 bg-slate-900 border-2 border-emerald-500/60 px-2.5 py-2 text-center text-white font-mono text-xs uppercase tracking-widest focus:outline-none"
+          >
+          <button id="joinLobbyBtn" class="pixel-btn flex-1 py-2.5 text-[10px] sm:text-xs bg-emerald-700 border-emerald-400">
+            PRIPOJIŤ SA
+          </button>
+        </div>
+        <div id="lobbyError" class="text-[11px] text-red-400 font-semibold hidden"></div>
+      </div>
+    </div>
+
+    <!-- Screen 1.5: Multiplayer Waiting Room (Lobby) -->
+    <div id="lobbyScreen" class="w-full max-w-md pixel-box bg-slate-950/90 backdrop-blur-md p-5 sm:p-6 text-center flex flex-col items-center gap-4 rounded-none hidden">
+      <div class="space-y-1">
+        <div class="text-[10px] pixel-font text-purple-300">KÓD MIESTNOSTI PRE KAMARÁTOV:</div>
+        <div id="displayRoomCode" class="pixel-font text-3xl text-amber-400 tracking-widest bg-slate-900 border-2 border-amber-500/50 py-2 px-5 inline-block select-all">
+          ----
+        </div>
+      </div>
+
+      <div class="w-full bg-slate-900/80 border border-sky-800/60 p-3 text-left">
+        <div class="flex justify-between items-center text-[10px] pixel-font text-sky-300 mb-2 border-b border-sky-800/50 pb-1.5">
+          <span>HRÁČI V LOBBY</span>
+          <span id="lobbyCountText">1/5</span>
+        </div>
+        <ul id="lobbyPlayerList" class="space-y-1.5 text-xs font-semibold">
+          <!-- Populated dynamically -->
+        </ul>
+      </div>
+
+      <div id="hostLobbyControls" class="w-full flex flex-col gap-2 hidden">
+        <button id="startMultiGameBtn" class="pixel-btn w-full py-3.5 text-xs bg-emerald-700 border-emerald-400">
+          SPUSTIŤ HRU PRE VŠETKÝCH ▶
+        </button>
+      </div>
+      <div id="guestLobbyWait" class="text-xs text-sky-200 animate-pulse hidden">
+        Čaká sa, kým hostiteľ spustí hru...
+      </div>
+
+      <button id="leaveLobbyBtn" class="text-[11px] text-slate-400 hover:text-red-400 underline">
+        Opustiť lobby
       </button>
     </div>
 
     <!-- Screen 2: Question & Gameplay -->
-    <div id="gameScreen" class="w-full max-w-lg pixel-box bg-slate-950/90 backdrop-blur-md p-4 sm:p-6 flex flex-col gap-4 rounded-none hidden">
+    <div id="gameScreen" class="w-full max-w-lg pixel-box bg-slate-950/90 backdrop-blur-md p-4 sm:p-5 flex flex-col gap-3 rounded-none hidden">
       
       <!-- Top info bar -->
       <div class="flex justify-between items-center text-xs border-b border-sky-800/60 pb-2">
         <div class="text-sky-300 font-semibold tracking-wide flex items-center gap-1.5">
           <span class="pixel-font text-[10px] text-sky-400">KOLO</span>
           <span id="roundCounter" class="font-bold text-white">1/7</span>
+        </div>
+        <div id="submittedStatusBadge" class="hidden text-[10px] font-mono text-emerald-400">
+          ODPOVEDE: <span id="submittedCountVal">0/0</span>
         </div>
         <div class="flex items-center gap-2">
           <span class="text-[10px] text-slate-400 font-mono">ČAS:</span>
@@ -216,245 +297,270 @@
       </div>
 
       <!-- Question Box -->
-      <div class="bg-sky-950/60 border border-sky-500/40 p-4 min-h-[90px] flex flex-col justify-center text-center">
+      <div class="bg-sky-950/60 border border-sky-500/40 p-3.5 min-h-[80px] flex flex-col justify-center text-center">
         <div id="categoryBadge" class="text-[10px] font-bold uppercase tracking-wider text-sky-300 mb-1">KATEGÓRIA</div>
-        <h2 id="questionPrompt" class="text-base sm:text-lg font-bold text-white leading-snug">
+        <h2 id="questionPrompt" class="text-sm sm:text-base font-bold text-white leading-snug">
           Načítavam otázku...
         </h2>
       </div>
 
-      <!-- Score Tower & Live Evaluation display -->
-      <div id="scoreArea" class="hidden flex-col items-center justify-center py-2 gap-2 bg-slate-900/60 border border-sky-800/40 p-3">
-        <div class="text-[11px] text-sky-300 tracking-wider font-semibold">VÝSLEDOK RESPONDENTOV:</div>
+      <!-- Solo Result Area -->
+      <div id="scoreArea" class="hidden flex-col items-center justify-center py-2 gap-1.5 bg-slate-900/70 border border-sky-800/40 p-3">
         <div class="flex items-center gap-4">
           <div class="text-center">
-            <div class="text-[9px] text-slate-400">HLASOV V PRIESKUME</div>
-            <div id="peopleCount" class="pixel-font text-xl text-amber-400 font-bold">0</div>
+            <div class="text-[9px] text-slate-400">HLASOV</div>
+            <div id="peopleCount" class="pixel-font text-lg text-amber-400 font-bold">0</div>
           </div>
-          <div class="text-2xl font-black text-sky-400">➜</div>
+          <div class="text-xl font-black text-sky-400">➜</div>
           <div class="text-center">
-            <div class="text-[9px] text-emerald-400">TVOJE BODY</div>
-            <div id="pointsGained" class="pixel-font text-2xl text-emerald-400 font-bold">+100</div>
+            <div class="text-[9px] text-emerald-400">BODY</div>
+            <div id="pointsGained" class="pixel-font text-xl text-emerald-400 font-bold">+100</div>
           </div>
         </div>
-        <div id="feedbackText" class="text-xs text-center text-slate-200 mt-1 max-w-sm"></div>
+        <div id="feedbackText" class="text-xs text-center text-slate-200 mt-1"></div>
+      </div>
+
+      <!-- Multiplayer Round Results Table -->
+      <div id="multiScoreArea" class="hidden flex-col gap-1.5 bg-slate-900/80 border border-sky-800/50 p-2.5">
+        <div class="text-[10px] pixel-font text-sky-300 text-center pb-1 border-b border-sky-800/40">VÝSLEDKY KOLA</div>
+        <div id="multiResultsList" class="space-y-1.5 text-xs max-h-40 overflow-y-auto">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+
+      <!-- Waiting for other players after submitting -->
+      <div id="waitingOthersBox" class="hidden text-center py-3 bg-slate-900/60 border border-sky-800/40">
+        <div class="text-xs pixel-font text-emerald-400 mb-1">✓ ODPOVEĎ ODOSLANÁ</div>
+        <div class="text-[11px] text-slate-300 animate-pulse">Čakám na ostatných hráčov v lobby...</div>
       </div>
 
       <!-- Status Indicator -->
       <div id="aiLoadingIndicator" class="hidden text-center py-2">
-        <div class="inline-flex items-center gap-2 text-xs pixel-font text-sky-300 bg-sky-950/80 px-3 py-1.5 border border-sky-500/40 animate-pulse">
-          <span>⚡ AI POČÍTA HLASY...</span>
+        <div class="inline-flex items-center gap-2 text-[10px] sm:text-xs pixel-font text-sky-300 bg-sky-950/80 px-3 py-1.5 border border-sky-500/40 animate-pulse">
+          <span>⏳ POČÍTAM HLASY V PRIESKUME...</span>
         </div>
       </div>
 
       <!-- Input Form -->
-      <form id="answerForm" class="flex flex-col gap-3">
-        <div class="relative">
-          <input 
-            type="text" 
-            id="answerInput" 
-            placeholder="Zadaj svoju odpoveď..." 
-            autocomplete="off" 
-            autocorrect="off" 
-            spellcheck="false"
-            class="w-full bg-slate-900 border-2 border-sky-500/60 px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-sky-400 text-sm font-semibold rounded-none"
-          >
-        </div>
-        <button type="submit" id="submitBtn" class="pixel-btn py-3 text-xs tracking-wider">
+      <form id="answerForm" class="flex flex-col gap-2.5">
+        <input 
+          type="text" 
+          id="answerInput" 
+          placeholder="Zadaj svoju odpoveď..." 
+          autocomplete="off" 
+          autocorrect="off" 
+          spellcheck="false"
+          class="w-full bg-slate-900 border-2 border-sky-500/60 px-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-sky-400 text-sm font-semibold rounded-none"
+        >
+        <button type="submit" id="submitBtn" class="pixel-btn py-2.5 text-xs tracking-wider">
           ODOSLAŤ ODPOVEĎ ↵
         </button>
       </form>
 
-      <!-- Next Round Button -->
-      <button id="nextBtn" class="pixel-btn py-3 text-xs tracking-wider hidden bg-emerald-700 border-emerald-400">
+      <!-- Next Round Button (Host / Solo) -->
+      <button id="nextBtn" class="pixel-btn py-2.5 text-xs tracking-wider hidden bg-emerald-700 border-emerald-400">
         ĎALŠIE KOLO ▶
       </button>
+      <div id="guestNextWait" class="hidden text-center text-[11px] text-sky-300 animate-pulse py-1">
+        Čaká sa, kým hostiteľ spustí ďalšie kolo...
+      </div>
     </div>
 
-    <!-- Screen 3: End Results -->
-    <div id="endScreen" class="w-full max-w-md pixel-box bg-slate-950/90 backdrop-blur-md p-6 text-center flex flex-col items-center gap-5 rounded-none hidden">
-      <h2 class="pixel-font text-xl text-sky-400 drop-shadow-[0_2px_0_#0369a1]">
+    <!-- Screen 3: End Results (Solo & Multiplayer Podium) -->
+    <div id="endScreen" class="w-full max-w-md pixel-box bg-slate-950/90 backdrop-blur-md p-5 text-center flex flex-col items-center gap-4 rounded-none hidden">
+      <h2 class="pixel-font text-lg sm:text-xl text-sky-400 drop-shadow-[0_2px_0_#0369a1]">
         MISIA UKONČENÁ!
       </h2>
       
-      <div class="w-full bg-sky-950/50 border border-sky-500/30 p-4 space-y-2">
+      <!-- Solo Summary -->
+      <div id="soloEndSummary" class="w-full bg-sky-950/50 border border-sky-500/30 p-4 space-y-2 hidden">
         <div class="text-xs text-sky-200 font-mono">DOSIAHNUTÁ VÝŠKA:</div>
         <div id="finalAltitude" class="pixel-font text-2xl text-emerald-400 font-bold">0 m</div>
         <div class="text-xs text-slate-300 font-medium">Celkové skóre: <span id="finalScore" class="font-bold text-white">0</span> / 700 bodov</div>
         <div id="finalTitle" class="text-xs pixel-font text-amber-300 pt-2 border-t border-sky-800/40">POZEMŠŤAN</div>
       </div>
 
-      <button id="restartBtn" class="pixel-btn w-full py-3.5 text-xs tracking-widest">
-        HRAŤ ZNOVA ↻
+      <!-- Multiplayer Podium -->
+      <div id="multiEndSummary" class="w-full bg-sky-950/50 border border-sky-500/30 p-3 space-y-2 text-left hidden">
+        <div class="text-[10px] pixel-font text-amber-300 text-center pb-1 border-b border-sky-800/50">KONEČNÉ PORADIE VESMÍRU</div>
+        <div id="podiumList" class="space-y-1.5 text-xs">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+
+      <button id="restartBtn" class="pixel-btn w-full py-3 text-xs tracking-widest">
+        SPÄŤ DO MENU ↻
       </button>
     </div>
   </main>
 
   <!-- Modal: Pravidlá -->
   <div id="rulesModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
-    <div class="w-full max-w-md pixel-box bg-slate-950 p-6 flex flex-col gap-4 text-left border-2 border-sky-400">
+    <div class="w-full max-w-md pixel-box bg-slate-950 p-5 flex flex-col gap-3 text-left border-2 border-sky-400">
       <div class="flex justify-between items-center border-b border-sky-800 pb-2">
         <span class="pixel-font text-xs text-sky-400">PRAVIDLÁ HRY</span>
         <button id="closeRulesBtn" class="text-sky-400 hover:text-white font-bold text-base px-2">✕</button>
       </div>
-      <div class="text-xs text-slate-300 space-y-2.5 leading-relaxed">
-        <p>🎯 <b>Cieľ hry:</b> Povedať platnú odpoveď na otázku, ktorú v prieskume 100 ľudí povedalo <b>čo najmenej ľudí</b> (ideálne 0 - tzv. <i>Pointless</i> odpoveď).</p>
-        <p>📈 <b>Bodovanie:</b> Body = 100 mínus počet respondentov. Unikátna odpoveď = <b>100 bodov</b>!</p>
-        <p>👨‍🚀 <b>Kozmonaut & Výška:</b> Každý bod ťa vynesie o <b>10 metrov</b> vyššie. Spolu 7 kôl (max 7 000 m). Vesmír začína hneď po 1 000 m!</p>
-        <p>🌦️ <b>Náhodné počasie:</b> Každá hra vygeneruje iné počasie v spodnej atmosfére (slnečno, dážď s bleskami, snehové vločky alebo západ slnka).</p>
-        <p>⏱️ <b>Časový limit:</b> Na každú otázku máš presne <b>30 sekúnd</b>. Ak neodpovieš včas, strácaš kolo („Hlupák 0 bodov“).</p>
+      <div class="text-xs text-slate-300 space-y-2 leading-relaxed">
+        <p>🎯 <b>Princíp Pointless:</b> Povedz platnú odpoveď na otázku, ktorú v prieskume 100 ľudí povedalo <b>čo najmenej ľudí</b> (0 ľudí = 100 bodov).</p>
+        <p>👨‍🚀 <b>Vzlet (7 kôl):</b> Každý bod = <b>10 metrov</b>. Po 1 000 m vstupuješ do vesmíru. V multiplayeri vidíš na plátne všetkých kozmonautov vedľa seba!</p>
+        <p>👥 <b>Multiplayer (2 – 6 hráčov):</b> Hostiteľ vytvorí lobby a zdieľa 4-miestny kód. API kľúč zadáva iba hostiteľ.</p>
+        <p>⏱️ <b>Limit 30 sekúnd:</b> Ak nestihneš odpovedať včas, dostávaš 0 bodov („Hlupák 0 bodov“).</p>
       </div>
-      <button id="confirmRulesBtn" class="pixel-btn py-2 text-xs w-full mt-2">ROZUMIEM</button>
+      <button id="confirmRulesBtn" class="pixel-btn py-2 text-xs w-full mt-1">ROZUMIEM</button>
     </div>
   </div>
 
+  <!-- Custom In-App Alert Banner (replaces alert()) -->
+  <div id="toastMsg" class="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 bg-red-950/95 border-2 border-red-500 text-red-200 px-4 py-2 text-xs font-bold shadow-xl hidden"></div>
+
   <script>
-    // --- API KEY MANAGEMENT ---
+    // --- CONSTANTS & CONFIG ---
     const STORAGE_KEY = 'pointless_gemini_api_key';
+    const NICK_KEY = 'pointless_player_nick';
+    const PEER_PREFIX = 'ptls-sk-2026-';
     let userApiKey = localStorage.getItem(STORAGE_KEY) || '';
 
-    function showScreen(screenId) {
-      ['apiKeyScreen', 'startScreen', 'gameScreen', 'endScreen'].forEach(id => {
-        document.getElementById(id).classList.add('hidden');
-      });
-      document.getElementById(screenId).classList.remove('hidden');
-    }
+    const SUIT_COLORS = [
+      { suit: '#f8fafc', visor: '#fbbf24', badge: '⚪ Biela' },
+      { suit: '#38bdf8', visor: '#f43f5e', badge: '🔵 Modrá' },
+      { suit: '#f43f5e', visor: '#fde047', badge: '🔴 Červená' },
+      { suit: '#4ade80', visor: '#38bdf8', badge: '🟢 Zelená' },
+      { suit: '#c084fc', visor: '#fde047', badge: '🟣 Fialová' },
+      { suit: '#fb923c', visor: '#38bdf8', badge: '🟠 Oranžová' }
+    ];
 
-    // --- AUDIO SYNTHESIS ENGINE ---
-    class SoundFX {
-      constructor() {
-        this.ctx = null;
-        this.enabled = true;
-      }
-      init() {
-        if (!this.ctx) {
-          const AudioContext = window.AudioContext || window.webkitAudioContext;
-          if (AudioContext) this.ctx = new AudioContext();
-        }
-        if (this.ctx && this.ctx.state === 'suspended') {
-          this.ctx.resume();
-        }
-      }
-      playTick() {
-        if (!this.enabled || !this.ctx) return;
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(440, this.ctx.currentTime);
-        gain.gain.setValueAtTime(0.08, this.ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.05);
-        osc.connect(gain);
-        gain.connect(this.ctx.destination);
-        osc.start();
-        osc.stop(this.ctx.currentTime + 0.05);
-      }
-      playUrgentTick() {
-        if (!this.enabled || !this.ctx) return;
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-        osc.type = 'square';
-        osc.frequency.setValueAtTime(880, this.ctx.currentTime);
-        gain.gain.setValueAtTime(0.12, this.ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.08);
-        osc.connect(gain);
-        gain.connect(this.ctx.destination);
-        osc.start();
-        osc.stop(this.ctx.currentTime + 0.08);
-      }
-      playSuccess() {
-        if (!this.enabled || !this.ctx) return;
-        const notes = [261.63, 329.63, 392.00, 523.25];
-        notes.forEach((freq, i) => {
-          const osc = this.ctx.createOscillator();
-          const gain = this.ctx.createGain();
-          osc.type = 'square';
-          osc.frequency.setValueAtTime(freq, this.ctx.currentTime + i * 0.08);
-          gain.gain.setValueAtTime(0.1, this.ctx.currentTime + i * 0.08);
-          gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + (i + 1) * 0.08);
-          osc.connect(gain);
-          gain.connect(this.ctx.destination);
-          osc.start(this.ctx.currentTime + i * 0.08);
-          osc.stop(this.ctx.currentTime + (i + 1) * 0.08);
-        });
-      }
-      playFail() {
-        if (!this.enabled || !this.ctx) return;
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(160, this.ctx.currentTime);
-        osc.frequency.linearRampToValueAtTime(70, this.ctx.currentTime + 0.4);
-        gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.4);
-        osc.connect(gain);
-        gain.connect(this.ctx.destination);
-        osc.start();
-        osc.stop(this.ctx.currentTime + 0.4);
-      }
-      playThunder() {
-        if (!this.enabled || !this.ctx) return;
-        const bufferSize = this.ctx.sampleRate * 0.8;
-        const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-        const data = buffer.getChannelData(0);
-        for (let i = 0; i < bufferSize; i++) {
-          data[i] = Math.random() * 2 - 1;
-        }
-        const noise = this.ctx.createBufferSource();
-        noise.buffer = buffer;
-        const filter = this.ctx.createBiquadFilter();
-        filter.type = 'lowpass';
-        filter.frequency.setValueAtTime(180, this.ctx.currentTime);
-        filter.frequency.linearRampToValueAtTime(40, this.ctx.currentTime + 0.8);
-        const gain = this.ctx.createGain();
-        gain.gain.setValueAtTime(0.15, this.ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.8);
-        noise.connect(filter);
-        filter.connect(gain);
-        gain.connect(this.ctx.destination);
-        noise.start();
-      }
-    }
-    const sfx = new SoundFX();
-
-    // --- CURATED QUESTION POOL ---
     const QUESTION_BANK = [
+      // GEOGRAFIA
       { category: "GEOGRAFIA", q: "Pomenuj oficiálne mesto na Slovensku." },
       { category: "GEOGRAFIA", q: "Pomenuj štát v Európe (podľa OSN)." },
       { category: "GEOGRAFIA", q: "Pomenuj hlavné mesto na svete." },
+      { category: "GEOGRAFIA", q: "Pomenuj rieku pretekajúcu cez Slovensko." },
+      { category: "GEOGRAFIA", q: "Pomenuj ostrovný štát na svete." },
+      { category: "GEOGRAFIA", q: "Pomenuj pohorie alebo národný park na Slovensku." },
+      { category: "GEOGRAFIA", q: "Pomenuj štát v Afrike." },
+      { category: "GEOGRAFIA", q: "Pomenuj štát v Južnej alebo Severnej Amerike." },
+      { category: "GEOGRAFIA", q: "Pomenuj more alebo oceán na Zemi." },
+      { category: "GEOGRAFIA", q: "Pomenuj sopku na svete." },
+
+      // VESMÍR & VEDA
       { category: "VESMÍR", q: "Pomenuj mesiac, planétu alebo teleso v Slnečnej sústave." },
+      { category: "VESMÍR", q: "Pomenuj súhvezdie na nočnej oblohe." },
+      { category: "VESMÍR", q: "Pomenuj vesmírnu misiu, raketu alebo vesmírnu stanicu." },
       { category: "CHÉMIA", q: "Pomenuj chemický prvok periodickej tabuľky." },
-      { category: "ŠPORT", q: "Pomenuj futbalový klub, ktorý hral Ligu majstrov." },
-      { category: "POP-KULTÚRA", q: "Pomenuj postavu zo sveta Marvelu alebo DC Comics." },
-      { category: "GAMING", q: "Pomenuj známu videohru alebo hernú sériu." },
-      { category: "PRÍRODA", q: "Pomenuj cicavca, ktorého názov začína na písmeno K alebo M." },
+      { category: "VEDA", q: "Pomenuj vedca, ktorý získal Nobelovu cenu." },
+      { category: "VEDA", q: "Pomenuj kosť v ľudskom tele." },
+      { category: "VEDA", q: "Pomenuj jednotku sústavy SI (základnú alebo odvodenú)." },
+
+      // HISTÓRIA & MYTOLÓGIA
       { category: "HISTÓRIA", q: "Pomenuj panovníka, cisára alebo kráľa v dejinách Európy." },
-      { category: "JEDLO & GASTRO", q: "Pomenuj tradičné slovenské alebo európske jedlo." },
+      { category: "HISTÓRIA", q: "Pomenuj starovekú civilizáciu alebo ríšu." },
+      { category: "HISTÓRIA", q: "Pomenuj hrad alebo zámok na Slovensku." },
+      { category: "MYTOLÓGIA", q: "Pomenuj boha alebo bytosť z gréckej, rímskej alebo severskej mytológie." },
+      { category: "HISTÓRIA", q: "Pomenuj prezidenta USA alebo Československa." },
+
+      // ŠPORT
+      { category: "ŠPORT", q: "Pomenuj futbalový klub, ktorý hral Ligu majstrov." },
+      { category: "ŠPORT", q: "Pomenuj tím NHL (hokejovej ligy)." },
+      { category: "ŠPORT", q: "Pomenuj olympijský šport." },
+      { category: "ŠPORT", q: "Pomenuj slovenského olympijského medailistu." },
+      { category: "ŠPORT", q: "Pomenuj okruh Formuly 1." },
+      { category: "ŠPORT", q: "Pomenuj tenistu alebo tenistku, ktorí vyhrali grandslamový turnaj." },
+
+      // POP-KULTÚRA, FILM & SERIÁLY
+      { category: "POP-KULTÚRA", q: "Pomenuj postavu zo sveta Marvelu alebo DC Comics." },
       { category: "FILM & SERIÁL", q: "Pomenuj film ocenený Oscarom za najlepší film." },
+      { category: "FILM & SERIÁL", q: "Pomenuj postavu zo sveta Star Wars alebo Pána prsteňov." },
+      { category: "FILM & SERIÁL", q: "Pomenuj známy animovaný film od štúdia Pixar alebo Disney." },
+      { category: "FILM & SERIÁL", q: "Pomenuj režiséra celovečerných filmov." },
+      { category: "SERIÁLY", q: "Pomenuj seriál z produkcie HBO alebo Netflix." },
+
+      // GAMING & TECHNOLÓGIE
+      { category: "GAMING", q: "Pomenuj známu videohru alebo hernú sériu." },
+      { category: "GAMING", q: "Pomenuj hernú postavu (napr. z hier Nintendo, PlayStation, PC)." },
+      { category: "TECHNOLÓGIE", q: "Pomenuj programovací jazyk alebo operačný systém." },
+      { category: "TECHNOLÓGIE", q: "Pomenuj značku automobilu." },
+
+      // PRÍRODA & ZVIERATÁ
+      { category: "PRÍRODA", q: "Pomenuj cicavca, ktorého názov začína na písmeno K alebo M." },
+      { category: "PRÍRODA", q: "Pomenuj druh vtáka žijúceho vo voľnej prírode." },
+      { category: "PRÍRODA", q: "Pomenuj plemeno psa." },
+      { category: "PRÍRODA", q: "Pomenuj dinosaura alebo prehistorického tvora." },
+      { category: "PRÍRODA", q: "Pomenuj strom alebo liečivú rastlinu." },
+
+      // JEDLO & GASTRO
+      { category: "JEDLO & GASTRO", q: "Pomenuj tradičné slovenské alebo európske jedlo." },
+      { category: "JEDLO & GASTRO", q: "Pomenuj druh syra alebo cestovín." },
+      { category: "JEDLO & GASTRO", q: "Pomenuj druh ovocia alebo zeleniny." },
+      { category: "JEDLO & GASTRO", q: "Pomenuj korenie alebo bylinku používanú pri varení." },
+
+      // HUDBA & UMENIE & LITERATÚRA
       { category: "HUDBA", q: "Pomenuj hudobný nástroj symfonického orchestra." },
-      { category: "TECHNOLÓGIE", q: "Pomenuj programovací jazyk alebo operačný systém." }
+      { category: "HUDBA", q: "Pomenuj hudobnú skupinu alebo speváka z 20. alebo 21. storočia." },
+      { category: "HUDBA", q: "Pomenuj hudobného skladateľa klasickej hudby." },
+      { category: "LITERATÚRA", q: "Pomenuj spisovateľa alebo básnika (slovenského alebo svetového)." },
+      { category: "UMENIE", q: "Pomenuj svetoznámeho maliara alebo sochára." },
+
+      // VŠEOBECNÝ PREHĽAD
+      { category: "DOPRAVA", q: "Pomenuj leteckú spoločnosť (aerolinku)." },
+      { category: "MENY", q: "Pomenuj oficiálnu svetovú menu (okrem eura a dolára)." },
+      { category: "JAZYKY", q: "Pomenuj oficiálny úradný jazyk niektorého štátu." },
+      { category: "ARCHITEKTÚRA", q: "Pomenuj svetoznámu stavbu, pamiatku alebo mrakodrap." }
     ];
 
-    // --- WEATHER SYSTEM TYPES ---
     const WEATHERS = [
       { id: "sunny", name: "☀️ SLNEČNO", topSky: [56, 189, 248], botSky: [186, 230, 253] },
       { id: "rainy", name: "🌧️ DÁŽĎ & BÚRKA", topSky: [51, 65, 85], botSky: [100, 116, 139] },
       { id: "snowy", name: "❄️ SNEŽENIE", topSky: [148, 163, 184], botSky: [226, 232, 240] },
       { id: "sunset", name: "🌅 ZÁPAD SLNKA", topSky: [124, 45, 18], botSky: [251, 146, 60] }
     ];
-    let currentWeather = WEATHERS[0];
 
-    // --- GAME STATE ---
-    let totalScore = 0;
-    let targetAltitude = 0;
-    let currentAltitude = 0;
+    function showToast(msg) {
+      const el = document.getElementById('toastMsg');
+      el.textContent = msg;
+      el.classList.remove('hidden');
+      clearTimeout(el._timer);
+      el._timer = setTimeout(() => el.classList.add('hidden'), 3500);
+    }
+
+    // --- GAME & MULTIPLAYER STATE ---
+    let gameMode = 'solo'; // 'solo' | 'host' | 'guest'
+    let transportMode = 'peerjs'; // 'peerjs' | 'local_sim'
+    let peer = null;
+    let hostConn = null;
+    let guestConns = {};
+    let bcChannel = null; // BroadcastChannel fallback for same-browser tabs
+    let roomCode = '';
+    let maxLobbyPlayers = 5;
+    let myPeerId = 'local';
+    let myNickname = 'Hráč';
+
+    let players = {};
+    let currentWeather = WEATHERS[0];
     let currentRound = 0;
     const maxRounds = 7;
     let currentQuestions = [];
     let roundTimerInterval = null;
     let timeLeft = 30;
+    let hasSubmittedThisRound = false;
+    let roundAnswers = {};
     let isEvaluating = false;
 
-    // --- CANVAS BACKGROUND & ENTITY ENGINE ---
+    function showScreen(screenId) {
+      ['apiKeyScreen', 'modeScreen', 'lobbyScreen', 'gameScreen', 'endScreen'].forEach(id => {
+        document.getElementById(id).classList.add('hidden');
+      });
+      document.getElementById(screenId).classList.remove('hidden');
+    }
+
+    function getNickname() {
+      const val = document.getElementById('nicknameInput').value.trim();
+      const nick = val || `Hráč_${Math.floor(10 + Math.random() * 89)}`;
+      localStorage.setItem(NICK_KEY, nick);
+      return nick;
+    }
+
+    // --- CANVAS RENDERER (BACKGROUND + UP TO 6 ASTRONAUTS) ---
     const canvas = document.getElementById('skyCanvas');
     const ctx = canvas.getContext('2d');
     let width, height;
@@ -482,6 +588,8 @@
     }));
 
     let lightningAlpha = 0;
+    let cameraAltitude = 0;
+    let bobbingPhase = 0;
 
     const stars = Array.from({ length: 180 }, () => ({
       x: Math.random(),
@@ -490,11 +598,6 @@
       blink: Math.random() * 6.28
     }));
 
-    const astronaut = {
-      bobbing: 0,
-      particles: []
-    };
-
     function lerpColor(c1, c2, t) {
       const r = Math.round(c1[0] + (c2[0] - c1[0]) * t);
       const g = Math.round(c1[1] + (c2[1] - c1[1]) * t);
@@ -502,12 +605,16 @@
       return `rgb(${r},${g},${b})`;
     }
 
-    function drawPixelAstronaut(x, y, isThrusting, inSpace) {
+    function drawSingleAstronaut(p, x, y, inSpace) {
+      const palette = SUIT_COLORS[p.colorIdx % SUIT_COLORS.length];
+      const isClimbing = (p.altitude - p.visualAltitude) > 2;
+
       ctx.save();
       ctx.translate(x, y);
 
-      if (isThrusting || inSpace) {
-        astronaut.particles.push({
+      if (!p.particles) p.particles = [];
+      if (isClimbing || inSpace) {
+        p.particles.push({
           x: -10 + (Math.random() * 4 - 2),
           y: 12 + Math.random() * 4,
           life: 1.0,
@@ -516,59 +623,72 @@
         });
       }
 
-      for (let i = astronaut.particles.length - 1; i >= 0; i--) {
-        const p = astronaut.particles[i];
-        p.y += 2.5;
-        p.life -= 0.05;
-        if (p.life <= 0) {
-          astronaut.particles.splice(i, 1);
+      for (let i = p.particles.length - 1; i >= 0; i--) {
+        const pt = p.particles[i];
+        pt.y += 2.2;
+        pt.life -= 0.06;
+        if (pt.life <= 0) {
+          p.particles.splice(i, 1);
         } else {
-          ctx.fillStyle = p.color;
-          ctx.globalAlpha = p.life;
-          ctx.fillRect(p.x, p.y, p.size, p.size);
+          ctx.fillStyle = pt.color;
+          ctx.globalAlpha = pt.life;
+          ctx.fillRect(pt.x, pt.y, pt.size, pt.size);
         }
       }
       ctx.globalAlpha = 1.0;
 
-      const rot = Math.sin(astronaut.bobbing * 0.8) * (inSpace ? 0.15 : 0.05);
+      // Nameplate above helmet
+      ctx.font = 'bold 10px Inter, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillStyle = 'rgba(2, 6, 23, 0.7)';
+      const nameW = ctx.measureText(p.name).width + 8;
+      ctx.fillRect(-nameW / 2, -37, nameW, 13);
+      ctx.fillStyle = p.id === myPeerId ? '#fde047' : '#e2e8f0';
+      ctx.fillText(p.name, 0, -27);
+
+      const rot = Math.sin(bobbingPhase * 0.8 + p.colorIdx) * (inSpace ? 0.14 : 0.05);
       ctx.rotate(rot);
 
-      ctx.fillStyle = '#64748b';
+      // Backpack
+      ctx.fillStyle = '#475569';
       ctx.fillRect(-14, -8, 6, 18);
       ctx.fillStyle = '#94a3b8';
       ctx.fillRect(-13, -7, 4, 16);
 
-      ctx.fillStyle = '#f8fafc';
+      // Body
+      ctx.fillStyle = palette.suit;
       ctx.fillRect(-8, -4, 16, 18);
 
-      ctx.fillStyle = '#0284c7';
+      // Belt & chest light
+      ctx.fillStyle = '#0f172a';
       ctx.fillRect(-8, 5, 16, 3);
       ctx.fillStyle = '#ef4444';
       ctx.fillRect(-4, -1, 3, 3);
-      ctx.fillStyle = '#38bdf8';
-      ctx.fillRect(1, -1, 3, 3);
 
-      ctx.fillStyle = '#f8fafc';
+      // Helmet
+      ctx.fillStyle = palette.suit;
       ctx.fillRect(-9, -20, 18, 15);
       ctx.fillRect(-7, -22, 14, 2);
 
-      ctx.fillStyle = inSpace ? '#fbbf24' : '#0ea5e9';
+      // Visor
+      ctx.fillStyle = inSpace ? palette.visor : '#0ea5e9';
       ctx.fillRect(-4, -17, 12, 9);
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(-2, -16, 4, 2);
 
-      ctx.fillStyle = '#e2e8f0';
+      // Limbs
+      ctx.fillStyle = palette.suit;
       ctx.fillRect(-11, -2, 4, 12);
       ctx.fillRect(7, -2, 4, 12);
-
-      ctx.fillStyle = '#cbd5e1';
       ctx.fillRect(-7, 14, 6, 9);
       ctx.fillRect(1, 14, 6, 9);
-      ctx.fillStyle = '#475569';
+
+      // Boots
+      ctx.fillStyle = '#334155';
       ctx.fillRect(-8, 21, 7, 3);
       ctx.fillRect(1, 21, 7, 3);
 
-      if (isThrusting) {
+      if (isClimbing) {
         ctx.fillStyle = '#38bdf8';
         ctx.fillRect(-13, 10, 4, 7 + Math.random() * 4);
         ctx.fillStyle = '#f59e0b';
@@ -579,11 +699,14 @@
     }
 
     function drawBackground() {
-      currentAltitude += (targetAltitude - currentAltitude) * 0.05;
-      document.getElementById('altitudeText').textContent = `${Math.round(currentAltitude)} m`;
-      const isClimbing = (targetAltitude - currentAltitude) > 2;
+      const playerArr = Object.values(players);
+      const myPlayer = players[myPeerId];
+      const targetCam = myPlayer ? myPlayer.altitude : 0;
 
-      const alt = Math.min(7000, Math.max(0, currentAltitude));
+      cameraAltitude += (targetCam - cameraAltitude) * 0.05;
+      document.getElementById('altitudeText').textContent = `${Math.round(cameraAltitude)} m`;
+
+      const alt = Math.min(7000, Math.max(0, cameraAltitude));
       const inSpace = alt >= 1000;
 
       const wBadge = document.getElementById('weatherBadge');
@@ -617,7 +740,6 @@
 
       if (alt < 1000) {
         const weatherAlpha = Math.max(0, 1 - alt / 950);
-
         if (currentWeather.id === 'rainy') {
           ctx.fillStyle = `rgba(147, 197, 253, ${0.7 * weatherAlpha})`;
           weatherParticles.forEach(p => {
@@ -626,10 +748,8 @@
             if (p.y > height) { p.y = -20; p.x = Math.random() * width; }
             ctx.fillRect(p.x, p.y, 2, 7);
           });
-
-          if (Math.random() < 0.005) {
-            lightningAlpha = 0.8;
-            sfx.playThunder();
+          if (Math.random() < 0.004) {
+            lightningAlpha = 0.7;
           }
           if (lightningAlpha > 0) {
             ctx.fillStyle = `rgba(255, 255, 255, ${lightningAlpha * weatherAlpha})`;
@@ -685,35 +805,23 @@
           const moonY = 80 + (alt - 1000) * 0.08;
           ctx.fillStyle = '#e2e8f0';
           ctx.beginPath();
-          ctx.arc(width * 0.82, moonY, 30, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.fillStyle = '#94a3b8';
-          ctx.beginPath();
-          ctx.arc(width * 0.82 - 8, moonY - 6, 6, 0, Math.PI * 2);
-          ctx.arc(width * 0.82 + 9, moonY + 7, 8, 0, Math.PI * 2);
+          ctx.arc(width * 0.85, moonY, 28, 0, Math.PI * 2);
           ctx.fill();
         }
-
         if (alt > 2000 && alt < 5500) {
-          ctx.fillStyle = '#f97316';
-          ctx.beginPath();
-          ctx.arc(width * 0.8, 170, 18, 0, Math.PI * 2);
-          ctx.fill();
-
           ctx.fillStyle = '#fde047';
           ctx.beginPath();
-          ctx.arc(width * 0.85, 270, 24, 0, Math.PI * 2);
+          ctx.arc(width * 0.85, 240, 22, 0, Math.PI * 2);
           ctx.fill();
           ctx.strokeStyle = '#fef08a';
           ctx.lineWidth = 4;
           ctx.beginPath();
-          ctx.ellipse(width * 0.85, 270, 46, 12, Math.PI / -6, 0, Math.PI * 2);
+          ctx.ellipse(width * 0.85, 240, 44, 11, Math.PI / -6, 0, Math.PI * 2);
           ctx.stroke();
         }
-
         if (alt > 4500) {
           const bhX = width * 0.5;
-          const bhY = 170;
+          const bhY = 150;
           const time = Date.now() * 0.002;
           const gradBH = ctx.createRadialGradient(bhX, bhY, 15, bhX, bhY, 70);
           gradBH.addColorStop(0, '#f97316');
@@ -730,16 +838,356 @@
         }
       }
 
-      astronaut.bobbing += 0.04;
-      const astroX = width * (width < 640 ? 0.82 : 0.15);
-      const astroY = height * 0.52 + Math.sin(astronaut.bobbing) * 8;
-      drawPixelAstronaut(astroX, astroY, isClimbing, inSpace);
+      bobbingPhase += 0.04;
+      const list = playerArr.length > 0 ? playerArr : [{ id: myPeerId, name: myNickname, colorIdx: 0, altitude: 0, visualAltitude: 0 }];
+      
+      list.forEach((p, idx) => {
+        if (typeof p.visualAltitude !== 'number') p.visualAltitude = p.altitude || 0;
+        p.visualAltitude += ((p.altitude || 0) - p.visualAltitude) * 0.05;
+
+        let astroX;
+        if (list.length === 1) {
+          astroX = width * (width < 640 ? 0.84 : 0.14);
+        } else {
+          const isLeft = idx % 2 === 0;
+          const lane = Math.floor(idx / 2);
+          if (isLeft) {
+            astroX = Math.max(32, width * 0.07 + lane * 44);
+          } else {
+            astroX = Math.min(width - 32, width * 0.93 - lane * 44);
+          }
+        }
+
+        const altDiff = p.visualAltitude - cameraAltitude;
+        const offsetPx = Math.max(-height * 0.35, Math.min(height * 0.35, -altDiff * 0.25));
+        const astroY = height * 0.52 + offsetPx + Math.sin(bobbingPhase + idx) * 7;
+
+        drawSingleAstronaut(p, astroX, astroY, inSpace);
+      });
 
       requestAnimationFrame(drawBackground);
     }
     requestAnimationFrame(drawBackground);
 
-    // --- GAME ENGINE ---
+    // --- MULTIPLAYER PEERJS NETWORKING WITH CANVAS FALLBACK ---
+    function cleanupPeer() {
+      if (peer) {
+        try { peer.destroy(); } catch (e) {}
+        peer = null;
+      }
+      if (bcChannel) {
+        try { bcChannel.close(); } catch (e) {}
+        bcChannel = null;
+      }
+      hostConn = null;
+      guestConns = {};
+      transportMode = 'peerjs';
+      document.getElementById('lobbyBadge').classList.add('hidden');
+    }
+
+    function broadcastToGuests(payload) {
+      if (transportMode === 'local_sim') {
+        if (bcChannel) bcChannel.postMessage({ senderId: myPeerId, payload });
+        return;
+      }
+      Object.values(guestConns).forEach(conn => {
+        if (conn && conn.open) {
+          conn.send(payload);
+        }
+      });
+    }
+
+    function updateLobbyUI() {
+      const pList = Object.values(players);
+      document.getElementById('lobbyCountText').textContent = `${pList.length}/${maxLobbyPlayers}`;
+      const ul = document.getElementById('lobbyPlayerList');
+      ul.innerHTML = '';
+
+      pList.forEach(p => {
+        const suit = SUIT_COLORS[p.colorIdx % SUIT_COLORS.length];
+        const li = document.createElement('li');
+        li.className = 'flex justify-between items-center bg-slate-950/80 px-3 py-1.5 border border-sky-900/60';
+        li.innerHTML = `
+          <span class="flex items-center gap-2">
+            <span>👨‍🚀</span>
+            <span class="${p.id === myPeerId ? 'text-amber-300' : 'text-white'}">${p.name}</span>
+            ${p.isHost ? '<span class="text-[9px] bg-purple-900 text-purple-200 px-1.5 py-0.5">HOST</span>' : ''}
+          </span>
+          <span class="text-[10px] text-slate-400">${suit.badge}</span>
+        `;
+        ul.appendChild(li);
+      });
+
+      const startBtn = document.getElementById('startMultiGameBtn');
+      if (startBtn) {
+        startBtn.disabled = pList.length < 2;
+        startBtn.textContent = pList.length < 2
+          ? 'ČAKÁM NA HRÁČOV (MIN. 2)...'
+          : `SPUSTIŤ HRU (${pList.length} HRÁČI) ▶`;
+      }
+    }
+
+    function initCanvasLocalLobby(asHost, codeToUse) {
+      transportMode = 'local_sim';
+      roomCode = codeToUse;
+      myPeerId = (asHost ? 'host_' : 'guest_') + Math.floor(1000 + Math.random() * 9000);
+
+      if ('BroadcastChannel' in window) {
+        bcChannel = new BroadcastChannel(PEER_PREFIX + roomCode);
+        bcChannel.onmessage = (ev) => {
+          const { senderId, payload } = ev.data || {};
+          if (senderId === myPeerId) return;
+          if (gameMode === 'host') {
+            handleHostMessage({ peer: senderId, open: true, send: (msg) => bcChannel.postMessage({ senderId: myPeerId, targetId: senderId, payload: msg }), close: () => {} }, payload);
+          } else if (gameMode === 'guest') {
+            if (!ev.data.targetId || ev.data.targetId === myPeerId) {
+              handleGuestMessage(payload);
+            }
+          }
+        };
+      }
+
+      if (asHost) {
+        players = {};
+        players[myPeerId] = {
+          id: myPeerId,
+          name: myNickname,
+          colorIdx: 0,
+          score: 0,
+          altitude: 0,
+          visualAltitude: 0,
+          isHost: true
+        };
+
+        document.getElementById('displayRoomCode').textContent = roomCode;
+        document.getElementById('headerRoomCode').textContent = roomCode;
+        document.getElementById('lobbyBadge').classList.remove('hidden');
+        document.getElementById('hostLobbyControls').classList.remove('hidden');
+        document.getElementById('guestLobbyWait').classList.add('hidden');
+        updateLobbyUI();
+        showScreen('lobbyScreen');
+        showToast('Lobby vytvorené! Pošli 4-miestny kód kamarátom.');
+      } else {
+        if (bcChannel) {
+          bcChannel.postMessage({ senderId: myPeerId, payload: { type: 'JOIN_REQUEST', name: myNickname } });
+        }
+      }
+    }
+
+    function createMultiplayerLobby() {
+      if (!userApiKey) {
+        showToast('Pre vytvorenie lobby musíš najprv zadať svoj Gemini API kľúč!');
+        showScreen('apiKeyScreen');
+        return;
+      }
+      cleanupPeer();
+
+      myNickname = getNickname();
+      maxLobbyPlayers = parseInt(document.getElementById('maxPlayersSelect').value, 10) || 5;
+      roomCode = String(Math.floor(1000 + Math.random() * 9000));
+      gameMode = 'host';
+
+      const errEl = document.getElementById('lobbyError');
+      errEl.classList.add('hidden');
+
+      if (typeof Peer === 'undefined') {
+        initCanvasLocalLobby(true, roomCode);
+        return;
+      }
+
+      try {
+        peer = new Peer(PEER_PREFIX + roomCode);
+      } catch (e) {
+        initCanvasLocalLobby(true, roomCode);
+        return;
+      }
+
+      peer.on('open', (id) => {
+        transportMode = 'peerjs';
+        myPeerId = id;
+        players = {};
+        players[myPeerId] = {
+          id: myPeerId,
+          name: myNickname,
+          colorIdx: 0,
+          score: 0,
+          altitude: 0,
+          visualAltitude: 0,
+          isHost: true
+        };
+
+        document.getElementById('displayRoomCode').textContent = roomCode;
+        document.getElementById('headerRoomCode').textContent = roomCode;
+        document.getElementById('lobbyBadge').classList.remove('hidden');
+        document.getElementById('hostLobbyControls').classList.remove('hidden');
+        document.getElementById('guestLobbyWait').classList.add('hidden');
+        updateLobbyUI();
+        showScreen('lobbyScreen');
+        showToast('Lobby vytvorené! Pošli 4-miestny kód kamarátom.');
+      });
+
+      peer.on('connection', (conn) => {
+        conn.on('data', (data) => {
+          handleHostMessage(conn, data);
+        });
+        conn.on('close', () => {
+          if (players[conn.peer]) {
+            delete players[conn.peer];
+            delete guestConns[conn.peer];
+            updateLobbyUI();
+            broadcastToGuests({ type: 'LOBBY_SYNC', players, maxLobbyPlayers });
+          }
+        });
+      });
+
+      peer.on('error', () => {
+        if (peer) {
+          try { peer.destroy(); } catch (e) {}
+          peer = null;
+        }
+        initCanvasLocalLobby(true, roomCode);
+      });
+    }
+
+    function joinMultiplayerLobby() {
+      const code = document.getElementById('joinCodeInput').value.trim();
+      const errEl = document.getElementById('lobbyError');
+      if (!/^\d{4}$/.test(code)) {
+        errEl.textContent = 'Zadaj presne 4-miestny číselný kód lobby.';
+        errEl.classList.remove('hidden');
+        return;
+      }
+
+      cleanupPeer();
+      errEl.classList.add('hidden');
+
+      myNickname = getNickname();
+      roomCode = code;
+      gameMode = 'guest';
+
+      if (typeof Peer === 'undefined') {
+        initCanvasLocalLobby(false, roomCode);
+        return;
+      }
+
+      try {
+        peer = new Peer();
+      } catch (e) {
+        initCanvasLocalLobby(false, roomCode);
+        return;
+      }
+
+      peer.on('open', (id) => {
+        transportMode = 'peerjs';
+        myPeerId = id;
+        hostConn = peer.connect(PEER_PREFIX + roomCode, { reliable: true });
+
+        hostConn.on('open', () => {
+          hostConn.send({ type: 'JOIN_REQUEST', name: myNickname });
+        });
+
+        hostConn.on('data', (data) => {
+          handleGuestMessage(data);
+        });
+
+        hostConn.on('close', () => {
+          showToast('Spojenie s hostiteľom bolo ukončené.');
+          cleanupPeer();
+          showScreen('modeScreen');
+        });
+      });
+
+      peer.on('error', () => {
+        if (peer) {
+          try { peer.destroy(); } catch (e) {}
+          peer = null;
+        }
+        initCanvasLocalLobby(false, roomCode);
+      });
+    }
+
+    // --- HOST MESSAGE HANDLER ---
+    function handleHostMessage(conn, data) {
+      if (!data || !data.type) return;
+      if (data.type === 'JOIN_REQUEST') {
+        const currentCount = Object.keys(players).length;
+        if (currentCount >= maxLobbyPlayers) {
+          conn.send({ type: 'JOIN_REJECTED', reason: `Lobby je plné (max ${maxLobbyPlayers} hráčov).` });
+          setTimeout(() => conn.close(), 300);
+          return;
+        }
+        guestConns[conn.peer] = conn;
+        players[conn.peer] = {
+          id: conn.peer,
+          name: (data.name || 'Hráč').slice(0, 12),
+          colorIdx: currentCount,
+          score: 0,
+          altitude: 0,
+          visualAltitude: 0,
+          isHost: false
+        };
+        updateLobbyUI();
+        broadcastToGuests({ type: 'LOBBY_SYNC', players, maxLobbyPlayers });
+      } else if (data.type === 'SUBMIT_ANSWER') {
+        if (currentRound > 0 && !isEvaluating) {
+          roundAnswers[conn.peer] = {
+            answer: data.answer || '',
+            timedOut: !!data.timedOut
+          };
+          checkAllMultiplayerSubmitted();
+        }
+      }
+    }
+
+    // --- GUEST MESSAGE HANDLER ---
+    function handleGuestMessage(data) {
+      if (!data || !data.type) return;
+      if (data.type === 'JOIN_REJECTED') {
+        const errEl = document.getElementById('lobbyError');
+        errEl.textContent = data.reason;
+        errEl.classList.remove('hidden');
+        cleanupPeer();
+        showScreen('modeScreen');
+      } else if (data.type === 'LOBBY_SYNC') {
+        players = data.players;
+        maxLobbyPlayers = data.maxLobbyPlayers;
+        document.getElementById('displayRoomCode').textContent = roomCode;
+        document.getElementById('headerRoomCode').textContent = roomCode;
+        document.getElementById('lobbyBadge').classList.remove('hidden');
+        document.getElementById('hostLobbyControls').classList.add('hidden');
+        document.getElementById('guestLobbyWait').classList.remove('hidden');
+        updateLobbyUI();
+        showScreen('lobbyScreen');
+      } else if (data.type === 'GAME_START') {
+        players = data.players;
+        currentWeather = data.weather;
+        currentQuestions = data.questions;
+        currentRound = 0;
+        document.getElementById('scoreVal').textContent = '0';
+        document.getElementById('headerScore').classList.remove('hidden');
+        showScreen('gameScreen');
+        loadNextQuestion();
+      } else if (data.type === 'SUBMISSION_PROGRESS') {
+        document.getElementById('submittedStatusBadge').classList.remove('hidden');
+        document.getElementById('submittedCountVal').textContent = `${data.submitted}/${data.total}`;
+      } else if (data.type === 'EVALUATING_START') {
+        clearInterval(roundTimerInterval);
+        document.getElementById('answerForm').classList.add('hidden');
+        document.getElementById('waitingOthersBox').classList.add('hidden');
+        document.getElementById('aiLoadingIndicator').classList.remove('hidden');
+      } else if (data.type === 'ROUND_RESULTS') {
+        players = data.players;
+        document.getElementById('aiLoadingIndicator').classList.add('hidden');
+        displayMultiplayerRoundResults(data.results);
+      } else if (data.type === 'NEXT_ROUND') {
+        loadNextQuestion();
+      } else if (data.type === 'GAME_OVER') {
+        players = data.players;
+        finishGame();
+      }
+    }
+
+    // --- CORE GAME FLOW (SOLO + MULTIPLAYER) ---
     function shuffle(arr) {
       const a = [...arr];
       for (let i = a.length - 1; i > 0; i--) {
@@ -749,22 +1197,64 @@
       return a;
     }
 
-    function initGame() {
+    function startSoloGame() {
       if (!userApiKey) {
+        showToast('Pre hranie Solo zadaj najprv svoj Gemini API kľúč!');
         showScreen('apiKeyScreen');
         return;
       }
+      cleanupPeer();
+      gameMode = 'solo';
+      myPeerId = 'solo_player';
+      myNickname = getNickname();
 
-      sfx.init();
-      totalScore = 0;
-      targetAltitude = 0;
-      currentAltitude = 0;
-      currentRound = 0;
-      document.getElementById('scoreVal').textContent = '0';
-      document.getElementById('headerScore').classList.remove('hidden');
+      players = {
+        [myPeerId]: {
+          id: myPeerId,
+          name: myNickname,
+          colorIdx: 0,
+          score: 0,
+          altitude: 0,
+          visualAltitude: 0,
+          isHost: true
+        }
+      };
 
       currentWeather = WEATHERS[Math.floor(Math.random() * WEATHERS.length)];
       currentQuestions = shuffle(QUESTION_BANK).slice(0, maxRounds);
+      currentRound = 0;
+
+      document.getElementById('scoreVal').textContent = '0';
+      document.getElementById('headerScore').classList.remove('hidden');
+      showScreen('gameScreen');
+      loadNextQuestion();
+    }
+
+    function startMultiplayerMatchAsHost() {
+      if (Object.keys(players).length < 2) {
+        showToast('Na multiplayer musia byť v lobby aspoň 2 hráči!');
+        return;
+      }
+
+      Object.values(players).forEach(p => {
+        p.score = 0;
+        p.altitude = 0;
+        p.visualAltitude = 0;
+      });
+
+      currentWeather = WEATHERS[Math.floor(Math.random() * WEATHERS.length)];
+      currentQuestions = shuffle(QUESTION_BANK).slice(0, maxRounds);
+      currentRound = 0;
+
+      document.getElementById('scoreVal').textContent = '0';
+      document.getElementById('headerScore').classList.remove('hidden');
+
+      broadcastToGuests({
+        type: 'GAME_START',
+        players,
+        weather: currentWeather,
+        questions: currentQuestions
+      });
 
       showScreen('gameScreen');
       loadNextQuestion();
@@ -772,15 +1262,30 @@
 
     function loadNextQuestion() {
       currentRound++;
+      hasSubmittedThisRound = false;
       isEvaluating = false;
+      roundAnswers = {};
+
       document.getElementById('roundCounter').textContent = `${currentRound}/${maxRounds}`;
-      
       const q = currentQuestions[currentRound - 1];
       document.getElementById('categoryBadge').textContent = q.category;
       document.getElementById('questionPrompt').textContent = q.q;
 
       document.getElementById('scoreArea').classList.add('hidden');
+      document.getElementById('multiScoreArea').classList.add('hidden');
+      document.getElementById('waitingOthersBox').classList.add('hidden');
+      document.getElementById('aiLoadingIndicator').classList.add('hidden');
       document.getElementById('nextBtn').classList.add('hidden');
+      document.getElementById('guestNextWait').classList.add('hidden');
+
+      if (gameMode !== 'solo') {
+        const totalP = Object.keys(players).length;
+        document.getElementById('submittedStatusBadge').classList.remove('hidden');
+        document.getElementById('submittedCountVal').textContent = `0/${totalP}`;
+      } else {
+        document.getElementById('submittedStatusBadge').classList.add('hidden');
+      }
+
       document.getElementById('answerForm').classList.remove('hidden');
       const input = document.getElementById('answerInput');
       input.value = '';
@@ -799,15 +1304,9 @@
         timeLeft--;
         updateTimerUI();
 
-        if (timeLeft <= 5 && timeLeft > 0) {
-          sfx.playUrgentTick();
-        } else if (timeLeft > 5) {
-          sfx.playTick();
-        }
-
         if (timeLeft <= 0) {
           clearInterval(roundTimerInterval);
-          handleTimeout();
+          handleLocalTimeout();
         }
       }, 1000);
     }
@@ -827,155 +1326,364 @@
       }
     }
 
-    function handleTimeout() {
-      if (isEvaluating) return;
-      isEvaluating = true;
-      sfx.playFail();
+    function handleLocalTimeout() {
+      if (hasSubmittedThisRound) return;
+      hasSubmittedThisRound = true;
+      document.getElementById('answerInput').disabled = true;
 
-      document.getElementById('answerForm').classList.add('hidden');
-      const scoreArea = document.getElementById('scoreArea');
-      scoreArea.classList.remove('hidden');
-      document.getElementById('peopleCount').textContent = '-';
-      document.getElementById('pointsGained').textContent = '+0';
-      document.getElementById('pointsGained').className = 'pixel-font text-2xl text-red-500 font-bold';
-      document.getElementById('feedbackText').innerHTML = `<span class="text-red-400 font-bold">Hlupák 0 bodov!</span> Nestihol si odpovedať do 30 sekúnd.`;
-
-      document.getElementById('nextBtn').classList.remove('hidden');
-      document.getElementById('nextBtn').focus();
+      if (gameMode === 'solo') {
+        document.getElementById('answerForm').classList.add('hidden');
+        const scoreArea = document.getElementById('scoreArea');
+        scoreArea.classList.remove('hidden');
+        document.getElementById('peopleCount').textContent = '-';
+        document.getElementById('pointsGained').textContent = '+0';
+        document.getElementById('pointsGained').className = 'pixel-font text-xl text-red-500 font-bold';
+        document.getElementById('feedbackText').innerHTML = `<span class="text-red-400 font-bold">Hlupák 0 bodov!</span> Nestihol si odpovedať do 30 sekúnd.`;
+        document.getElementById('nextBtn').classList.remove('hidden');
+      } else if (gameMode === 'host') {
+        roundAnswers[myPeerId] = { answer: '', timedOut: true };
+        Object.keys(players).forEach(pid => {
+          if (!roundAnswers[pid]) roundAnswers[pid] = { answer: '', timedOut: true };
+        });
+        checkAllMultiplayerSubmitted();
+      } else if (gameMode === 'guest') {
+        document.getElementById('answerForm').classList.add('hidden');
+        document.getElementById('waitingOthersBox').classList.remove('hidden');
+        if (transportMode === 'local_sim' && bcChannel) {
+          bcChannel.postMessage({ senderId: myPeerId, payload: { type: 'SUBMIT_ANSWER', answer: '', timedOut: true } });
+        } else if (hostConn && hostConn.open) {
+          hostConn.send({ type: 'SUBMIT_ANSWER', answer: '', timedOut: true });
+        }
+      }
     }
 
-    async function evaluateAnswer(answerText) {
-      if (isEvaluating) return;
-      isEvaluating = true;
-      clearInterval(roundTimerInterval);
+    function submitPlayerAnswer(answerText) {
+      if (hasSubmittedThisRound) return;
+      hasSubmittedThisRound = true;
+      document.getElementById('answerInput').disabled = true;
 
-      const input = document.getElementById('answerInput');
-      input.disabled = true;
+      if (gameMode === 'solo') {
+        clearInterval(roundTimerInterval);
+        evaluateSoloAnswer(answerText);
+      } else if (gameMode === 'host') {
+        document.getElementById('answerForm').classList.add('hidden');
+        document.getElementById('waitingOthersBox').classList.remove('hidden');
+        roundAnswers[myPeerId] = { answer: answerText, timedOut: false };
+        checkAllMultiplayerSubmitted();
+      } else if (gameMode === 'guest') {
+        document.getElementById('answerForm').classList.add('hidden');
+        document.getElementById('waitingOthersBox').classList.remove('hidden');
+        if (transportMode === 'local_sim' && bcChannel) {
+          bcChannel.postMessage({ senderId: myPeerId, payload: { type: 'SUBMIT_ANSWER', answer: answerText, timedOut: false } });
+        } else if (hostConn && hostConn.open) {
+          hostConn.send({ type: 'SUBMIT_ANSWER', answer: answerText, timedOut: false });
+        }
+      }
+    }
 
-      const currentQ = currentQuestions[currentRound - 1];
-      const loader = document.getElementById('aiLoadingIndicator');
-      loader.classList.remove('hidden');
+    function checkAllMultiplayerSubmitted() {
+      const totalP = Object.keys(players).length;
+      const subCount = Object.keys(roundAnswers).length;
 
-      const prompt = `Si prísny ale spravodlivý rozhodca v slovenskej vedomostnej šou Pointless (Čo najmenej ľudí).
-Otázka kola: "${currentQ.q}"
-Kategória: "${currentQ.category}"
-Odpoveď hráča: "${answerText}"
+      document.getElementById('submittedCountVal').textContent = `${subCount}/${totalP}`;
+      broadcastToGuests({ type: 'SUBMISSION_PROGRESS', submitted: subCount, total: totalP });
 
-PRAVIDLÁ HODNOTENIA:
-1. Najprv over, či je odpoveď hráča SKUTOČNE správna a patrí do kategórie/otázky (alebo ide o jasnú, vtipnú pop-kultúrnu referenciu priamo súvisiacu s témou).
-2. Ak odpoveď je nezmysel, náhodné písmená, úplne mimo tému alebo fakticky nesprávna -> VŽDY vráť "valid": false!
-3. Ak je odpoveď správna: odhadni, koľko zo 100 bežných Slovákov by ju povedalo:
-   - Veľmi známa odpoveď (napr. Bratislava, Zem, Slovensko, Železo, Messi/Real Madrid) = 50 až 90 ľudí.
-   - Stredne známa odpoveď = 15 až 49 ľudí.
-   - Zriedkavá, obscure správna odpoveď alebo trefná pop-kultúrna referencia = 0 až 5 ľudí.
+      if (subCount >= totalP && !isEvaluating) {
+        clearInterval(roundTimerInterval);
+        evaluateMultiplayerAnswersAsHost();
+      }
+    }
 
-Vráť VÝHRADNE platný JSON objekt:
-{
-  "valid": true/false,
-  "people": číslo od 0 do 100,
-  "comment": "1 krátka veta v slovenčine vysvetľujúca hodnotenie"
-}`;
+    // --- GEMINI AI CALL ---
+    async function callGeminiAI(promptText) {
+      if (!userApiKey) {
+        throw new Error("Chýba Gemini API kľúč!");
+      }
+      const models = ["gemini-3.8-flash", "gemini-3-flash-preview", "gemini-2.5-flash"];
 
-      try {
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-lite-latest:generateContent?key=${encodeURIComponent(userApiKey)}`, {
+      for (const model of models) {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(userApiKey)}`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            contents: [{ parts: [{ text: prompt }] }],
+            contents: [{ parts: [{ text: promptText }] }],
             generationConfig: { responseMimeType: "application/json", temperature: 0.1 }
           })
         });
 
-        loader.classList.add('hidden');
-
-        if (!response.ok) {
+        if (response.ok) {
+          const data = await response.json();
+          const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (rawText) {
+            return JSON.parse(rawText);
+          }
+        } else {
           const errData = await response.json().catch(() => ({}));
-          const errMsg = errData?.error?.message || `HTTP ${response.status}`;
-          displayRoundResult({
-            valid: false,
-            people: 100,
-            comment: `Chyba API kľúča (${errMsg}). Skontroluj kľúč cez tlačidlo 🔑 KĽÚČ hore.`
-          });
-          return;
+          if (model === models[models.length - 1]) {
+            throw new Error(errData?.error?.message || `HTTP ${response.status}`);
+          }
         }
+      }
+      throw new Error("Nepodarilo sa získať odpoveď z API.");
+    }
 
-        const data = await response.json();
-        const rawText = data.candidates[0].content.parts[0].text;
-        const result = JSON.parse(rawText);
-        displayRoundResult(result);
+    async function evaluateSoloAnswer(answerText) {
+      isEvaluating = true;
+      const currentQ = currentQuestions[currentRound - 1];
+      const loader = document.getElementById('aiLoadingIndicator');
+      loader.classList.remove('hidden');
 
+      const prompt = `Si spravodlivý rozhodca v slovenskej vedomostnej šou Pointless (Čo najmenej ľudí).
+Otázka kola: "${currentQ.q}"
+Kategória: "${currentQ.category}"
+Odpoveď hráča: "${answerText}"
+
+PRAVIDLÁ:
+1. Najprv over, či je odpoveď SKUTOČNE správna a patrí do kategórie/otázky (alebo ide o jasnú, trefnú pop-kultúrnu referenciu k téme).
+2. Ak je odpoveď nezmysel, náhodné písmená, úplne mimo tému alebo fakticky nesprávna -> vráť "valid": false.
+3. Ak je správna: odhadni počet zo 100 Slovákov, ktorí by ju povedali (veľmi známa = 50-90, stredná = 15-49, obscure/raritná alebo trefná referencia = 0-5).
+
+Vráť VÝHRADNE platný JSON:
+{
+  "valid": true/false,
+  "people": číslo 0-100,
+  "comment": "1 krátka veta v slovenčine"
+}`;
+
+      try {
+        const res = await callGeminiAI(prompt);
+        loader.classList.add('hidden');
+        displaySoloResult(res);
       } catch (err) {
         loader.classList.add('hidden');
-        displayRoundResult({
+        displaySoloResult({
           valid: false,
           people: 100,
-          comment: `Nepodarilo sa spojiť s Gemini AI (${err.message}). Skontroluj pripojenie alebo API kľúč.`
+          comment: `Chyba AI (${err.message}). Skontroluj svoj kľúč cez tlačidlo 🔑 KĽÚČ hore.`
         });
       }
     }
 
-    function displayRoundResult(res) {
+    function displaySoloResult(res) {
       document.getElementById('answerForm').classList.add('hidden');
       const scoreArea = document.getElementById('scoreArea');
       scoreArea.classList.remove('hidden');
 
+      const p = players[myPeerId];
       let gained = 0;
-      const peopleEl = document.getElementById('peopleCount');
-      const pointsEl = document.getElementById('pointsGained');
-      const feedbackEl = document.getElementById('feedbackText');
 
       if (res.valid) {
         const count = Math.min(100, Math.max(0, Number(res.people) || 0));
         gained = Math.max(0, 100 - count);
-        totalScore += gained;
-        targetAltitude += gained * 10;
+        p.score += gained;
+        p.altitude += gained * 10;
 
-        peopleEl.textContent = count;
-        pointsEl.textContent = `+${gained}`;
-        pointsEl.className = 'pixel-font text-2xl text-emerald-400 font-bold';
-        feedbackEl.textContent = res.comment;
-        sfx.playSuccess();
+        document.getElementById('peopleCount').textContent = count;
+        document.getElementById('pointsGained').textContent = `+${gained}`;
+        document.getElementById('pointsGained').className = 'pixel-font text-xl text-emerald-400 font-bold';
+        document.getElementById('feedbackText').textContent = res.comment;
       } else {
-        peopleEl.textContent = 'NEPLATNÉ';
-        pointsEl.textContent = '+0';
-        pointsEl.className = 'pixel-font text-2xl text-red-500 font-bold';
-        feedbackEl.innerHTML = `<span class="text-red-400 font-bold">0 bodov:</span> ${res.comment}`;
-        sfx.playFail();
+        document.getElementById('peopleCount').textContent = 'NEPLATNÉ';
+        document.getElementById('pointsGained').textContent = '+0';
+        document.getElementById('pointsGained').className = 'pixel-font text-xl text-red-500 font-bold';
+        document.getElementById('feedbackText').innerHTML = `<span class="text-red-400 font-bold">0 bodov:</span> ${res.comment}`;
       }
 
-      document.getElementById('scoreVal').textContent = totalScore;
-
+      document.getElementById('scoreVal').textContent = p.score;
       const nextBtn = document.getElementById('nextBtn');
       nextBtn.classList.remove('hidden');
       nextBtn.focus();
     }
 
+    async function evaluateMultiplayerAnswersAsHost() {
+      isEvaluating = true;
+      document.getElementById('answerForm').classList.add('hidden');
+      document.getElementById('waitingOthersBox').classList.add('hidden');
+      document.getElementById('aiLoadingIndicator').classList.remove('hidden');
+      broadcastToGuests({ type: 'EVALUATING_START' });
+
+      const currentQ = currentQuestions[currentRound - 1];
+      const submissions = Object.keys(players).map(pid => ({
+        id: pid,
+        name: players[pid].name,
+        answer: roundAnswers[pid]?.answer || '',
+        timedOut: !!roundAnswers[pid]?.timedOut
+      }));
+
+      const activeSubs = submissions.filter(s => !s.timedOut && s.answer.trim().length > 0);
+      let aiMap = {};
+
+      if (activeSubs.length > 0) {
+        const prompt = `Si rozhodca v slovenskej vedomostnej šou Pointless (Čo najmenej ľudí).
+Otázka kola: "${currentQ.q}"
+Kategória: "${currentQ.category}"
+
+Vyhodnoť odpovede týchto hráčov:
+${JSON.stringify(activeSubs.map(s => ({ id: s.id, answer: s.answer })))}
+
+PRAVIDLÁ:
+1. Over pre každého hráča, či je odpoveď SKUTOČNE správna (alebo ide o jasnú pop-kultúrnu referenciu k téme). Nezmysly alebo nesprávne odpovede označ "valid": false.
+2. Odhadni počet zo 100 Slovákov, ktorí by odpoveď povedali (známa = 50-90, stredná = 15-49, obscure/raritná = 0-5). Rovnaké odpovede viacerých hráčov musia dostať rovnaký počet ľudí.
+
+Vráť VÝHRADNE JSON pole objektov:
+[
+  { "id": "id_hraca", "valid": true/false, "people": číslo_0_100, "comment": "krátky komentár" }
+]`;
+
+        try {
+          const arr = await callGeminiAI(prompt);
+          if (Array.isArray(arr)) {
+            arr.forEach(item => { aiMap[item.id] = item; });
+          }
+        } catch (err) {
+          activeSubs.forEach(s => {
+            aiMap[s.id] = { valid: false, people: 100, comment: `Chyba AI (${err.message})` };
+          });
+        }
+      }
+
+      const roundResults = submissions.map(s => {
+        const p = players[s.id];
+        if (s.timedOut || !s.answer.trim()) {
+          return {
+            id: s.id,
+            name: p.name,
+            colorIdx: p.colorIdx,
+            answer: '—',
+            valid: false,
+            people: '-',
+            gained: 0,
+            comment: 'Hlupák 0 bodov (vypršal čas)'
+          };
+        }
+        const evalObj = aiMap[s.id] || { valid: false, people: 100, comment: 'Neplatná odpoveď' };
+        if (evalObj.valid) {
+          const count = Math.min(100, Math.max(0, Number(evalObj.people) || 0));
+          const gained = Math.max(0, 100 - count);
+          p.score += gained;
+          p.altitude += gained * 10;
+          return {
+            id: s.id,
+            name: p.name,
+            colorIdx: p.colorIdx,
+            answer: s.answer,
+            valid: true,
+            people: count,
+            gained,
+            comment: evalObj.comment
+          };
+        } else {
+          return {
+            id: s.id,
+            name: p.name,
+            colorIdx: p.colorIdx,
+            answer: s.answer,
+            valid: false,
+            people: 'X',
+            gained: 0,
+            comment: evalObj.comment
+          };
+        }
+      });
+
+      document.getElementById('aiLoadingIndicator').classList.add('hidden');
+      broadcastToGuests({ type: 'ROUND_RESULTS', players, results: roundResults });
+      displayMultiplayerRoundResults(roundResults);
+    }
+
+    function displayMultiplayerRoundResults(results) {
+      document.getElementById('answerForm').classList.add('hidden');
+      document.getElementById('waitingOthersBox').classList.add('hidden');
+
+      const area = document.getElementById('multiScoreArea');
+      const list = document.getElementById('multiResultsList');
+      area.classList.remove('hidden');
+      list.innerHTML = '';
+
+      if (players[myPeerId]) {
+        document.getElementById('scoreVal').textContent = players[myPeerId].score;
+      }
+
+      const sorted = [...results].sort((a, b) => b.gained - a.gained);
+      sorted.forEach(r => {
+        const row = document.createElement('div');
+        row.className = 'flex justify-between items-center bg-slate-950/90 px-2.5 py-1.5 border border-sky-900/50';
+        row.innerHTML = `
+          <div class="text-left overflow-hidden pr-2">
+            <div class="font-bold text-white truncate">
+              ${r.name} <span class="text-sky-300 font-normal">(${r.answer})</span>
+            </div>
+            <div class="text-[10px] text-slate-400 truncate">${r.comment}</div>
+          </div>
+          <div class="text-right shrink-0">
+            <div class="pixel-font text-xs ${r.gained > 0 ? 'text-emerald-400' : 'text-red-400'}">+${r.gained}b</div>
+            <div class="text-[9px] text-slate-400">Hlasy: ${r.people}</div>
+          </div>
+        `;
+        list.appendChild(row);
+      });
+
+      if (gameMode === 'host') {
+        const nextBtn = document.getElementById('nextBtn');
+        nextBtn.classList.remove('hidden');
+        nextBtn.focus();
+      } else {
+        document.getElementById('guestNextWait').classList.remove('hidden');
+      }
+    }
+
     function finishGame() {
       showScreen('endScreen');
+      const pList = Object.values(players).sort((a, b) => b.altitude - a.altitude);
 
-      document.getElementById('finalScore').textContent = totalScore;
-      document.getElementById('finalAltitude').textContent = `${Math.round(targetAltitude)} m`;
+      if (gameMode === 'solo') {
+        const me = pList[0];
+        document.getElementById('multiEndSummary').classList.add('hidden');
+        document.getElementById('soloEndSummary').classList.remove('hidden');
+        document.getElementById('finalScore').textContent = me.score;
+        document.getElementById('finalAltitude').textContent = `${Math.round(me.altitude)} m`;
 
-      let title = "POZEMŠŤAN";
-      if (targetAltitude >= 5500) title = "VLÁDCA ČIERNEJ DIERY 🕳️";
-      else if (targetAltitude >= 3500) title = "GALAKTICKÝ PRIESKUMNÍK 🪐";
-      else if (targetAltitude >= 1000) title = "KOZMONAUT VO VESMÍRE 🚀";
-      else if (targetAltitude >= 500) title = "PILOT STRATOSFÉRY ✈️";
+        let title = "POZEMŠŤAN";
+        if (me.altitude >= 5500) title = "VLÁDCA ČIERNEJ DIERY 🕳️";
+        else if (me.altitude >= 3500) title = "GALAKTICKÝ PRIESKUMNÍK 🪐";
+        else if (me.altitude >= 1000) title = "KOZMONAUT VO VESMÍRE 🚀";
+        else if (me.altitude >= 500) title = "PILOT STRATOSFÉRY ✈️";
+        document.getElementById('finalTitle').textContent = title;
+      } else {
+        document.getElementById('soloEndSummary').classList.add('hidden');
+        document.getElementById('multiEndSummary').classList.remove('hidden');
+        const pod = document.getElementById('podiumList');
+        pod.innerHTML = '';
 
-      document.getElementById('finalTitle').textContent = title;
+        const medals = ['🥇', '🥈', '🥉', '4.', '5.', '6.'];
+        pList.forEach((p, i) => {
+          const item = document.createElement('div');
+          item.className = 'flex justify-between items-center bg-slate-950/90 px-3 py-2 border border-sky-800/60';
+          item.innerHTML = `
+            <span class="font-bold ${p.id === myPeerId ? 'text-amber-300' : 'text-white'}">
+              ${medals[i] || (i + 1) + '.'} ${p.name}
+            </span>
+            <span class="pixel-font text-[11px] text-emerald-400">
+              ${Math.round(p.altitude)} m (${p.score}b)
+            </span>
+          `;
+          pod.appendChild(item);
+        });
+      }
     }
 
     // --- EVENT LISTENERS ---
     document.addEventListener('DOMContentLoaded', () => {
-      // Initial Screen routing based on saved API Key
+      const savedNick = localStorage.getItem(NICK_KEY);
+      if (savedNick) document.getElementById('nicknameInput').value = savedNick;
+
       if (userApiKey) {
         document.getElementById('apiKeyInput').value = userApiKey;
-        showScreen('startScreen');
+        showScreen('modeScreen');
       } else {
         showScreen('apiKeyScreen');
       }
 
-      // API Key Form submit
       document.getElementById('apiKeyForm').addEventListener('submit', (e) => {
         e.preventDefault();
         const keyVal = document.getElementById('apiKeyInput').value.trim();
@@ -988,54 +1696,56 @@ Vráť VÝHRADNE platný JSON objekt:
         errEl.classList.add('hidden');
         userApiKey = keyVal;
         localStorage.setItem(STORAGE_KEY, userApiKey);
-        showScreen('startScreen');
+        showScreen('modeScreen');
       });
 
-      // Open API Key Screen from Header
+      document.getElementById('skipKeyBtn').addEventListener('click', () => {
+        showScreen('modeScreen');
+      });
+
       document.getElementById('apiKeyBtn').addEventListener('click', () => {
         clearInterval(roundTimerInterval);
+        cleanupPeer();
         document.getElementById('apiKeyInput').value = userApiKey;
         showScreen('apiKeyScreen');
       });
 
-      // Clear saved API key
-      document.getElementById('clearKeyBtn').addEventListener('click', () => {
-        localStorage.removeItem(STORAGE_KEY);
-        userApiKey = '';
-        document.getElementById('apiKeyInput').value = '';
-        document.getElementById('apiKeyError').textContent = "Uložený kľúč bol vymazaný.";
-        document.getElementById('apiKeyError').classList.remove('hidden');
-      });
+      document.getElementById('soloStartBtn').addEventListener('click', startSoloGame);
+      document.getElementById('createLobbyBtn').addEventListener('click', createMultiplayerLobby);
+      document.getElementById('joinLobbyBtn').addEventListener('click', joinMultiplayerLobby);
 
-      document.getElementById('startBtn').addEventListener('click', initGame);
+      document.getElementById('startMultiGameBtn').addEventListener('click', startMultiplayerMatchAsHost);
+      document.getElementById('leaveLobbyBtn').addEventListener('click', () => {
+        cleanupPeer();
+        showScreen('modeScreen');
+      });
 
       document.getElementById('answerForm').addEventListener('submit', (e) => {
         e.preventDefault();
         const txt = document.getElementById('answerInput').value.trim();
-        if (txt) evaluateAnswer(txt);
+        if (txt) submitPlayerAnswer(txt);
       });
 
       document.getElementById('nextBtn').addEventListener('click', () => {
         if (currentRound >= maxRounds) {
+          if (gameMode === 'host') broadcastToGuests({ type: 'GAME_OVER', players });
           finishGame();
         } else {
+          if (gameMode === 'host') broadcastToGuests({ type: 'NEXT_ROUND' });
           loadNextQuestion();
         }
       });
 
-      document.getElementById('restartBtn').addEventListener('click', initGame);
+      document.getElementById('restartBtn').addEventListener('click', () => {
+        cleanupPeer();
+        document.getElementById('headerScore').classList.add('hidden');
+        showScreen('modeScreen');
+      });
 
       const modal = document.getElementById('rulesModal');
       document.getElementById('rulesBtn').addEventListener('click', () => modal.classList.remove('hidden'));
       document.getElementById('closeRulesBtn').addEventListener('click', () => modal.classList.add('hidden'));
       document.getElementById('confirmRulesBtn').addEventListener('click', () => modal.classList.add('hidden'));
-
-      const soundBtn = document.getElementById('soundToggle');
-      soundBtn.addEventListener('click', () => {
-        sfx.init();
-        sfx.enabled = !sfx.enabled;
-        soundBtn.textContent = sfx.enabled ? '🔊' : '🔇';
-      });
     });
   </script>
 </body>
