@@ -17,13 +17,15 @@ crown | hat | 👑 | Zlatá korunka | Kráľovská korunka na prilbu | 2500
 cowboy | hat | 🤠 | Kovbojský klobúk | Štýlový klobúk na dvor aj do vesmíru | 80
 headphones | hat | 🎧 | DJ Slúchadlá | Farebné slúchadlá na prilbu | 60
 tophat | hat | 🎩 | Cylinder | Elegantný čierny cylinder | 300
+cool_shades | hat | 🕶️ | Pixelové okuliare | Štýlové čierne pixelové okuliare na priezor | 400
 
 # SKAFANDRE (suit)
 gold_suit | suit | ✨ | Zlatý skafander | Prémiový zlatý oblek | 3000
 neon_suit | suit | 💠 | Neónový oblek | Žiarivý tyrkysový oblek | 1500
 
-# STOPY JETPACKU (trail)
+# STOPY JETPACKU A DOPRAVA (trail)
 rainbow_trail | trail | 🌈 | Dúhová stopa | Farebné častice z jetpacku | 1000
 plasma_trail | trail | 🔥 | Plazmová stopa | Fialovo-ružová plazma | 700
+mini_ufo | trail | 🛸 | Mini UFO | Lietajúci tanier na ktorom kozmonaut sedí | 2000
 `;
 

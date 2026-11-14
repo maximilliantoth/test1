@@ -107,6 +107,23 @@
       background-size: 100% 4px;
       pointer-events: none;
     }
+    #shopItemsGrid {
+      scrollbar-width: thin;
+      scrollbar-color: #eab308 #0f172a;
+      -webkit-overflow-scrolling: touch;
+    }
+    #shopItemsGrid::-webkit-scrollbar {
+      width: 8px;
+    }
+    #shopItemsGrid::-webkit-scrollbar-track {
+      background: #0f172a;
+      border-radius: 4px;
+    }
+    #shopItemsGrid::-webkit-scrollbar-thumb {
+      background: #eab308;
+      border-radius: 4px;
+      border: 1px solid #020617;
+    }
   </style>
 </head>
 <body class="flex flex-col text-slate-100">
@@ -422,8 +439,8 @@
 
   <!-- Modal: Shop -->
   <div id="shopModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
-    <div class="w-full max-w-lg pixel-box bg-slate-950 p-5 flex flex-col gap-3 text-left border-2 border-yellow-400 max-h-[85dvh]">
-      <div class="flex justify-between items-center border-b border-yellow-700/60 pb-2">
+    <div class="w-full max-w-lg pixel-box bg-slate-950 p-5 flex flex-col gap-3 text-left border-2 border-yellow-400 max-h-[85dvh] min-h-0">
+      <div class="flex justify-between items-center border-b border-yellow-700/60 pb-2 shrink-0">
         <div class="flex items-center gap-2">
           <span class="pixel-font text-xs text-yellow-300">🛒 KOZMICKÝ SHOP</span>
           <span class="text-[10px] pixel-font bg-yellow-950/80 text-yellow-300 border border-yellow-500/50 px-2 py-0.5">
@@ -432,11 +449,11 @@
         </div>
         <button id="closeShopBtn" class="text-yellow-300 hover:text-white font-bold text-base px-2">✕</button>
       </div>
-      <div id="shopItemsGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 overflow-y-auto pr-1 py-1"></div>
-      <p class="text-[10px] text-slate-400 leading-snug border-t border-slate-800 pt-2">
+      <div id="shopItemsGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y pr-1.5 py-1"></div>
+      <p class="text-[10px] text-slate-400 leading-snug border-t border-slate-800 pt-2 shrink-0">
         Tip: Kredity získavaš za správne odpovede (+10 🪙), Pointless (+40 🪙) a dokončenie hry (+25 🪙).
       </p>
-      <button id="confirmShopBtn" class="pixel-btn py-2 text-xs w-full">ZAVRIEŤ OBCHOD</button>
+      <button id="confirmShopBtn" class="pixel-btn py-2 text-xs w-full shrink-0">ZAVRIEŤ OBCHOD</button>
     </div>
   </div>
 
@@ -792,19 +809,22 @@
       pctx.ellipse(w / 2, padY + 4, 52 * shadowScale, 8 * shadowScale, 0, 0, Math.PI * 2);
       pctx.fill();
 
-      // Jetpack particles
+      // Jetpack / UFO particles
+      const hasMiniUfo = cosmetics.trail === 'mini_ufo';
       let trailColor = Math.random() > 0.4 ? '#38bdf8' : '#f59e0b';
       if (cosmetics.trail === 'rainbow_trail') {
         const rainbow = ['#ef4444', '#f97316', '#fde047', '#4ade80', '#38bdf8', '#c084fc'];
         trailColor = rainbow[Math.floor(Math.random() * rainbow.length)];
       } else if (cosmetics.trail === 'plasma_trail') {
         trailColor = Math.random() > 0.5 ? '#e879f9' : '#a855f7';
+      } else if (hasMiniUfo) {
+        trailColor = Math.random() > 0.4 ? '#4ade80' : '#22d3ee';
       }
       if (Math.random() > 0.25) {
         astroPreviewParticles.push({
-          x: cx - 52 + (Math.random() * 14 - 7),
-          y: cy + 36 + Math.random() * 6,
-          vx: -0.6 - Math.random() * 0.8,
+          x: hasMiniUfo ? (cx + (Math.random() * 44 - 22)) : (cx - 52 + (Math.random() * 14 - 7)),
+          y: hasMiniUfo ? (cy + 88 + Math.random() * 6) : (cy + 36 + Math.random() * 6),
+          vx: hasMiniUfo ? (Math.random() * 0.6 - 0.3) : (-0.6 - Math.random() * 0.8),
           vy: 1.6 + Math.random() * 1.6,
           size: 4 + Math.random() * 5,
           life: 1,
@@ -859,30 +879,40 @@
       pctx.fillRect(-60, 46, 6, 4 + Math.random() * 6);
       pctx.fillRect(-45, 46, 6, 4 + Math.random() * 6);
 
-      // --- LEGS & MOON BOOTS ---
+      // --- LEGS & MOON BOOTS (or Mini UFO seat) ---
       const legShade = palette.shade;
-      // Left & right legs
-      pctx.fillStyle = palette.suit;
-      pctx.fillRect(-32, 48, 26, 44);
-      pctx.fillRect(6, 48, 26, 44);
-      // Knee pads & ribbed joints
-      pctx.fillStyle = legShade;
-      pctx.fillRect(-32, 64, 26, 10);
-      pctx.fillRect(6, 64, 26, 10);
-      pctx.fillStyle = '#1e293b';
-      pctx.fillRect(-30, 68, 22, 2);
-      pctx.fillRect(8, 68, 22, 2);
-      // Heavy boots
-      pctx.fillStyle = '#334155';
-      pctx.fillRect(-36, 90, 32, 18);
-      pctx.fillRect(4, 90, 32, 18);
-      pctx.fillStyle = '#475569';
-      pctx.fillRect(-36, 90, 32, 6);
-      pctx.fillRect(4, 90, 32, 6);
-      // Thick ribbed soles
-      pctx.fillStyle = '#0f172a';
-      pctx.fillRect(-38, 106, 36, 7);
-      pctx.fillRect(2, 106, 36, 7);
+      if (hasMiniUfo) {
+        // Sitting legs tucked forward on UFO
+        pctx.fillStyle = palette.suit;
+        pctx.fillRect(-28, 44, 24, 18);
+        pctx.fillRect(6, 44, 24, 18);
+        pctx.fillStyle = '#334155';
+        pctx.fillRect(-24, 58, 22, 12);
+        pctx.fillRect(10, 58, 22, 12);
+      } else {
+        // Left & right legs
+        pctx.fillStyle = palette.suit;
+        pctx.fillRect(-32, 48, 26, 44);
+        pctx.fillRect(6, 48, 26, 44);
+        // Knee pads & ribbed joints
+        pctx.fillStyle = legShade;
+        pctx.fillRect(-32, 64, 26, 10);
+        pctx.fillRect(6, 64, 26, 10);
+        pctx.fillStyle = '#1e293b';
+        pctx.fillRect(-30, 68, 22, 2);
+        pctx.fillRect(8, 68, 22, 2);
+        // Heavy boots
+        pctx.fillStyle = '#334155';
+        pctx.fillRect(-36, 90, 32, 18);
+        pctx.fillRect(4, 90, 32, 18);
+        pctx.fillStyle = '#475569';
+        pctx.fillRect(-36, 90, 32, 6);
+        pctx.fillRect(4, 90, 32, 6);
+        // Thick ribbed soles
+        pctx.fillStyle = '#0f172a';
+        pctx.fillRect(-38, 106, 36, 7);
+        pctx.fillRect(2, 106, 36, 7);
+      }
 
       // --- TORSO & SUIT DETAILS ---
       pctx.fillStyle = palette.suit;
@@ -1034,6 +1064,43 @@
         pctx.fillRect(-28, -120, 56, 8);
         pctx.fillStyle = '#facc15';
         pctx.fillRect(-6, -121, 12, 10);
+      } else if (cosmetics.hat === 'cool_shades') {
+        // Pixel sunglasses across visor
+        pctx.fillStyle = '#020617';
+        pctx.fillRect(-40, -76, 18, 6);
+        pctx.fillRect(-24, -80, 26, 16);
+        pctx.fillRect(2, -78, 8, 6);
+        pctx.fillRect(10, -80, 26, 16);
+        // Pixel white glint
+        pctx.fillStyle = '#ffffff';
+        pctx.fillRect(-20, -76, 6, 4);
+        pctx.fillRect(-14, -72, 4, 4);
+        pctx.fillRect(14, -76, 6, 4);
+        pctx.fillRect(20, -72, 4, 4);
+      }
+
+      if (hasMiniUfo) {
+        // Mini UFO saucer under sitting astronaut
+        pctx.fillStyle = 'rgba(56, 189, 248, 0.35)';
+        pctx.fillRect(-44, 42, 88, 16);
+        pctx.fillStyle = '#94a3b8';
+        pctx.fillRect(-68, 56, 136, 14);
+        pctx.fillStyle = '#cbd5e1';
+        pctx.fillRect(-52, 50, 104, 8);
+        pctx.fillStyle = '#475569';
+        pctx.fillRect(-60, 70, 120, 10);
+        // Blinking UFO rim lights
+        const ufoBlink = Math.floor(now / 180) % 3;
+        const ufoLights = [-52, -26, 0, 26, 46];
+        ufoLights.forEach((lx, idx) => {
+          pctx.fillStyle = (idx % 3 === ufoBlink) ? '#4ade80' : '#22d3ee';
+          pctx.fillRect(lx, 60, 8, 6);
+        });
+        // Green tractor thruster glow underneath
+        pctx.fillStyle = 'rgba(74, 222, 128, 0.5)';
+        pctx.fillRect(-32, 80, 64, 8);
+        pctx.fillStyle = 'rgba(34, 211, 238, 0.4)';
+        pctx.fillRect(-20, 88, 40, 6);
       }
 
       pctx.restore();
@@ -1674,18 +1741,21 @@
       ctx.save();
       ctx.translate(x, y);
 
+      const hasMiniUfo = cosmetics.trail === 'mini_ufo';
       if (!p.particles) p.particles = [];
-      if (isClimbing || inSpace) {
+      if (isClimbing || inSpace || hasMiniUfo) {
         let pColor = Math.random() > 0.4 ? '#38bdf8' : '#f59e0b';
         if (cosmetics.trail === 'rainbow_trail') {
           const rainbow = ['#ef4444', '#f97316', '#fde047', '#4ade80', '#38bdf8', '#c084fc'];
           pColor = rainbow[Math.floor(Math.random() * rainbow.length)];
         } else if (cosmetics.trail === 'plasma_trail') {
           pColor = Math.random() > 0.5 ? '#e879f9' : '#a855f7';
+        } else if (hasMiniUfo) {
+          pColor = Math.random() > 0.4 ? '#4ade80' : '#22d3ee';
         }
         p.particles.push({
-          x: -10 + (Math.random() * 4 - 2),
-          y: 12 + Math.random() * 4,
+          x: hasMiniUfo ? (Math.random() * 16 - 8) : (-10 + (Math.random() * 4 - 2)),
+          y: hasMiniUfo ? (22 + Math.random() * 3) : (12 + Math.random() * 4),
           life: 1.0,
           color: pColor,
           size: Math.random() > 0.5 ? 3 : 2
@@ -1788,6 +1858,18 @@
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(-2, -16, 4, 2);
 
+      // Pixel Sunglasses (rendered over visor)
+      if (cosmetics.hat === 'cool_shades') {
+        ctx.fillStyle = '#020617';
+        ctx.fillRect(-9, -15, 5, 2);
+        ctx.fillRect(-4, -16, 6, 5);
+        ctx.fillRect(2, -15, 2, 2);
+        ctx.fillRect(4, -16, 6, 5);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(-3, -15, 2, 1);
+        ctx.fillRect(5, -15, 2, 1);
+      }
+
       // Animated Limbs
       const walkSwing = p.isWalking ? Math.sin(bobbingPhase * 3.2 + p.colorIdx) * 3 : 0;
       const armWave = p.isWalking ? walkSwing : Math.sin(bobbingPhase * 2 + p.colorIdx) * 2;
@@ -1796,13 +1878,35 @@
       ctx.fillStyle = palette.suit;
       ctx.fillRect(-11, -2 + armWave, 4, 12);
       ctx.fillRect(7, -2 - armWave, 4, 12);
-      ctx.fillRect(-7, 14 - leftLegLift, 6, 9);
-      ctx.fillRect(1, 14 - rightLegLift, 6, 9);
 
-      // Boots
-      ctx.fillStyle = '#334155';
-      ctx.fillRect(-8, 21 - leftLegLift, 7, 3);
-      ctx.fillRect(1, 21 - rightLegLift, 7, 3);
+      if (hasMiniUfo) {
+        // Sitting legs + Mini UFO saucer underneath
+        ctx.fillRect(-7, 12, 6, 5);
+        ctx.fillRect(1, 12, 6, 5);
+        ctx.fillStyle = 'rgba(56, 189, 248, 0.35)';
+        ctx.fillRect(-12, 11, 24, 5);
+        ctx.fillStyle = '#94a3b8';
+        ctx.fillRect(-18, 15, 36, 4);
+        ctx.fillStyle = '#cbd5e1';
+        ctx.fillRect(-14, 13, 28, 3);
+        ctx.fillStyle = '#475569';
+        ctx.fillRect(-15, 19, 30, 3);
+        const ufoBlink = Math.floor(Date.now() / 180) % 3;
+        [-13, -5, 3, 11].forEach((lx, idx) => {
+          ctx.fillStyle = (idx % 3 === ufoBlink) ? '#4ade80' : '#22d3ee';
+          ctx.fillRect(lx, 16, 2, 2);
+        });
+        ctx.fillStyle = 'rgba(74, 222, 128, 0.5)';
+        ctx.fillRect(-8, 22, 16, 2);
+      } else {
+        ctx.fillRect(-7, 14 - leftLegLift, 6, 9);
+        ctx.fillRect(1, 14 - rightLegLift, 6, 9);
+
+        // Boots
+        ctx.fillStyle = '#334155';
+        ctx.fillRect(-8, 21 - leftLegLift, 7, 3);
+        ctx.fillRect(1, 21 - rightLegLift, 7, 3);
+      }
 
       if (isClimbing) {
         ctx.fillStyle = '#38bdf8';
