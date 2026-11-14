@@ -1823,6 +1823,130 @@
       ctx.restore();
     }
 
+    function drawSimpleFarm(groundY) {
+      const isMobileMode = document.body.dataset.device === 'mobile';
+      const scale = isMobileMode ? 0.64 : 1;
+      const hx = isMobileMode
+        ? Math.max(52, Math.min(width * 0.16, 150))
+        : Math.max(76, Math.min(width * 0.18, 220));
+      const sx = isMobileMode
+        ? Math.min(width - 44, hx + 126)
+        : Math.min(width - 58, hx + 166);
+      const fx = isMobileMode
+        ? Math.min(width - 44, sx + 102)
+        : Math.min(width - 78, sx + 158);
+
+      const barnW = 76;
+      const barnH = 50;
+      const wallTop = groundY - barnH;
+
+      ctx.save();
+      ctx.translate(fx, groundY);
+      ctx.scale(scale, scale);
+      ctx.translate(-fx, -groundY);
+
+      // White silo next to the barn (left side)
+      const siloX = fx - barnW / 2 - 20;
+      const siloW = 18;
+      const siloH = 54;
+      ctx.fillStyle = '#f8fafc';
+      ctx.fillRect(siloX, groundY - siloH, siloW, siloH);
+      ctx.fillStyle = '#e2e8f0';
+      ctx.fillRect(siloX + siloW - 5, groundY - siloH, 5, siloH);
+      // Red silo dome roof
+      ctx.fillStyle = '#dc2626';
+      ctx.beginPath();
+      ctx.moveTo(siloX - 2, groundY - siloH);
+      ctx.lineTo(siloX + siloW / 2, groundY - siloH - 12);
+      ctx.lineTo(siloX + siloW + 2, groundY - siloH);
+      ctx.closePath();
+      ctx.fill();
+      // White silo band
+      ctx.fillStyle = '#cbd5e1';
+      ctx.fillRect(siloX, groundY - siloH + 16, siloW, 2);
+      ctx.fillRect(siloX, groundY - siloH + 34, siloW, 2);
+
+      // Red barn main wall
+      ctx.fillStyle = '#dc2626';
+      ctx.fillRect(fx - barnW / 2, wallTop, barnW, barnH);
+      ctx.fillStyle = '#b91c1c';
+      ctx.fillRect(fx + barnW / 2 - 6, wallTop, 6, barnH);
+
+      // White corner & base trim
+      ctx.fillStyle = '#f8fafc';
+      ctx.fillRect(fx - barnW / 2, wallTop, 4, barnH);
+      ctx.fillRect(fx + barnW / 2 - 4, wallTop, 4, barnH);
+
+      // Classic gambrel barn roof (red with white trim)
+      ctx.fillStyle = '#7f1d1d';
+      ctx.beginPath();
+      ctx.moveTo(fx - barnW / 2 - 7, wallTop + 2);
+      ctx.lineTo(fx - barnW / 2 + 12, wallTop - 20);
+      ctx.lineTo(fx, wallTop - 30);
+      ctx.lineTo(fx + barnW / 2 - 12, wallTop - 20);
+      ctx.lineTo(fx + barnW / 2 + 7, wallTop + 2);
+      ctx.closePath();
+      ctx.fill();
+
+      // White roof outline
+      ctx.strokeStyle = '#f8fafc';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.moveTo(fx - barnW / 2 - 7, wallTop + 2);
+      ctx.lineTo(fx - barnW / 2 + 12, wallTop - 20);
+      ctx.lineTo(fx, wallTop - 30);
+      ctx.lineTo(fx + barnW / 2 - 12, wallTop - 20);
+      ctx.lineTo(fx + barnW / 2 + 7, wallTop + 2);
+      ctx.stroke();
+
+      // Upper hayloft window (white frame)
+      ctx.fillStyle = '#f8fafc';
+      ctx.fillRect(fx - 8, wallTop - 16, 16, 14);
+      ctx.fillStyle = '#1e293b';
+      ctx.fillRect(fx - 6, wallTop - 14, 12, 10);
+
+      // Barn double doors with white X-frame
+      const doorW = 30;
+      const doorH = 28;
+      const doorX = fx - doorW / 2;
+      const doorY = groundY - doorH;
+      ctx.fillStyle = '#f8fafc';
+      ctx.fillRect(doorX - 2, doorY - 2, doorW + 4, doorH + 2);
+      ctx.fillStyle = '#991b1b';
+      ctx.fillRect(doorX, doorY, doorW, doorH);
+      ctx.fillStyle = '#f8fafc';
+      ctx.fillRect(fx - 1, doorY, 2, doorH);
+      ctx.strokeStyle = '#f8fafc';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(doorX + 1, doorY + 1);
+      ctx.lineTo(fx - 2, groundY - 1);
+      ctx.moveTo(fx - 2, doorY + 1);
+      ctx.lineTo(doorX + 1, groundY - 1);
+      ctx.moveTo(fx + 2, doorY + 1);
+      ctx.lineTo(doorX + doorW - 1, groundY - 1);
+      ctx.moveTo(doorX + doorW - 1, doorY + 1);
+      ctx.lineTo(fx + 2, groundY - 1);
+      ctx.stroke();
+
+      // Simple white paddock fence & hay bale on the right
+      const fenceStart = fx + barnW / 2 + 4;
+      const fenceCount = 4;
+      ctx.fillStyle = '#f8fafc';
+      ctx.fillRect(fenceStart, groundY - 13, fenceCount * 10, 2.5);
+      ctx.fillRect(fenceStart, groundY - 6, fenceCount * 10, 2.5);
+      for (let i = 0; i < fenceCount; i++) {
+        ctx.fillRect(fenceStart + i * 10, groundY - 18, 3, 18);
+      }
+      // Small golden hay bale
+      ctx.fillStyle = '#eab308';
+      ctx.fillRect(fenceStart + 8, groundY - 10, 14, 10);
+      ctx.fillStyle = '#ca8a04';
+      ctx.fillRect(fenceStart + 8, groundY - 6, 14, 2);
+
+      ctx.restore();
+    }
+
     function drawDetailedMountains(groundY) {
       const wId = currentWeather.id;
       const isSnowy = wId === 'snowy';
@@ -2056,6 +2180,7 @@
 
       drawSimpleHouse(groundY);
       drawSimpleShop(groundY);
+      drawSimpleFarm(groundY);
     }
 
     function drawLaunchpadAndLandscape(alt) {
