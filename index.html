@@ -620,8 +620,27 @@
       </div>
 
       <div class="flex flex-col sm:flex-row items-center justify-between gap-2 pt-1">
-        <span class="text-xs text-slate-300">Zatiaľ prázdna stodola — čoskoro tu budú bývať tvoje zvieratá.</span>
+        <span class="text-xs text-slate-300">Klikni na krabicu <strong class="text-amber-300">NA PREDAJ</strong> na ľavej poličke a pozri si zvieratá.</span>
         <button id="confirmFarmBtn" class="py-2 px-5 text-[10px] pixel-font border border-slate-600 bg-slate-800 hover:bg-slate-700 text-slate-200 w-full sm:w-auto shrink-0">ZAVRIEŤ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Krabica NA PREDAJ (Zoznam zvierat) -->
+  <div id="animalMarketModal" class="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 hidden">
+    <div class="w-full max-w-2xl pixel-box bg-slate-950 p-3.5 sm:p-5 flex flex-col gap-3 text-left border-2 border-amber-400 max-h-[88dvh]">
+      <div class="flex justify-between items-center border-b border-amber-800/70 pb-2 gap-2">
+        <div class="flex items-center gap-2 flex-wrap">
+          <span class="pixel-font text-[10px] sm:text-xs text-amber-300">📦 NA PREDAJ — ZVIERATÁ</span>
+          <span class="text-[10px] pixel-font bg-amber-950/80 text-amber-200 border border-amber-500/50 px-2 py-0.5">🪙 <span id="animalMarketCoinsVal">0</span></span>
+        </div>
+        <button id="closeAnimalMarketBtn" class="text-amber-300 hover:text-white font-bold text-base px-2">✕</button>
+      </div>
+
+      <div id="animalMarketList" class="grid grid-cols-1 sm:grid-cols-2 gap-2 overflow-y-auto pr-1 flex-1"></div>
+
+      <div class="flex justify-end pt-1 border-t border-slate-800">
+        <button id="confirmAnimalMarketBtn" class="py-2 px-5 text-[10px] pixel-font border border-slate-600 bg-slate-800 hover:bg-slate-700 text-slate-200 w-full sm:w-auto">ZAVRIEŤ</button>
       </div>
     </div>
   </div>
@@ -648,6 +667,7 @@
 
   <script src="questions.js"></script>
   <script src="shop.js"></script>
+  <script src="animals.js"></script>
   <script>
     // --- CONSTANTS & CONFIG ---
     const STORAGE_KEY = 'pointless_gemini_api_key';
@@ -1397,6 +1417,57 @@
     }
 
     let farmInteriorRaf = null;
+    let farmSaleBoxHitbox = null;
+    let isFarmSaleBoxHovered = false;
+
+    const OWNED_ANIMALS_KEY = 'astro_quiz_owned_animals_v1';
+    let ownedAnimals = (() => {
+      try {
+        const parsed = JSON.parse(localStorage.getItem(OWNED_ANIMALS_KEY) || '[]');
+        return Array.isArray(parsed) ? parsed : [];
+      } catch { return []; }
+    })();
+
+    let FARM_ANIMALS = [];
+
+    function parseAnimalsText(text) {
+      return text
+        .split(/\r?\n/)
+        .map(line => line.trim())
+        .filter(line => line && !line.startsWith('#') && !line.startsWith('//'))
+        .map(line => {
+          const parts = line.split('|').map(part => part.trim());
+          if (parts.length < 5) return null;
+          const [id, category, icon, name, priceStr] = parts;
+          const price = parseInt(priceStr, 10);
+          if (!id || !category || !name || !Number.isFinite(price) || price < 0) return null;
+          return { id, category, icon: icon || '🐾', name, price };
+        })
+        .filter(Boolean);
+    }
+
+    async function loadAnimalsFromFile() {
+      try {
+        if (typeof window.ANIMALS_TEXT !== 'string') {
+          throw new Error('Súbor animals.js nebol načítaný.');
+        }
+        const parsed = parseAnimalsText(window.ANIMALS_TEXT);
+        if (parsed.length === 0) {
+          throw new Error('Súbor animals.js neobsahuje žiadne zvieratá.');
+        }
+        FARM_ANIMALS = parsed;
+        return true;
+      } catch (err) {
+        console.error('Chyba pri načítaní animals.js:', err);
+        showToast('Nepodarilo sa načítať animals.js!');
+        return false;
+      }
+    }
+
+    async function ensureAnimalsLoaded() {
+      if (FARM_ANIMALS.length > 0) return true;
+      return await loadAnimalsFromFile();
+    }
 
     function drawFarmInterior() {
       const canvas = document.getElementById('farmInteriorCanvas');
@@ -1528,13 +1599,39 @@
         fctx.fillRect(bx + 2, by + 2, bw - 6, 2);
       }
 
-      // Hay bales on left & right lofts
-      drawHayBale(58, loftY - 24, 38, 22);
-      drawHayBale(99, loftY - 24, 38, 22);
-      drawHayBale(76, loftY - 46, 38, 22);
+      // Hay bales on right loft and one on far-left loft
+      drawHayBale(54, loftY - 24, 36, 22);
       drawHayBale(w - 172, loftY - 24, 38, 22);
       drawHayBale(w - 131, loftY - 24, 38, 22);
       drawHayBale(w - 150, loftY - 46, 38, 22);
+
+      // Wooden "NA PREDAJ" box on the left shelf
+      const boxX = 98;
+      const boxY = loftY - 36;
+      const boxW = 78;
+      const boxH = 34;
+      farmSaleBoxHitbox = { x: boxX - 4, y: boxY - 6, w: boxW + 8, h: boxH + 10 };
+
+      fctx.fillStyle = '#b45309';
+      fctx.fillRect(boxX, boxY, boxW, boxH);
+      fctx.fillStyle = '#92400e';
+      fctx.fillRect(boxX, boxY, boxW, 6);
+      fctx.strokeStyle = isFarmSaleBoxHovered ? '#fde047' : '#451a03';
+      fctx.lineWidth = isFarmSaleBoxHovered ? 2.5 : 1.5;
+      fctx.strokeRect(boxX, boxY, boxW, boxH);
+
+      // Sign label "NA PREDAJ" on the box
+      fctx.fillStyle = '#fef3c7';
+      fctx.fillRect(boxX + 5, boxY + 10, boxW - 10, 18);
+      fctx.strokeStyle = '#78350f';
+      fctx.lineWidth = 1;
+      fctx.strokeRect(boxX + 5, boxY + 10, boxW - 10, 18);
+      fctx.font = 'bold 9px "Press Start 2P", monospace';
+      fctx.textAlign = 'center';
+      fctx.textBaseline = 'middle';
+      fctx.fillStyle = '#991b1b';
+      fctx.fillText('NA PREDAJ', boxX + boxW / 2, boxY + 20);
+      fctx.textBaseline = 'alphabetic';
 
       // Heavy vertical wooden support posts
       const posts = [42, 184, w - 196, w - 54];
@@ -1682,10 +1779,85 @@
 
     function closeFarmModal() {
       document.getElementById('farmModal').classList.add('hidden');
+      isFarmSaleBoxHovered = false;
       if (farmInteriorRaf) {
         cancelAnimationFrame(farmInteriorRaf);
         farmInteriorRaf = null;
       }
+    }
+
+    function renderAnimalMarket() {
+      const listEl = document.getElementById('animalMarketList');
+      const coinsEl = document.getElementById('animalMarketCoinsVal');
+      if (coinsEl) coinsEl.textContent = playerCoins;
+      if (!listEl) return;
+
+      listEl.innerHTML = '';
+      FARM_ANIMALS.forEach(animal => {
+        const isOwned = ownedAnimals.includes(animal.id);
+        const canAfford = playerCoins >= animal.price;
+        const catColor = animal.category === 'Tropické'
+          ? 'text-emerald-300 bg-emerald-950/80 border-emerald-700/60'
+          : animal.category === 'Exotické'
+            ? 'text-purple-300 bg-purple-950/80 border-purple-700/60'
+            : 'text-amber-300 bg-amber-950/80 border-amber-700/60';
+
+        const card = document.createElement('div');
+        card.className = `p-2.5 border-2 flex items-center justify-between gap-2.5 ${
+          isOwned
+            ? 'border-emerald-500/70 bg-emerald-950/30'
+            : 'border-slate-700 bg-slate-900/90'
+        }`;
+        card.innerHTML = `
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="text-2xl leading-none shrink-0">${animal.icon}</div>
+            <div class="min-w-0">
+              <div class="text-xs font-bold text-white truncate">${animal.name}</div>
+              <div class="flex items-center gap-1.5 mt-1">
+                <span class="text-[9px] px-1.5 py-0.5 border ${catColor}">${animal.category}</span>
+                <span class="text-[10px] font-mono text-amber-300 font-bold">🪙 ${animal.price}</span>
+              </div>
+            </div>
+          </div>
+          <button class="animal-buy-btn py-1.5 px-2.5 text-[9px] pixel-font border shrink-0 transition-colors ${
+            isOwned
+              ? 'border-emerald-500/60 bg-emerald-900/60 text-emerald-200 cursor-default'
+              : canAfford
+                ? 'border-amber-400 bg-amber-600 hover:bg-amber-500 text-slate-950 font-bold'
+                : 'border-slate-700 bg-slate-800 text-slate-500 cursor-not-allowed'
+          }" ${isOwned ? 'disabled' : ''}>
+            ${isOwned ? 'KÚPENÉ ✓' : 'KÚPIŤ'}
+          </button>
+        `;
+
+        const btn = card.querySelector('.animal-buy-btn');
+        if (!isOwned && btn) {
+          btn.addEventListener('click', () => {
+            if (playerCoins >= animal.price) {
+              playerCoins -= animal.price;
+              ownedAnimals.push(animal.id);
+              localStorage.setItem(OWNED_ANIMALS_KEY, JSON.stringify(ownedAnimals));
+              saveShopState();
+              renderAnimalMarket();
+              showToast(`Kúpené zviera: ${animal.icon} ${animal.name}!`);
+            } else {
+              showToast(`Potrebuješ ešte ${animal.price - playerCoins} 🪙!`);
+            }
+          });
+        }
+
+        listEl.appendChild(card);
+      });
+    }
+
+    async function openAnimalMarketModal() {
+      await ensureAnimalsLoaded();
+      renderAnimalMarket();
+      document.getElementById('animalMarketModal').classList.remove('hidden');
+    }
+
+    function closeAnimalMarketModal() {
+      document.getElementById('animalMarketModal').classList.add('hidden');
     }
 
     const SUIT_COLORS = [
@@ -4702,6 +4874,39 @@ Vráť VÝHRADNE JSON pole objektov:
       });
       document.getElementById('closeFarmBtn').addEventListener('click', closeFarmModal);
       document.getElementById('confirmFarmBtn').addEventListener('click', closeFarmModal);
+      document.getElementById('closeAnimalMarketBtn').addEventListener('click', closeAnimalMarketModal);
+      document.getElementById('confirmAnimalMarketBtn').addEventListener('click', closeAnimalMarketModal);
+
+      const farmCanvas = document.getElementById('farmInteriorCanvas');
+      if (farmCanvas) {
+        const getFarmCanvasCoords = (clientX, clientY) => {
+          const rect = farmCanvas.getBoundingClientRect();
+          return {
+            x: (clientX - rect.left) * (farmCanvas.width / rect.width),
+            y: (clientY - rect.top) * (farmCanvas.height / rect.height)
+          };
+        };
+        const isInSaleBox = (pt) => {
+          if (!farmSaleBoxHitbox) return false;
+          return pt.x >= farmSaleBoxHitbox.x && pt.x <= farmSaleBoxHitbox.x + farmSaleBoxHitbox.w &&
+                 pt.y >= farmSaleBoxHitbox.y && pt.y <= farmSaleBoxHitbox.y + farmSaleBoxHitbox.h;
+        };
+        farmCanvas.addEventListener('mousemove', (e) => {
+          const pt = getFarmCanvasCoords(e.clientX, e.clientY);
+          isFarmSaleBoxHovered = isInSaleBox(pt);
+          farmCanvas.style.cursor = isFarmSaleBoxHovered ? 'pointer' : '';
+        });
+        farmCanvas.addEventListener('mouseleave', () => {
+          isFarmSaleBoxHovered = false;
+          farmCanvas.style.cursor = '';
+        });
+        farmCanvas.addEventListener('click', (e) => {
+          const pt = getFarmCanvasCoords(e.clientX, e.clientY);
+          if (isInSaleBox(pt)) {
+            openAnimalMarketModal();
+          }
+        });
+      }
 
       const isPointInBox = (box, cx, cy) => {
         if (!box) return false;
