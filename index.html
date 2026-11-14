@@ -147,6 +147,9 @@
       <div id="headerScore" class="hidden text-[10px] sm:text-xs pixel-font text-emerald-400 bg-slate-900/90 px-2.5 py-1.5 rounded border border-emerald-500/40">
         <span id="scoreVal">0</span> b
       </div>
+      <button id="shopBtn" title="Kozmický obchod" class="text-[10px] pixel-font text-yellow-300 hover:text-white bg-yellow-950/70 px-2.5 py-1.5 rounded border border-yellow-500/40 flex items-center gap-1">
+        🛒 <span id="headerCoinsVal">100</span> 🪙
+      </button>
       <button id="apiKeyBtn" title="Nastaviť API kľúč" class="text-[10px] pixel-font text-amber-300 hover:text-white bg-amber-950/70 px-2 py-1.5 rounded border border-amber-500/40">
         🔑 KĽÚČ
       </button>
@@ -417,6 +420,26 @@
     </div>
   </main>
 
+  <!-- Modal: Shop -->
+  <div id="shopModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="w-full max-w-lg pixel-box bg-slate-950 p-5 flex flex-col gap-3 text-left border-2 border-yellow-400 max-h-[85dvh]">
+      <div class="flex justify-between items-center border-b border-yellow-700/60 pb-2">
+        <div class="flex items-center gap-2">
+          <span class="pixel-font text-xs text-yellow-300">🛒 KOZMICKÝ SHOP</span>
+          <span class="text-[10px] pixel-font bg-yellow-950/80 text-yellow-300 border border-yellow-500/50 px-2 py-0.5">
+            🪙 <span id="shopCoinsVal">100</span>
+          </span>
+        </div>
+        <button id="closeShopBtn" class="text-yellow-300 hover:text-white font-bold text-base px-2">✕</button>
+      </div>
+      <div id="shopItemsGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 overflow-y-auto pr-1 py-1"></div>
+      <p class="text-[10px] text-slate-400 leading-snug border-t border-slate-800 pt-2">
+        Tip: Kredity získavaš za správne odpovede (+10 🪙), Pointless (+40 🪙) a dokončenie hry (+25 🪙).
+      </p>
+      <button id="confirmShopBtn" class="pixel-btn py-2 text-xs w-full">ZAVRIEŤ OBCHOD</button>
+    </div>
+  </div>
+
   <!-- Modal: Pravidlá -->
   <div id="rulesModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
     <div class="w-full max-w-md pixel-box bg-slate-950 p-5 flex flex-col gap-3 text-left border-2 border-sky-400">
@@ -441,8 +464,135 @@
     // --- CONSTANTS & CONFIG ---
     const STORAGE_KEY = 'pointless_gemini_api_key';
     const NICK_KEY = 'pointless_player_nick';
+    const COINS_KEY = 'pointless_coins';
+    const OWNED_KEY = 'pointless_owned_items';
+    const EQUIPPED_KEY = 'pointless_equipped_items';
     const PEER_PREFIX = 'ptls-sk-2026-';
     let userApiKey = localStorage.getItem(STORAGE_KEY) || '';
+
+    const SHOP_ITEMS = [
+      { id: 'crown', slot: 'hat', icon: '👑', name: 'Zlatá korunka', desc: 'Kráľovská korunka na prilbu', price: 120 },
+      { id: 'cowboy', slot: 'hat', icon: '🤠', name: 'Kovbojský klobúk', desc: 'Štýlový klobúk na dvor aj do vesmíru', price: 80 },
+      { id: 'headphones', slot: 'hat', icon: '🎧', name: 'DJ Slúchadlá', desc: 'Farebné slúchadlá na prilbu', price: 60 },
+      { id: 'tophat', slot: 'hat', icon: '🎩', name: 'Cylinder', desc: 'Elegantný čierny cylinder', price: 100 },
+      { id: 'gold_suit', slot: 'suit', icon: '✨', name: 'Zlatý skafander', desc: 'Prémiový zlatý oblek', price: 150 },
+      { id: 'neon_suit', slot: 'suit', icon: '💠', name: 'Neónový oblek', desc: 'Žiarivý tyrkysový oblek', price: 110 },
+      { id: 'rainbow_trail', slot: 'trail', icon: '🌈', name: 'Dúhová stopa', desc: 'Farebné častice z jetpacku', price: 90 },
+      { id: 'plasma_trail', slot: 'trail', icon: '🔥', name: 'Plazmová stopa', desc: 'Fialovo-ružová plazma', price: 70 }
+    ];
+
+    let playerCoins = (() => {
+      const saved = parseInt(localStorage.getItem(COINS_KEY), 10);
+      return Number.isFinite(saved) && saved >= 0 ? saved : 100;
+    })();
+    let ownedItems = (() => {
+      try {
+        const parsed = JSON.parse(localStorage.getItem(OWNED_KEY) || '[]');
+        return Array.isArray(parsed) ? parsed : [];
+      } catch { return []; }
+    })();
+    let equippedCosmetics = (() => {
+      try {
+        const parsed = JSON.parse(localStorage.getItem(EQUIPPED_KEY) || '{}');
+        return { hat: parsed.hat || null, suit: parsed.suit || null, trail: parsed.trail || null };
+      } catch { return { hat: null, suit: null, trail: null }; }
+    })();
+
+    function saveShopState() {
+      localStorage.setItem(COINS_KEY, String(playerCoins));
+      localStorage.setItem(OWNED_KEY, JSON.stringify(ownedItems));
+      localStorage.setItem(EQUIPPED_KEY, JSON.stringify(equippedCosmetics));
+      const hCoins = document.getElementById('headerCoinsVal');
+      const sCoins = document.getElementById('shopCoinsVal');
+      if (hCoins) hCoins.textContent = playerCoins;
+      if (sCoins) sCoins.textContent = playerCoins;
+      if (players[myPeerId]) {
+        players[myPeerId].cosmetics = { ...equippedCosmetics };
+      }
+    }
+
+    function addCoins(amount) {
+      if (!amount || amount <= 0) return;
+      playerCoins += amount;
+      saveShopState();
+    }
+
+    function renderShopItems() {
+      const grid = document.getElementById('shopItemsGrid');
+      if (!grid) return;
+      grid.innerHTML = '';
+      SHOP_ITEMS.forEach(item => {
+        const isOwned = ownedItems.includes(item.id);
+        const isEquipped = equippedCosmetics[item.slot] === item.id;
+        const canAfford = playerCoins >= item.price;
+
+        const card = document.createElement('div');
+        card.className = `p-3 border-2 flex flex-col justify-between gap-2 ${
+          isEquipped
+            ? 'border-emerald-400 bg-emerald-950/30'
+            : isOwned
+              ? 'border-sky-500/60 bg-slate-900/90'
+              : 'border-slate-700 bg-slate-900/70'
+        }`;
+
+        card.innerHTML = `
+          <div class="flex items-start justify-between gap-2">
+            <div class="flex items-center gap-2">
+              <span class="text-xl">${item.icon}</span>
+              <div>
+                <div class="text-xs font-bold text-white">${item.name}</div>
+                <div class="text-[10px] text-slate-400">${item.desc}</div>
+              </div>
+            </div>
+          </div>
+          <div class="flex items-center justify-between pt-1 border-t border-slate-800/80">
+            <span class="text-[10px] pixel-font ${isOwned ? 'text-emerald-400' : 'text-yellow-300'}">
+              ${isOwned ? (isEquipped ? 'NASADENÉ' : 'VLASTNENÉ') : `${item.price} 🪙`}
+            </span>
+            <button type="button" class="shop-action-btn px-2.5 py-1 text-[9px] pixel-font border ${
+              isOwned
+                ? (isEquipped
+                    ? 'bg-slate-800 border-slate-500 text-slate-200 hover:bg-slate-700'
+                    : 'bg-emerald-700 border-emerald-400 text-white hover:bg-emerald-600')
+                : (canAfford
+                    ? 'bg-yellow-600 border-yellow-300 text-slate-950 hover:bg-yellow-500'
+                    : 'bg-slate-800 border-slate-700 text-slate-500 cursor-not-allowed')
+            }">
+              ${isOwned ? (isEquipped ? 'ZLOŽIŤ' : 'NASADIŤ') : 'KÚPIŤ'}
+            </button>
+          </div>
+        `;
+
+        card.querySelector('.shop-action-btn').addEventListener('click', () => {
+          if (isOwned) {
+            equippedCosmetics[item.slot] = isEquipped ? null : item.id;
+            saveShopState();
+            renderShopItems();
+          } else if (canAfford) {
+            playerCoins -= item.price;
+            ownedItems.push(item.id);
+            equippedCosmetics[item.slot] = item.id;
+            saveShopState();
+            renderShopItems();
+            showToast(`Kúpené: ${item.icon} ${item.name}!`);
+          } else {
+            showToast(`Potrebuješ ešte ${item.price - playerCoins} 🪙!`);
+          }
+        });
+
+        grid.appendChild(card);
+      });
+    }
+
+    function openShopModal() {
+      saveShopState();
+      renderShopItems();
+      document.getElementById('shopModal').classList.remove('hidden');
+    }
+
+    function closeShopModal() {
+      document.getElementById('shopModal').classList.add('hidden');
+    }
 
     const SUIT_COLORS = [
       { suit: '#f8fafc', visor: '#fbbf24', badge: '⚪ Biela' },
@@ -567,6 +717,9 @@
       const astroY = height * 0.52;
 
       if (gainedPoints > 0) {
+        if (playerObj.id === myPeerId) {
+          addCoins(gainedPoints >= 95 ? 40 : 10);
+        }
         screenShake = gainedPoints >= 90 ? 12 : 6;
         playerObj.celebrateTimer = 90;
         floatingTexts.push({
@@ -782,11 +935,15 @@
       }
     }
 
+    let shopHitbox = null;
+
     function drawSimpleShop(groundY) {
-      const sx = width - Math.max(76, Math.min(width * 0.18, 220));
+      const hx = Math.max(76, Math.min(width * 0.18, 220));
+      const sx = Math.min(width - 58, hx + 166);
       const shopW = 92;
       const shopH = 56;
       const wallTop = groundY - shopH;
+      shopHitbox = { x: sx - shopW / 2 - 6, y: wallTop - 28, w: shopW + 12, h: shopH + 30 };
 
       // Shop wall
       ctx.fillStyle = '#e2e8f0';
@@ -1018,7 +1175,13 @@
     function drawSingleAstronaut(p, x, y, inSpace) {
       if (rescueRocket.boarded) return; // Inside the rescue rocket returning to Earth!
 
-      const palette = SUIT_COLORS[p.colorIdx % SUIT_COLORS.length];
+      const basePalette = SUIT_COLORS[p.colorIdx % SUIT_COLORS.length];
+      const cosmetics = p.cosmetics || (p.id === myPeerId ? equippedCosmetics : {});
+      const palette = cosmetics.suit === 'gold_suit'
+        ? { suit: '#facc15', visor: '#0ea5e9' }
+        : cosmetics.suit === 'neon_suit'
+          ? { suit: '#22d3ee', visor: '#f43f5e' }
+          : basePalette;
       const isClimbing = (p.altitude - p.visualAltitude) > 2;
       const isCelebrating = (p.celebrateTimer || 0) > 0;
       if (isCelebrating) p.celebrateTimer--;
@@ -1028,11 +1191,18 @@
 
       if (!p.particles) p.particles = [];
       if (isClimbing || inSpace) {
+        let pColor = Math.random() > 0.4 ? '#38bdf8' : '#f59e0b';
+        if (cosmetics.trail === 'rainbow_trail') {
+          const rainbow = ['#ef4444', '#f97316', '#fde047', '#4ade80', '#38bdf8', '#c084fc'];
+          pColor = rainbow[Math.floor(Math.random() * rainbow.length)];
+        } else if (cosmetics.trail === 'plasma_trail') {
+          pColor = Math.random() > 0.5 ? '#e879f9' : '#a855f7';
+        }
         p.particles.push({
           x: -10 + (Math.random() * 4 - 2),
           y: 12 + Math.random() * 4,
           life: 1.0,
-          color: Math.random() > 0.4 ? '#38bdf8' : '#f59e0b',
+          color: pColor,
           size: Math.random() > 0.5 ? 3 : 2
         });
       }
@@ -1097,6 +1267,35 @@
       ctx.fillStyle = palette.suit;
       ctx.fillRect(-9, -20, 18, 15);
       ctx.fillRect(-7, -22, 14, 2);
+
+      // Equipped Hat
+      if (cosmetics.hat === 'crown') {
+        ctx.fillStyle = '#facc15';
+        ctx.fillRect(-7, -26, 14, 4);
+        ctx.fillRect(-7, -30, 3, 4);
+        ctx.fillRect(-1, -31, 3, 5);
+        ctx.fillRect(4, -30, 3, 4);
+        ctx.fillStyle = '#ef4444';
+        ctx.fillRect(0, -25, 2, 2);
+      } else if (cosmetics.hat === 'cowboy') {
+        ctx.fillStyle = '#92400e';
+        ctx.fillRect(-12, -24, 24, 3);
+        ctx.fillRect(-7, -31, 14, 7);
+        ctx.fillStyle = '#fbbf24';
+        ctx.fillRect(-7, -26, 14, 2);
+      } else if (cosmetics.hat === 'headphones') {
+        ctx.fillStyle = '#38bdf8';
+        ctx.fillRect(-10, -23, 20, 3);
+        ctx.fillStyle = '#f43f5e';
+        ctx.fillRect(-12, -18, 4, 8);
+        ctx.fillRect(8, -18, 4, 8);
+      } else if (cosmetics.hat === 'tophat') {
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(-11, -24, 22, 3);
+        ctx.fillRect(-7, -34, 14, 10);
+        ctx.fillStyle = '#ef4444';
+        ctx.fillRect(-7, -26, 14, 2);
+      }
 
       // Visor
       ctx.fillStyle = inSpace ? palette.visor : '#0ea5e9';
@@ -1980,7 +2179,8 @@
           score: 0,
           altitude: 0,
           visualAltitude: 0,
-          isHost: true
+          isHost: true,
+          cosmetics: { ...equippedCosmetics }
         };
 
         document.getElementById('displayRoomCode').textContent = roomCode;
@@ -2037,7 +2237,8 @@
           score: 0,
           altitude: 0,
           visualAltitude: 0,
-          isHost: true
+          isHost: true,
+          cosmetics: { ...equippedCosmetics }
         };
 
         document.getElementById('displayRoomCode').textContent = roomCode;
@@ -2245,7 +2446,8 @@
           score: 0,
           altitude: 0,
           visualAltitude: 0,
-          isHost: true
+          isHost: true,
+          cosmetics: { ...equippedCosmetics }
         }
       };
 
@@ -2737,6 +2939,7 @@ Vráť VÝHRADNE JSON pole objektov:
     }
 
     function finishGame() {
+      addCoins(25);
       showScreen('endScreen');
       const pList = Object.values(players).sort((a, b) => b.altitude - a.altitude);
 
@@ -2800,6 +3003,7 @@ Vráť VÝHRADNE JSON pole objektov:
     // --- EVENT LISTENERS ---
     document.addEventListener('DOMContentLoaded', () => {
       loadQuestionsFromFile();
+      saveShopState();
       const savedNick = localStorage.getItem(NICK_KEY);
       if (savedNick) document.getElementById('nicknameInput').value = savedNick;
 
@@ -2877,6 +3081,34 @@ Vráť VÝHRADNE JSON pole objektov:
       document.getElementById('rulesBtn').addEventListener('click', () => modal.classList.remove('hidden'));
       document.getElementById('closeRulesBtn').addEventListener('click', () => modal.classList.add('hidden'));
       document.getElementById('confirmRulesBtn').addEventListener('click', () => modal.classList.add('hidden'));
+
+      document.getElementById('shopBtn').addEventListener('click', openShopModal);
+      document.getElementById('closeShopBtn').addEventListener('click', closeShopModal);
+      document.getElementById('confirmShopBtn').addEventListener('click', closeShopModal);
+
+      const isPointInShop = (cx, cy) => {
+        if (!shopHitbox) return false;
+        const onYard = activeScreen === 'apiKeyScreen' || activeScreen === 'modeScreen' || activeScreen === 'lobbyScreen';
+        if (!onYard) return false;
+        return cx >= shopHitbox.x && cx <= shopHitbox.x + shopHitbox.w &&
+               cy >= shopHitbox.y && cy <= shopHitbox.y + shopHitbox.h;
+      };
+
+      document.addEventListener('mousemove', (e) => {
+        if (e.target.closest('button, a, input, select, .pixel-box')) {
+          document.body.style.cursor = '';
+          return;
+        }
+        document.body.style.cursor = isPointInShop(e.clientX, e.clientY) ? 'pointer' : '';
+      });
+
+      document.addEventListener('click', (e) => {
+        if (e.target.closest('button, a, input, select, .pixel-box')) return;
+        if (!document.getElementById('shopModal').classList.contains('hidden')) return;
+        if (isPointInShop(e.clientX, e.clientY)) {
+          openShopModal();
+        }
+      });
     });
   </script>
 </body>
