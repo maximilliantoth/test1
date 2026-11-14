@@ -102,7 +102,7 @@
   <div class="scanlines absolute inset-0 z-10 pointer-events-none"></div>
 
   <!-- Subtle altitude indicator & Weather badge -->
-  <div class="fixed top-3 right-4 z-30 flex flex-col items-end gap-1 pointer-events-none select-none">
+  <div class="fixed top-14 right-4 z-30 flex flex-col items-end gap-1 pointer-events-none select-none">
     <div id="altitudeText" class="text-[11px] font-mono tracking-widest text-white/60">
       0 m
     </div>
@@ -112,17 +112,20 @@
   </div>
 
   <!-- Header -->
-  <header class="relative z-20 flex justify-between items-center px-4 py-3 bg-slate-950/70 backdrop-blur-md border-b-2 border-sky-900/60 shadow-lg shrink-0">
-    <div class="flex items-center gap-3">
+  <header class="relative z-20 flex justify-between items-center px-3 sm:px-4 py-3 bg-slate-950/70 backdrop-blur-md border-b-2 border-sky-900/60 shadow-lg shrink-0">
+    <div class="flex items-center gap-2 sm:gap-3">
       <div class="w-7 h-7 bg-sky-500 pixel-box flex items-center justify-center text-slate-950 font-black text-xs">P</div>
       <span class="pixel-font text-xs sm:text-sm text-sky-400 tracking-wider drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">POINTLESS</span>
     </div>
-    <div class="flex items-center gap-3">
-      <div id="headerScore" class="hidden text-xs pixel-font text-emerald-400 bg-slate-900/90 px-3 py-1.5 rounded border border-emerald-500/40">
-        SKÓRE: <span id="scoreVal">0</span>
+    <div class="flex items-center gap-2 sm:gap-3">
+      <div id="headerScore" class="hidden text-[10px] sm:text-xs pixel-font text-emerald-400 bg-slate-900/90 px-2.5 py-1.5 rounded border border-emerald-500/40">
+        <span id="scoreVal">0</span> b
       </div>
+      <button id="apiKeyBtn" title="Nastaviť API kľúč" class="text-[10px] pixel-font text-amber-300 hover:text-white bg-amber-950/70 px-2 py-1.5 rounded border border-amber-500/40">
+        🔑 KĽÚČ
+      </button>
       <button id="rulesBtn" class="text-[10px] pixel-font text-sky-300 hover:text-white bg-sky-950/80 px-2.5 py-1.5 rounded border border-sky-500/40">
-        ? PRAVIDLÁ
+        ?
       </button>
       <button id="soundToggle" class="text-xs text-sky-400 hover:text-white px-2 py-1 bg-slate-900/80 rounded border border-sky-800">
         🔊
@@ -133,8 +136,44 @@
   <!-- Main Viewport -->
   <main class="relative z-20 flex-1 flex flex-col items-center justify-center p-3 sm:p-4 overflow-hidden">
     
+    <!-- Screen 0: API Key Setup (shown if no key saved or when user clicks KĽÚČ) -->
+    <div id="apiKeyScreen" class="w-full max-w-md pixel-box bg-slate-950/90 backdrop-blur-md p-6 sm:p-7 text-center flex flex-col items-center gap-4 rounded-none hidden">
+      <div class="space-y-1.5">
+        <div class="text-2xl">🔑</div>
+        <h2 class="pixel-font text-sm sm:text-base text-sky-400 leading-snug">
+          GEMINI API KĽÚČ
+        </h2>
+        <p class="text-xs text-slate-300 leading-relaxed">
+          Pre vyhodnocovanie odpovedí cez AI zadaj svoj bezplatný kľúč z <b>Google AI Studio</b>. Kľúč sa uloží iba lokálne v tvojom prehliadači.
+        </p>
+      </div>
+
+      <form id="apiKeyForm" class="w-full flex flex-col gap-3">
+        <input 
+          type="password" 
+          id="apiKeyInput" 
+          placeholder="AIzaSy..." 
+          autocomplete="off"
+          class="w-full bg-slate-900 border-2 border-sky-500/60 px-3 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-sky-400 text-xs font-mono rounded-none"
+        >
+        <div id="apiKeyError" class="text-[11px] text-red-400 font-semibold hidden"></div>
+        <button type="submit" class="pixel-btn w-full py-3 text-xs tracking-wider">
+          ULOŽIŤ A POKRAČOVAŤ ▶
+        </button>
+      </form>
+
+      <div class="w-full flex justify-between items-center pt-2 border-t border-sky-900/60 text-[11px]">
+        <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer" class="text-sky-400 hover:text-sky-300 underline">
+          Získať kľúč zadarmo ↗
+        </a>
+        <button id="clearKeyBtn" type="button" class="text-slate-400 hover:text-red-400">
+          Vymazať uložený kľúč
+        </button>
+      </div>
+    </div>
+
     <!-- Screen 1: Start -->
-    <div id="startScreen" class="w-full max-w-md pixel-box bg-slate-950/85 backdrop-blur-md p-6 sm:p-8 text-center flex flex-col items-center gap-6 rounded-none">
+    <div id="startScreen" class="w-full max-w-md pixel-box bg-slate-950/85 backdrop-blur-md p-6 sm:p-8 text-center flex flex-col items-center gap-6 rounded-none hidden">
       <div class="space-y-2">
         <h1 class="pixel-font text-2xl sm:text-3xl text-sky-400 drop-shadow-[0_4px_0_#0369a1] leading-tight">
           POINTLESS
@@ -270,6 +309,17 @@
   </div>
 
   <script>
+    // --- API KEY MANAGEMENT ---
+    const STORAGE_KEY = 'pointless_gemini_api_key';
+    let userApiKey = localStorage.getItem(STORAGE_KEY) || '';
+
+    function showScreen(screenId) {
+      ['apiKeyScreen', 'startScreen', 'gameScreen', 'endScreen'].forEach(id => {
+        document.getElementById(id).classList.add('hidden');
+      });
+      document.getElementById(screenId).classList.remove('hidden');
+    }
+
     // --- AUDIO SYNTHESIS ENGINE ---
     class SoundFX {
       constructor() {
@@ -416,7 +466,6 @@
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
 
-    // Procedural Clouds
     const clouds = Array.from({ length: 12 }, () => ({
       x: Math.random() * 2000,
       y: Math.random() * 500,
@@ -424,7 +473,6 @@
       speed: 0.2 + Math.random() * 0.4
     }));
 
-    // Weather particles
     const weatherParticles = Array.from({ length: 90 }, () => ({
       x: Math.random() * 2000,
       y: Math.random() * 1000,
@@ -435,7 +483,6 @@
 
     let lightningAlpha = 0;
 
-    // Stars
     const stars = Array.from({ length: 180 }, () => ({
       x: Math.random(),
       y: Math.random(),
@@ -443,10 +490,7 @@
       blink: Math.random() * 6.28
     }));
 
-    // Astronaut State
     const astronaut = {
-      x: 0.16,
-      y: 0.55,
       bobbing: 0,
       particles: []
     };
@@ -462,7 +506,6 @@
       ctx.save();
       ctx.translate(x, y);
 
-      // Jetpack exhaust particles
       if (isThrusting || inSpace) {
         astronaut.particles.push({
           x: -10 + (Math.random() * 4 - 2),
@@ -490,17 +533,14 @@
       const rot = Math.sin(astronaut.bobbing * 0.8) * (inSpace ? 0.15 : 0.05);
       ctx.rotate(rot);
 
-      // Backpack
       ctx.fillStyle = '#64748b';
       ctx.fillRect(-14, -8, 6, 18);
       ctx.fillStyle = '#94a3b8';
       ctx.fillRect(-13, -7, 4, 16);
 
-      // Main Spacesuit Body
       ctx.fillStyle = '#f8fafc';
       ctx.fillRect(-8, -4, 16, 18);
 
-      // Details
       ctx.fillStyle = '#0284c7';
       ctx.fillRect(-8, 5, 16, 3);
       ctx.fillStyle = '#ef4444';
@@ -508,23 +548,19 @@
       ctx.fillStyle = '#38bdf8';
       ctx.fillRect(1, -1, 3, 3);
 
-      // Helmet
       ctx.fillStyle = '#f8fafc';
       ctx.fillRect(-9, -20, 18, 15);
       ctx.fillRect(-7, -22, 14, 2);
 
-      // Visor
       ctx.fillStyle = inSpace ? '#fbbf24' : '#0ea5e9';
       ctx.fillRect(-4, -17, 12, 9);
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(-2, -16, 4, 2);
 
-      // Arms
       ctx.fillStyle = '#e2e8f0';
       ctx.fillRect(-11, -2, 4, 12);
       ctx.fillRect(7, -2, 4, 12);
 
-      // Legs & Boots
       ctx.fillStyle = '#cbd5e1';
       ctx.fillRect(-7, 14, 6, 9);
       ctx.fillRect(1, 14, 6, 9);
@@ -532,7 +568,6 @@
       ctx.fillRect(-8, 21, 7, 3);
       ctx.fillRect(1, 21, 7, 3);
 
-      // Thruster flame
       if (isThrusting) {
         ctx.fillStyle = '#38bdf8';
         ctx.fillRect(-13, 10, 4, 7 + Math.random() * 4);
@@ -551,7 +586,6 @@
       const alt = Math.min(7000, Math.max(0, currentAltitude));
       const inSpace = alt >= 1000;
 
-      // Weather badge update
       const wBadge = document.getElementById('weatherBadge');
       if (inSpace) {
         wBadge.textContent = '🌌 VÁKUUM VESMÍRU';
@@ -561,7 +595,6 @@
         wBadge.className = 'text-[9px] font-mono tracking-wide text-sky-300/80 uppercase';
       }
 
-      // Sky Gradient
       let topCol, botCol;
       if (alt <= 500) {
         const t = alt / 500;
@@ -582,7 +615,6 @@
       ctx.fillStyle = grad;
       ctx.fillRect(0, 0, width, height);
 
-      // Weather Effects in lower atmosphere (< 1000m)
       if (alt < 1000) {
         const weatherAlpha = Math.max(0, 1 - alt / 950);
 
@@ -638,7 +670,6 @@
         }
       }
 
-      // Stars in Space
       if (alt > 700) {
         const starAlpha = Math.min(1, (alt - 700) / 400);
         const time = Date.now() * 0.003;
@@ -649,7 +680,6 @@
         });
       }
 
-      // Celestial Objects (> 1000m)
       if (alt >= 1000) {
         if (alt < 3500) {
           const moonY = 80 + (alt - 1000) * 0.08;
@@ -700,7 +730,6 @@
         }
       }
 
-      // Astronaut update
       astronaut.bobbing += 0.04;
       const astroX = width * (width < 640 ? 0.82 : 0.15);
       const astroY = height * 0.52 + Math.sin(astronaut.bobbing) * 8;
@@ -721,6 +750,11 @@
     }
 
     function initGame() {
+      if (!userApiKey) {
+        showScreen('apiKeyScreen');
+        return;
+      }
+
       sfx.init();
       totalScore = 0;
       targetAltitude = 0;
@@ -729,15 +763,10 @@
       document.getElementById('scoreVal').textContent = '0';
       document.getElementById('headerScore').classList.remove('hidden');
 
-      // Randomize Weather
       currentWeather = WEATHERS[Math.floor(Math.random() * WEATHERS.length)];
-
       currentQuestions = shuffle(QUESTION_BANK).slice(0, maxRounds);
 
-      document.getElementById('startScreen').classList.add('hidden');
-      document.getElementById('endScreen').classList.add('hidden');
-      document.getElementById('gameScreen').classList.remove('hidden');
-
+      showScreen('gameScreen');
       loadNextQuestion();
     }
 
@@ -827,56 +856,62 @@
       const loader = document.getElementById('aiLoadingIndicator');
       loader.classList.remove('hidden');
 
-      const prompt = `Si rozhodca v slovenskej vedomostnej šou Pointless (Čo najmenej ľudí). 
+      const prompt = `Si prísny ale spravodlivý rozhodca v slovenskej vedomostnej šou Pointless (Čo najmenej ľudí).
 Otázka kola: "${currentQ.q}"
 Kategória: "${currentQ.category}"
 Odpoveď hráča: "${answerText}"
 
-PRAVIDLÁ:
-1. Prieskum 100 ľudí. Správna, obscure alebo raritná odpoveď = 0 až 5 ľudí (top úspech).
-2. Kreatívne pop-kultúrne referencie, metafory a vtipné easter-eggy UZNAJ a priraď im 0-5 hlasov!
-3. Bežná/slávna správna odpoveď = 30 až 85 ľudí.
-4. Úplne nesprávna odpoveď = "valid": false.
+PRAVIDLÁ HODNOTENIA:
+1. Najprv over, či je odpoveď hráča SKUTOČNE správna a patrí do kategórie/otázky (alebo ide o jasnú, vtipnú pop-kultúrnu referenciu priamo súvisiacu s témou).
+2. Ak odpoveď je nezmysel, náhodné písmená, úplne mimo tému alebo fakticky nesprávna -> VŽDY vráť "valid": false!
+3. Ak je odpoveď správna: odhadni, koľko zo 100 bežných Slovákov by ju povedalo:
+   - Veľmi známa odpoveď (napr. Bratislava, Zem, Slovensko, Železo, Messi/Real Madrid) = 50 až 90 ľudí.
+   - Stredne známa odpoveď = 15 až 49 ľudí.
+   - Zriedkavá, obscure správna odpoveď alebo trefná pop-kultúrna referencia = 0 až 5 ľudí.
 
-Vráť výhradne JSON:
+Vráť VÝHRADNE platný JSON objekt:
 {
   "valid": true/false,
-  "people": číslo 0-100,
-  "comment": "1 krátka veta v slovenčine"
+  "people": číslo od 0 do 100,
+  "comment": "1 krátka veta v slovenčine vysvetľujúca hodnotenie"
 }`;
 
-      let result = null;
-
       try {
-        const response = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=", {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(userApiKey)}`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             contents: [{ parts: [{ text: prompt }] }],
-            generationConfig: { responseMimeType: "application/json", temperature: 0.2 }
+            generationConfig: { responseMimeType: "application/json", temperature: 0.1 }
           })
         });
 
-        if (response.ok) {
-          const data = await response.json();
-          result = JSON.parse(data.candidates[0].content.parts[0].text);
+        loader.classList.add('hidden');
+
+        if (!response.ok) {
+          const errData = await response.json().catch(() => ({}));
+          const errMsg = errData?.error?.message || `HTTP ${response.status}`;
+          displayRoundResult({
+            valid: false,
+            people: 100,
+            comment: `Chyba API kľúča (${errMsg}). Skontroluj kľúč cez tlačidlo 🔑 KĽÚČ hore.`
+          });
+          return;
         }
+
+        const data = await response.json();
+        const rawText = data.candidates[0].content.parts[0].text;
+        const result = JSON.parse(rawText);
+        displayRoundResult(result);
+
       } catch (err) {
-        console.warn("AI offline fallback", err);
+        loader.classList.add('hidden');
+        displayRoundResult({
+          valid: false,
+          people: 100,
+          comment: `Nepodarilo sa spojiť s Gemini AI (${err.message}). Skontroluj pripojenie alebo API kľúč.`
+        });
       }
-
-      if (!result || typeof result.valid !== 'boolean') {
-        const clean = answerText.trim().toLowerCase();
-        if (clean.length < 2) {
-          result = { valid: false, people: 100, comment: "Príliš krátka odpoveď." };
-        } else {
-          const pseudoCount = Math.floor(Math.random() * 25);
-          result = { valid: true, people: pseudoCount, comment: "Uznané! Dobrá odpoveď." };
-        }
-      }
-
-      loader.classList.add('hidden');
-      displayRoundResult(result);
     }
 
     function displayRoundResult(res) {
@@ -890,11 +925,12 @@ Vráť výhradne JSON:
       const feedbackEl = document.getElementById('feedbackText');
 
       if (res.valid) {
-        gained = Math.max(0, 100 - res.people);
+        const count = Math.min(100, Math.max(0, Number(res.people) || 0));
+        gained = Math.max(0, 100 - count);
         totalScore += gained;
         targetAltitude += gained * 10;
 
-        peopleEl.textContent = res.people;
+        peopleEl.textContent = count;
         pointsEl.textContent = `+${gained}`;
         pointsEl.className = 'pixel-font text-2xl text-emerald-400 font-bold';
         feedbackEl.textContent = res.comment;
@@ -903,7 +939,7 @@ Vráť výhradne JSON:
         peopleEl.textContent = 'NEPLATNÉ';
         pointsEl.textContent = '+0';
         pointsEl.className = 'pixel-font text-2xl text-red-500 font-bold';
-        feedbackEl.innerHTML = `<span class="text-red-400 font-bold">Nesprávna odpoveď:</span> ${res.comment}`;
+        feedbackEl.innerHTML = `<span class="text-red-400 font-bold">0 bodov:</span> ${res.comment}`;
         sfx.playFail();
       }
 
@@ -915,8 +951,7 @@ Vráť výhradne JSON:
     }
 
     function finishGame() {
-      document.getElementById('gameScreen').classList.add('hidden');
-      document.getElementById('endScreen').classList.remove('hidden');
+      showScreen('endScreen');
 
       document.getElementById('finalScore').textContent = totalScore;
       document.getElementById('finalAltitude').textContent = `${Math.round(targetAltitude)} m`;
@@ -932,6 +967,46 @@ Vráť výhradne JSON:
 
     // --- EVENT LISTENERS ---
     document.addEventListener('DOMContentLoaded', () => {
+      // Initial Screen routing based on saved API Key
+      if (userApiKey) {
+        document.getElementById('apiKeyInput').value = userApiKey;
+        showScreen('startScreen');
+      } else {
+        showScreen('apiKeyScreen');
+      }
+
+      // API Key Form submit
+      document.getElementById('apiKeyForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const keyVal = document.getElementById('apiKeyInput').value.trim();
+        const errEl = document.getElementById('apiKeyError');
+        if (!keyVal || keyVal.length < 15) {
+          errEl.textContent = "Zadaj platný Google AI Studio API kľúč (začína na AIza...).";
+          errEl.classList.remove('hidden');
+          return;
+        }
+        errEl.classList.add('hidden');
+        userApiKey = keyVal;
+        localStorage.setItem(STORAGE_KEY, userApiKey);
+        showScreen('startScreen');
+      });
+
+      // Open API Key Screen from Header
+      document.getElementById('apiKeyBtn').addEventListener('click', () => {
+        clearInterval(roundTimerInterval);
+        document.getElementById('apiKeyInput').value = userApiKey;
+        showScreen('apiKeyScreen');
+      });
+
+      // Clear saved API key
+      document.getElementById('clearKeyBtn').addEventListener('click', () => {
+        localStorage.removeItem(STORAGE_KEY);
+        userApiKey = '';
+        document.getElementById('apiKeyInput').value = '';
+        document.getElementById('apiKeyError').textContent = "Uložený kľúč bol vymazaný.";
+        document.getElementById('apiKeyError').classList.remove('hidden');
+      });
+
       document.getElementById('startBtn').addEventListener('click', initGame);
 
       document.getElementById('answerForm').addEventListener('submit', (e) => {
@@ -950,13 +1025,11 @@ Vráť výhradne JSON:
 
       document.getElementById('restartBtn').addEventListener('click', initGame);
 
-      // Rules Modal
       const modal = document.getElementById('rulesModal');
       document.getElementById('rulesBtn').addEventListener('click', () => modal.classList.remove('hidden'));
       document.getElementById('closeRulesBtn').addEventListener('click', () => modal.classList.add('hidden'));
       document.getElementById('confirmRulesBtn').addEventListener('click', () => modal.classList.add('hidden'));
 
-      // Sound Toggle
       const soundBtn = document.getElementById('soundToggle');
       soundBtn.addEventListener('click', () => {
         sfx.init();
