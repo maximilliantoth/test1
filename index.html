@@ -453,83 +453,52 @@
       { suit: '#fb923c', visor: '#38bdf8', badge: '🟠 Oranžová' }
     ];
 
-    const QUESTION_BANK = [
-      // GEOGRAFIA
-      { category: "GEOGRAFIA", q: "Pomenuj oficiálne mesto na Slovensku." },
-      { category: "GEOGRAFIA", q: "Pomenuj štát v Európe (podľa OSN)." },
-      { category: "GEOGRAFIA", q: "Pomenuj hlavné mesto na svete." },
-      { category: "GEOGRAFIA", q: "Pomenuj rieku pretekajúcu cez Slovensko." },
-      { category: "GEOGRAFIA", q: "Pomenuj ostrovný štát na svete." },
-      { category: "GEOGRAFIA", q: "Pomenuj pohorie alebo národný park na Slovensku." },
-      { category: "GEOGRAFIA", q: "Pomenuj štát v Afrike." },
-      { category: "GEOGRAFIA", q: "Pomenuj štát v Južnej alebo Severnej Amerike." },
-      { category: "GEOGRAFIA", q: "Pomenuj more alebo oceán na Zemi." },
-      { category: "GEOGRAFIA", q: "Pomenuj sopku na svete." },
+    const QUESTIONS_FILE = 'questions.txt';
+    let QUESTION_BANK = [];
 
-      // VESMÍR & VEDA
-      { category: "VESMÍR", q: "Pomenuj mesiac, planétu alebo teleso v Slnečnej sústave." },
-      { category: "VESMÍR", q: "Pomenuj súhvezdie na nočnej oblohe." },
-      { category: "VESMÍR", q: "Pomenuj vesmírnu misiu, raketu alebo vesmírnu stanicu." },
-      { category: "CHÉMIA", q: "Pomenuj chemický prvok periodickej tabuľky." },
-      { category: "VEDA", q: "Pomenuj vedca, ktorý získal Nobelovu cenu." },
-      { category: "VEDA", q: "Pomenuj kosť v ľudskom tele." },
-      { category: "VEDA", q: "Pomenuj jednotku sústavy SI (základnú alebo odvodenú)." },
+    function parseQuestionsText(text) {
+      return text
+        .split(/\r?\n/)
+        .map(line => line.trim())
+        .filter(line => line && !line.startsWith('#') && !line.startsWith('//'))
+        .map(line => {
+          const sepIdx = line.indexOf('|');
+          if (sepIdx === -1) {
+            return { category: 'VŠEOBECNÉ', q: line };
+          }
+          const category = line.slice(0, sepIdx).trim() || 'VŠEOBECNÉ';
+          const q = line.slice(sepIdx + 1).trim();
+          return q ? { category, q } : null;
+        })
+        .filter(Boolean);
+    }
 
-      // HISTÓRIA & MYTOLÓGIA
-      { category: "HISTÓRIA", q: "Pomenuj panovníka, cisára alebo kráľa v dejinách Európy." },
-      { category: "HISTÓRIA", q: "Pomenuj starovekú civilizáciu alebo ríšu." },
-      { category: "HISTÓRIA", q: "Pomenuj hrad alebo zámok na Slovensku." },
-      { category: "MYTOLÓGIA", q: "Pomenuj boha alebo bytosť z gréckej, rímskej alebo severskej mytológie." },
-      { category: "HISTÓRIA", q: "Pomenuj prezidenta USA alebo Československa." },
+    async function loadQuestionsFromFile() {
+      try {
+        const res = await fetch(QUESTIONS_FILE, { cache: 'no-store' });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const text = await res.text();
+        const parsed = parseQuestionsText(text);
+        if (parsed.length === 0) {
+          throw new Error('Súbor questions.txt neobsahuje žiadne otázky.');
+        }
+        QUESTION_BANK = parsed;
+        return true;
+      } catch (err) {
+        console.error('Nepodarilo sa načítať questions.txt:', err);
+        if (window.location.protocol === 'file:') {
+          showToast('Pre načítanie questions.txt spusti hru cez lokálny server (napr. python3 -m http.server).');
+        } else {
+          showToast(`Nepodarilo sa načítať ${QUESTIONS_FILE}: ${err.message}`);
+        }
+        return false;
+      }
+    }
 
-      // ŠPORT
-      { category: "ŠPORT", q: "Pomenuj futbalový klub, ktorý hral Ligu majstrov." },
-      { category: "ŠPORT", q: "Pomenuj tím NHL (hokejovej ligy)." },
-      { category: "ŠPORT", q: "Pomenuj olympijský šport." },
-      { category: "ŠPORT", q: "Pomenuj slovenského olympijského medailistu." },
-      { category: "ŠPORT", q: "Pomenuj okruh Formuly 1." },
-      { category: "ŠPORT", q: "Pomenuj tenistu alebo tenistku, ktorí vyhrali grandslamový turnaj." },
-
-      // POP-KULTÚRA, FILM & SERIÁLY
-      { category: "POP-KULTÚRA", q: "Pomenuj postavu zo sveta Marvelu alebo DC Comics." },
-      { category: "FILM & SERIÁL", q: "Pomenuj film ocenený Oscarom za najlepší film." },
-      { category: "FILM & SERIÁL", q: "Pomenuj postavu zo sveta Star Wars alebo Pána prsteňov." },
-      { category: "FILM & SERIÁL", q: "Pomenuj známy animovaný film od štúdia Pixar alebo Disney." },
-      { category: "FILM & SERIÁL", q: "Pomenuj režiséra celovečerných filmov." },
-      { category: "SERIÁLY", q: "Pomenuj seriál z produkcie HBO alebo Netflix." },
-
-      // GAMING & TECHNOLÓGIE
-      { category: "GAMING", q: "Pomenuj známu videohru alebo hernú sériu." },
-      { category: "GAMING", q: "Pomenuj hernú postavu (napr. z hier Nintendo, PlayStation, PC)." },
-      { category: "TECHNOLÓGIE", q: "Pomenuj programovací jazyk alebo operačný systém." },
-      { category: "TECHNOLÓGIE", q: "Pomenuj značku automobilu." },
-
-      // PRÍRODA & ZVIERATÁ
-      { category: "PRÍRODA", q: "Pomenuj cicavca, ktorého názov začína na písmeno K alebo M." },
-      { category: "PRÍRODA", q: "Pomenuj druh vtáka žijúceho vo voľnej prírode." },
-      { category: "PRÍRODA", q: "Pomenuj plemeno psa." },
-      { category: "PRÍRODA", q: "Pomenuj dinosaura alebo prehistorického tvora." },
-      { category: "PRÍRODA", q: "Pomenuj strom alebo liečivú rastlinu." },
-
-      // JEDLO & GASTRO
-      { category: "JEDLO & GASTRO", q: "Pomenuj tradičné slovenské alebo európske jedlo." },
-      { category: "JEDLO & GASTRO", q: "Pomenuj druh syra alebo cestovín." },
-      { category: "JEDLO & GASTRO", q: "Pomenuj druh ovocia alebo zeleniny." },
-      { category: "JEDLO & GASTRO", q: "Pomenuj korenie alebo bylinku používanú pri varení." },
-
-      // HUDBA & UMENIE & LITERATÚRA
-      { category: "HUDBA", q: "Pomenuj hudobný nástroj symfonického orchestra." },
-      { category: "HUDBA", q: "Pomenuj hudobnú skupinu alebo speváka z 20. alebo 21. storočia." },
-      { category: "HUDBA", q: "Pomenuj hudobného skladateľa klasickej hudby." },
-      { category: "LITERATÚRA", q: "Pomenuj spisovateľa alebo básnika (slovenského alebo svetového)." },
-      { category: "UMENIE", q: "Pomenuj svetoznámeho maliara alebo sochára." },
-
-      // VŠEOBECNÝ PREHĽAD
-      { category: "DOPRAVA", q: "Pomenuj leteckú spoločnosť (aerolinku)." },
-      { category: "MENY", q: "Pomenuj oficiálnu svetovú menu (okrem eura a dolára)." },
-      { category: "JAZYKY", q: "Pomenuj oficiálny úradný jazyk niektorého štátu." },
-      { category: "ARCHITEKTÚRA", q: "Pomenuj svetoznámu stavbu, pamiatku alebo mrakodrap." }
-    ];
+    async function ensureQuestionsLoaded() {
+      if (QUESTION_BANK.length > 0) return true;
+      return await loadQuestionsFromFile();
+    }
 
     const WEATHERS = [
       { id: "sunny", name: "☀️ SLNEČNO", topSky: [56, 189, 248], botSky: [186, 230, 253] },
@@ -1589,12 +1558,13 @@
       return a;
     }
 
-    function startSoloGame() {
+    async function startSoloGame() {
       if (!userApiKey) {
         showToast('Pre hranie Solo zadaj najprv svoj Gemini API kľúč!');
         showScreen('apiKeyScreen');
         return;
       }
+      if (!(await ensureQuestionsLoaded())) return;
       cleanupPeer();
       rescueRocket.active = false;
       rescueRocket.phase = 'idle';
@@ -1625,11 +1595,12 @@
       loadNextQuestion();
     }
 
-    function startMultiplayerMatchAsHost() {
+    async function startMultiplayerMatchAsHost() {
       if (Object.keys(players).length < 2) {
         showToast('Na multiplayer musia byť v lobby aspoň 2 hráči!');
         return;
       }
+      if (!(await ensureQuestionsLoaded())) return;
 
       rescueRocket.active = false;
       rescueRocket.phase = 'idle';
@@ -1665,7 +1636,7 @@
       isEvaluating = false;
       roundAnswers = {};
 
-      document.getElementById('roundCounter').textContent = `${currentRound}/${maxRounds}`;
+      document.getElementById('roundCounter').textContent = `${currentRound}/${currentQuestions.length || maxRounds}`;
       const q = currentQuestions[currentRound - 1];
       document.getElementById('categoryBadge').textContent = q.category;
       document.getElementById('questionPrompt').textContent = q.q;
@@ -2162,6 +2133,7 @@ Vráť VÝHRADNE JSON pole objektov:
 
     // --- EVENT LISTENERS ---
     document.addEventListener('DOMContentLoaded', () => {
+      loadQuestionsFromFile();
       const savedNick = localStorage.getItem(NICK_KEY);
       if (savedNick) document.getElementById('nicknameInput').value = savedNick;
 
@@ -2215,7 +2187,8 @@ Vráť VÝHRADNE JSON pole objektov:
       });
 
       document.getElementById('nextBtn').addEventListener('click', () => {
-        if (currentRound >= maxRounds) {
+        const totalRounds = currentQuestions.length || maxRounds;
+        if (currentRound >= totalRounds) {
           if (gameMode === 'host') broadcastToGuests({ type: 'GAME_OVER', players });
           finishGame();
         } else {
