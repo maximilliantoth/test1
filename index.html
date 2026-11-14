@@ -1751,6 +1751,33 @@
       }
     }
 
+    const ANIMAL_SCALES = {
+      rabbit: 0.60,
+      chicken: 0.62,
+      parrot: 0.62,
+      duck: 0.65,
+      turkey: 0.78,
+      monkey: 0.82,
+      sloth: 0.82,
+      pig: 0.86,
+      goat: 0.88,
+      sheep: 0.90,
+      flamingo: 0.92,
+      croc: 1.00,
+      kangaroo: 1.05,
+      leopard: 1.05,
+      llama: 1.08,
+      panda: 1.18,
+      zebra: 1.20,
+      tiger: 1.22,
+      lion: 1.24,
+      cow: 1.28,
+      horse: 1.32,
+      hippo: 1.45,
+      giraffe: 1.50,
+      elephant: 1.65
+    };
+
     function drawOwnedBarnAnimals(fctx, w, h, floorY, t) {
       if (!ownedAnimals.length || !FARM_ANIMALS.length) return;
       const activeList = ownedAnimals
@@ -1798,20 +1825,19 @@
       activeList.sort((a, b) => farmAnimalWalkers[a.id].y - farmAnimalWalkers[b.id].y);
       activeList.forEach(animal => {
         const wk = farmAnimalWalkers[animal.id];
-        const hop = Math.abs(Math.sin(t * 2.8 + wk.hopOffset)) * 2.5;
+        const animalScale = ANIMAL_SCALES[animal.id] || 1;
+        const hop = Math.abs(Math.sin(t * 2.8 + wk.hopOffset)) * 2.5 * Math.min(1.2, animalScale);
         const legSwing = Math.sin(t * 5.2 + wk.hopOffset) * 2;
 
         // Ground shadow
         fctx.fillStyle = 'rgba(0, 0, 0, 0.32)';
         fctx.beginPath();
-        fctx.ellipse(wk.x, wk.y + 1, 13, 4, 0, 0, Math.PI * 2);
+        fctx.ellipse(wk.x, wk.y + 1, 13 * animalScale, 4 * animalScale, 0, 0, Math.PI * 2);
         fctx.fill();
 
         fctx.save();
         fctx.translate(wk.x, wk.y - hop);
-        if (wk.vx > 0) {
-          fctx.scale(-1, 1);
-        }
+        fctx.scale((wk.vx > 0 ? -1 : 1) * animalScale, animalScale);
         drawPixelAnimal(fctx, animal.id, legSwing);
         fctx.restore();
       });
