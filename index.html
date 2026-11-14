@@ -1823,20 +1823,208 @@
       ctx.restore();
     }
 
+    function drawDetailedMountains(groundY) {
+      const wId = currentWeather.id;
+      const isSnowy = wId === 'snowy';
+      const isSunset = wId === 'sunset';
+      const isRainy = wId === 'rainy';
+
+      const palettes = {
+        sunny: {
+          farLit: '#64748b', farShadow: '#475569',
+          midLit: '#3f5169', midShadow: '#1e293b',
+          nearLit: '#334155', nearShadow: '#0f172a',
+          snowLit: '#ffffff', snowShadow: '#bfdbfe',
+          ridgeRock: '#1e293b',
+          mist: 'rgba(186, 230, 253, 0.28)',
+          foothill: '#14532d', foothillShade: '#052e16'
+        },
+        sunset: {
+          farLit: '#8b5a7c', farShadow: '#4c2c52',
+          midLit: '#6b3b5b', midShadow: '#2e1a3b',
+          nearLit: '#4a2545', nearShadow: '#1f122b',
+          snowLit: '#fed7aa', snowShadow: '#c4b5fd',
+          ridgeRock: '#2e1065',
+          mist: 'rgba(251, 146, 60, 0.22)',
+          foothill: '#1e293b', foothillShade: '#0f172a'
+        },
+        rainy: {
+          farLit: '#64748b', farShadow: '#475569',
+          midLit: '#475569', midShadow: '#334155',
+          nearLit: '#334155', nearShadow: '#1e293b',
+          snowLit: '#e2e8f0', snowShadow: '#94a3b8',
+          ridgeRock: '#1e293b',
+          mist: 'rgba(148, 163, 184, 0.34)',
+          foothill: '#1e3a2f', foothillShade: '#0f241c'
+        },
+        snowy: {
+          farLit: '#cbd5e1', farShadow: '#94a3b8',
+          midLit: '#94a3b8', midShadow: '#64748b',
+          nearLit: '#64748b', nearShadow: '#475569',
+          snowLit: '#ffffff', snowShadow: '#cbd5e1',
+          ridgeRock: '#475569',
+          mist: 'rgba(241, 245, 249, 0.42)',
+          foothill: '#cbd5e1', foothillShade: '#94a3b8'
+        }
+      };
+      const pal = palettes[wId] || palettes.sunny;
+
+      // Scale peak heights gracefully for desktop and smaller viewports
+      const maxH = Math.min(height * 0.56, 420);
+
+      // Helper: draw a faceted mountain peak with lit/shadow sides, jagged snow cap, and gullies
+      function drawPeak(cx, baseLeft, baseRight, peakH, ridgeShift, litCol, shadowCol, hasSnow, snowRatio) {
+        const peakY = groundY - peakH;
+        const ridgeX = cx + ridgeShift;
+        const midY = groundY - peakH * 0.45;
+
+        // Left (sunlit) face
+        ctx.fillStyle = litCol;
+        ctx.beginPath();
+        ctx.moveTo(baseLeft, groundY);
+        ctx.lineTo(cx, peakY);
+        ctx.lineTo(ridgeX, midY);
+        ctx.lineTo(cx + (baseRight - cx) * 0.08, groundY);
+        ctx.closePath();
+        ctx.fill();
+
+        // Right (shaded) face
+        ctx.fillStyle = shadowCol;
+        ctx.beginPath();
+        ctx.moveTo(cx, peakY);
+        ctx.lineTo(baseRight, groundY);
+        ctx.lineTo(cx + (baseRight - cx) * 0.08, groundY);
+        ctx.lineTo(ridgeX, midY);
+        ctx.closePath();
+        ctx.fill();
+
+        // Subtle rocky crag / secondary rib on shaded side
+        ctx.fillStyle = pal.ridgeRock;
+        ctx.globalAlpha = 0.22;
+        ctx.beginPath();
+        ctx.moveTo(cx + (baseRight - cx) * 0.24, groundY - peakH * 0.58);
+        ctx.lineTo(cx + (baseRight - cx) * 0.52, groundY - peakH * 0.22);
+        ctx.lineTo(cx + (baseRight - cx) * 0.36, groundY - peakH * 0.18);
+        ctx.closePath();
+        ctx.fill();
+        ctx.globalAlpha = 1;
+
+        if (!hasSnow) return;
+
+        // Jagged snow cap on lit side
+        const snowH = peakH * snowRatio;
+        const snowY = peakY + snowH;
+        const leftSnowX = cx - (cx - baseLeft) * snowRatio;
+        const rightSnowX = cx + (baseRight - cx) * snowRatio;
+        const ridgeSnowX = cx + ridgeShift * snowRatio;
+
+        ctx.fillStyle = pal.snowLit;
+        ctx.beginPath();
+        ctx.moveTo(cx, peakY);
+        ctx.lineTo(leftSnowX, snowY + 6);
+        ctx.lineTo(leftSnowX + (ridgeSnowX - leftSnowX) * 0.35, snowY - 5);
+        ctx.lineTo(leftSnowX + (ridgeSnowX - leftSnowX) * 0.65, snowY + 9);
+        ctx.lineTo(ridgeSnowX, snowY - 2);
+        ctx.closePath();
+        ctx.fill();
+
+        // Jagged snow cap on shaded side
+        ctx.fillStyle = pal.snowShadow;
+        ctx.beginPath();
+        ctx.moveTo(cx, peakY);
+        ctx.lineTo(ridgeSnowX, snowY - 2);
+        ctx.lineTo(ridgeSnowX + (rightSnowX - ridgeSnowX) * 0.45, snowY + 10);
+        ctx.lineTo(ridgeSnowX + (rightSnowX - ridgeSnowX) * 0.72, snowY - 3);
+        ctx.lineTo(rightSnowX, snowY + 5);
+        ctx.closePath();
+        ctx.fill();
+
+        // Snow gully streak down the upper slope
+        ctx.fillStyle = pal.snowLit;
+        ctx.globalAlpha = 0.75;
+        ctx.beginPath();
+        ctx.moveTo(leftSnowX + (ridgeSnowX - leftSnowX) * 0.55, snowY + 2);
+        ctx.lineTo(leftSnowX + (ridgeSnowX - leftSnowX) * 0.42, snowY + snowH * 0.55);
+        ctx.lineTo(leftSnowX + (ridgeSnowX - leftSnowX) * 0.62, snowY + snowH * 0.38);
+        ctx.closePath();
+        ctx.fill();
+        ctx.globalAlpha = 1;
+      }
+
+      // 1. Distant Towering Alpine Range (tallest peaks, atmospheric perspective)
+      drawPeak(width * 0.14, -width * 0.08, width * 0.36, maxH * 0.96, 18, pal.farLit, pal.farShadow, true, 0.36);
+      drawPeak(width * 0.42, width * 0.20, width * 0.66, maxH * 0.84, -14, pal.farLit, pal.farShadow, true, 0.33);
+      drawPeak(width * 0.74, width * 0.50, width * 0.98, maxH * 1.02, 22, pal.farLit, pal.farShadow, true, 0.38);
+      drawPeak(width * 0.95, width * 0.76, width * 1.15, maxH * 0.78, -10, pal.farLit, pal.farShadow, true, 0.32);
+
+      // Soft valley mist between far and mid mountain ranges
+      const farMist = ctx.createLinearGradient(0, groundY - maxH * 0.42, 0, groundY);
+      farMist.addColorStop(0, 'rgba(255,255,255,0)');
+      farMist.addColorStop(1, pal.mist);
+      ctx.fillStyle = farMist;
+      ctx.fillRect(0, groundY - maxH * 0.42, width, maxH * 0.42);
+
+      // 2. Midground Jagged Peaks (especially prominent behind the house on the left & right)
+      drawPeak(width * 0.04, -width * 0.12, width * 0.24, maxH * 0.64, 12, pal.midLit, pal.midShadow, true, 0.30);
+      drawPeak(width * 0.27, width * 0.09, width * 0.48, maxH * 0.74, 16, pal.midLit, pal.midShadow, true, 0.34);
+      drawPeak(width * 0.58, width * 0.38, width * 0.80, maxH * 0.68, -12, pal.midLit, pal.midShadow, true, 0.30);
+      drawPeak(width * 0.86, width * 0.67, width * 1.08, maxH * 0.72, 14, pal.midLit, pal.midShadow, true, 0.32);
+
+      // 3. Closer Rocky Crags (lower, darker, framing the house & shop)
+      drawPeak(width * 0.18, width * 0.02, width * 0.34, maxH * 0.44, 10, pal.nearLit, pal.nearShadow, isSnowy, 0.28);
+      drawPeak(width * 0.48, width * 0.32, width * 0.65, maxH * 0.40, -8, pal.nearLit, pal.nearShadow, isSnowy, 0.25);
+      drawPeak(width * 0.79, width * 0.62, width * 0.96, maxH * 0.46, 11, pal.nearLit, pal.nearShadow, isSnowy, 0.28);
+
+      // Low mist along the base of the mountains
+      const nearMist = ctx.createLinearGradient(0, groundY - 70, 0, groundY);
+      nearMist.addColorStop(0, 'rgba(255,255,255,0)');
+      nearMist.addColorStop(1, pal.mist);
+      ctx.fillStyle = nearMist;
+      ctx.fillRect(0, groundY - 70, width, 70);
+
+      // 4. Rolling Forested Foothills right behind the yard
+      ctx.fillStyle = pal.foothill;
+      ctx.beginPath();
+      ctx.moveTo(0, groundY);
+      ctx.lineTo(0, groundY - 38);
+      ctx.lineTo(width * 0.12, groundY - 54);
+      ctx.lineTo(width * 0.28, groundY - 34);
+      ctx.lineTo(width * 0.45, groundY - 58);
+      ctx.lineTo(width * 0.64, groundY - 32);
+      ctx.lineTo(width * 0.82, groundY - 52);
+      ctx.lineTo(width, groundY - 36);
+      ctx.lineTo(width, groundY);
+      ctx.closePath();
+      ctx.fill();
+
+      // Distant pine silhouettes along the foothill crest
+      ctx.fillStyle = pal.foothillShade;
+      for (let x = 18; x < width; x += 26) {
+        const crestH = 34 + Math.sin(x * 0.015) * 12 + Math.cos(x * 0.032) * 8;
+        const py = groundY - crestH;
+        ctx.fillRect(x - 4, py - 8, 8, 8);
+        ctx.fillRect(x - 2, py - 14, 4, 6);
+      }
+
+      if (isSunset) {
+        // Subtle warm rim glow on the horizon
+        const glow = ctx.createLinearGradient(0, groundY - 40, 0, groundY);
+        glow.addColorStop(0, 'rgba(251, 146, 60, 0)');
+        glow.addColorStop(1, 'rgba(251, 146, 60, 0.16)');
+        ctx.fillStyle = glow;
+        ctx.fillRect(0, groundY - 40, width, 40);
+      }
+      if (isRainy) {
+        // Subtle dark atmospheric veil
+        ctx.fillStyle = 'rgba(15, 23, 42, 0.14)';
+        ctx.fillRect(0, groundY - maxH, width, maxH);
+      }
+    }
+
     function drawHomeYardLandscape() {
       const groundY = height - 64;
 
-      // Distant soft hills
-      ctx.fillStyle = currentWeather.id === 'snowy' ? '#94a3b8' : '#1e3a5f';
-      ctx.beginPath();
-      ctx.moveTo(0, height);
-      ctx.lineTo(0, height - 130);
-      ctx.lineTo(width * 0.25, height - 190);
-      ctx.lineTo(width * 0.52, height - 120);
-      ctx.lineTo(width * 0.78, height - 205);
-      ctx.lineTo(width, height - 135);
-      ctx.lineTo(width, height);
-      ctx.fill();
+      drawDetailedMountains(groundY);
 
       // Lush green grass yard
       ctx.fillStyle = currentWeather.id === 'snowy' ? '#e2e8f0' : '#16a34a';
