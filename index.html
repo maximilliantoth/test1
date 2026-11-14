@@ -460,6 +460,8 @@
   <!-- Custom In-App Alert Banner (replaces alert()) -->
   <div id="toastMsg" class="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 bg-red-950/95 border-2 border-red-500 text-red-200 px-4 py-2 text-xs font-bold shadow-xl hidden"></div>
 
+  <script src="questions.js"></script>
+  <script src="shop.js"></script>
   <script>
     // --- CONSTANTS & CONFIG ---
     const STORAGE_KEY = 'pointless_gemini_api_key';
@@ -470,7 +472,6 @@
     const PEER_PREFIX = 'ptls-sk-2026-';
     let userApiKey = localStorage.getItem(STORAGE_KEY) || '';
 
-    const SHOP_FILE = 'shop.txt';
     let SHOP_ITEMS = [];
 
     function parseShopItemsText(text) {
@@ -491,22 +492,18 @@
 
     async function loadShopItemsFromFile() {
       try {
-        const res = await fetch(SHOP_FILE, { cache: 'no-store' });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const text = await res.text();
-        const parsed = parseShopItemsText(text);
+        if (typeof window.SHOP_TEXT !== 'string') {
+          throw new Error('Súbor shop.js nebol načítaný.');
+        }
+        const parsed = parseShopItemsText(window.SHOP_TEXT);
         if (parsed.length === 0) {
-          throw new Error('Súbor shop.txt neobsahuje žiadne položky.');
+          throw new Error('Súbor shop.js neobsahuje žiadne položky.');
         }
         SHOP_ITEMS = parsed;
         return true;
       } catch (err) {
-        console.error('Nepodarilo sa načítať shop.txt:', err);
-        if (window.location.protocol === 'file:') {
-          showToast('Pre načítanie shop.txt spusti hru cez lokálny server (napr. python3 -m http.server).');
-        } else {
-          showToast(`Nepodarilo sa načítať ${SHOP_FILE}: ${err.message}`);
-        }
+        console.error('Nepodarilo sa načítať shop.js:', err);
+        showToast(`Nepodarilo sa načítať shop.js: ${err.message}`);
         return false;
       }
     }
@@ -557,7 +554,7 @@
       if (!grid) return;
       grid.innerHTML = '';
       if (SHOP_ITEMS.length === 0) {
-        grid.innerHTML = '<div class="col-span-full text-center text-xs text-slate-400 py-6">Nepodarilo sa načítať položky obchodu zo súboru shop.txt.</div>';
+        grid.innerHTML = '<div class="col-span-full text-center text-xs text-slate-400 py-6">Nepodarilo sa načítať položky obchodu zo súboru shop.js.</div>';
         return;
       }
       SHOP_ITEMS.forEach(item => {
@@ -643,7 +640,6 @@
       { suit: '#fb923c', visor: '#38bdf8', badge: '🟠 Oranžová' }
     ];
 
-    const QUESTIONS_FILE = 'questions.txt';
     let QUESTION_BANK = [];
 
     function parseQuestionsText(text) {
@@ -665,22 +661,18 @@
 
     async function loadQuestionsFromFile() {
       try {
-        const res = await fetch(QUESTIONS_FILE, { cache: 'no-store' });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const text = await res.text();
-        const parsed = parseQuestionsText(text);
+        if (typeof window.QUESTIONS_TEXT !== 'string') {
+          throw new Error('Súbor questions.js nebol načítaný.');
+        }
+        const parsed = parseQuestionsText(window.QUESTIONS_TEXT);
         if (parsed.length === 0) {
-          throw new Error('Súbor questions.txt neobsahuje žiadne otázky.');
+          throw new Error('Súbor questions.js neobsahuje žiadne otázky.');
         }
         QUESTION_BANK = parsed;
         return true;
       } catch (err) {
-        console.error('Nepodarilo sa načítať questions.txt:', err);
-        if (window.location.protocol === 'file:') {
-          showToast('Pre načítanie questions.txt spusti hru cez lokálny server (napr. python3 -m http.server).');
-        } else {
-          showToast(`Nepodarilo sa načítať ${QUESTIONS_FILE}: ${err.message}`);
-        }
+        console.error('Nepodarilo sa načítať questions.js:', err);
+        showToast(`Nepodarilo sa načítať questions.js: ${err.message}`);
         return false;
       }
     }

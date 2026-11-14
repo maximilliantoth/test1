@@ -1,3 +1,12 @@
+// ============================================================================
+// UPOZORNENIE PRED ÚPRAVOU:
+// Text je zabalený v JS template literáli (`...`).
+// V texte otázok NEPOUŽÍVAJ spätné úvodzovky (`), sekvenciu ${...}
+// ani spätné lomky (\), inak sa súbor nemusí správne načítať!
+// Bežné úvodzovky (" alebo ') môžeš používať bez obáv.
+// ============================================================================
+
+window.QUESTIONS_TEXT = `
 # Zoznam otázok pre hru Pointless
 # Formát každého riadka: KATEGÓRIA | Text otázky
 # Prázdne riadky a riadky začínajúce na # alebo // sa ignorujú.
@@ -78,4 +87,5 @@ DOPRAVA | Pomenuj leteckú spoločnosť (aerolinku).
 MENY | Pomenuj oficiálnu svetovú menu (okrem eura a dolára).
 JAZYKY | Pomenuj oficiálny úradný jazyk niektorého štátu.
 ARCHITEKTÚRA | Pomenuj svetoznámu stavbu, pamiatku alebo mrakodrap.
+`;
 

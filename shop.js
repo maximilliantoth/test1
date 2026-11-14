@@ -1,3 +1,12 @@
+// ============================================================================
+// UPOZORNENIE PRED ÚPRAVOU:
+// Text je zabalený v JS template literáli (`...`).
+// V texte položiek NEPOUŽÍVAJ spätné úvodzovky (`), sekvenciu ${...}
+// ani spätné lomky (\), inak sa súbor nemusí správne načítať!
+// Bežné úvodzovky (" alebo ') môžeš používať bez obáv.
+// ============================================================================
+
+window.SHOP_TEXT = `
 # Zoznam položiek v Kozmickom obchode pre hru Pointless
 # Formát každého riadka: ID | SLOT | IKONA | NÁZOV | POPIS | CENA
 # Povolené sloty: hat, suit, trail
@@ -16,4 +25,5 @@ neon_suit | suit | 💠 | Neónový oblek | Žiarivý tyrkysový oblek | 110
 # STOPY JETPACKU (trail)
 rainbow_trail | trail | 🌈 | Dúhová stopa | Farebné častice z jetpacku | 90
 plasma_trail | trail | 🔥 | Plazmová stopa | Fialovo-ružová plazma | 70
+`;
 
