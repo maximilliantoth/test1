@@ -470,16 +470,51 @@
     const PEER_PREFIX = 'ptls-sk-2026-';
     let userApiKey = localStorage.getItem(STORAGE_KEY) || '';
 
-    const SHOP_ITEMS = [
-      { id: 'crown', slot: 'hat', icon: '👑', name: 'Zlatá korunka', desc: 'Kráľovská korunka na prilbu', price: 120 },
-      { id: 'cowboy', slot: 'hat', icon: '🤠', name: 'Kovbojský klobúk', desc: 'Štýlový klobúk na dvor aj do vesmíru', price: 80 },
-      { id: 'headphones', slot: 'hat', icon: '🎧', name: 'DJ Slúchadlá', desc: 'Farebné slúchadlá na prilbu', price: 60 },
-      { id: 'tophat', slot: 'hat', icon: '🎩', name: 'Cylinder', desc: 'Elegantný čierny cylinder', price: 100 },
-      { id: 'gold_suit', slot: 'suit', icon: '✨', name: 'Zlatý skafander', desc: 'Prémiový zlatý oblek', price: 150 },
-      { id: 'neon_suit', slot: 'suit', icon: '💠', name: 'Neónový oblek', desc: 'Žiarivý tyrkysový oblek', price: 110 },
-      { id: 'rainbow_trail', slot: 'trail', icon: '🌈', name: 'Dúhová stopa', desc: 'Farebné častice z jetpacku', price: 90 },
-      { id: 'plasma_trail', slot: 'trail', icon: '🔥', name: 'Plazmová stopa', desc: 'Fialovo-ružová plazma', price: 70 }
-    ];
+    const SHOP_FILE = 'shop.txt';
+    let SHOP_ITEMS = [];
+
+    function parseShopItemsText(text) {
+      return text
+        .split(/\r?\n/)
+        .map(line => line.trim())
+        .filter(line => line && !line.startsWith('#') && !line.startsWith('//'))
+        .map(line => {
+          const parts = line.split('|').map(part => part.trim());
+          if (parts.length < 6) return null;
+          const [id, slot, icon, name, desc, priceStr] = parts;
+          const price = parseInt(priceStr, 10);
+          if (!id || !slot || !name || !Number.isFinite(price) || price < 0) return null;
+          return { id, slot, icon: icon || '🛍️', name, desc: desc || '', price };
+        })
+        .filter(Boolean);
+    }
+
+    async function loadShopItemsFromFile() {
+      try {
+        const res = await fetch(SHOP_FILE, { cache: 'no-store' });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const text = await res.text();
+        const parsed = parseShopItemsText(text);
+        if (parsed.length === 0) {
+          throw new Error('Súbor shop.txt neobsahuje žiadne položky.');
+        }
+        SHOP_ITEMS = parsed;
+        return true;
+      } catch (err) {
+        console.error('Nepodarilo sa načítať shop.txt:', err);
+        if (window.location.protocol === 'file:') {
+          showToast('Pre načítanie shop.txt spusti hru cez lokálny server (napr. python3 -m http.server).');
+        } else {
+          showToast(`Nepodarilo sa načítať ${SHOP_FILE}: ${err.message}`);
+        }
+        return false;
+      }
+    }
+
+    async function ensureShopItemsLoaded() {
+      if (SHOP_ITEMS.length > 0) return true;
+      return await loadShopItemsFromFile();
+    }
 
     let playerCoins = (() => {
       const saved = parseInt(localStorage.getItem(COINS_KEY), 10);
@@ -521,6 +556,10 @@
       const grid = document.getElementById('shopItemsGrid');
       if (!grid) return;
       grid.innerHTML = '';
+      if (SHOP_ITEMS.length === 0) {
+        grid.innerHTML = '<div class="col-span-full text-center text-xs text-slate-400 py-6">Nepodarilo sa načítať položky obchodu zo súboru shop.txt.</div>';
+        return;
+      }
       SHOP_ITEMS.forEach(item => {
         const isOwned = ownedItems.includes(item.id);
         const isEquipped = equippedCosmetics[item.slot] === item.id;
@@ -584,8 +623,9 @@
       });
     }
 
-    function openShopModal() {
+    async function openShopModal() {
       saveShopState();
+      await ensureShopItemsLoaded();
       renderShopItems();
       document.getElementById('shopModal').classList.remove('hidden');
     }
