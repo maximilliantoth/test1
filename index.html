@@ -594,7 +594,10 @@
       }
     }
 
+    let activeScreen = 'apiKeyScreen';
+
     function showScreen(screenId) {
+      activeScreen = screenId;
       ['apiKeyScreen', 'modeScreen', 'lobbyScreen', 'gameScreen', 'endScreen'].forEach(id => {
         document.getElementById(id).classList.add('hidden');
       });
@@ -680,6 +683,124 @@
       const g = Math.round(c1[1] + (c2[1] - c1[1]) * t);
       const b = Math.round(c1[2] + (c2[2] - c1[2]) * t);
       return `rgb(${r},${g},${b})`;
+    }
+
+    const yardWalkerState = {};
+
+    function getYardWalker(id, index) {
+      if (!yardWalkerState[id]) {
+        const startRatio = 0.15 + ((index * 0.17) % 0.7);
+        yardWalkerState[id] = {
+          xRatio: startRatio,
+          dir: index % 2 === 0 ? 1 : -1,
+          speed: 0.0008 + (index % 3) * 0.00025
+        };
+      }
+      return yardWalkerState[id];
+    }
+
+    function drawSimpleHouse(groundY) {
+      const hx = Math.max(76, Math.min(width * 0.18, 220));
+      const houseW = 84;
+      const houseH = 54;
+      const wallTop = groundY - houseH;
+
+      // Chimney & gentle smoke puffs
+      ctx.fillStyle = '#991b1b';
+      ctx.fillRect(hx + 16, wallTop - 34, 12, 22);
+      const t = Date.now() * 0.002;
+      for (let i = 0; i < 3; i++) {
+        const puffProgress = ((t + i * 0.9) % 2.7) / 2.7;
+        const px = hx + 22 + Math.sin(t + i) * 5 + puffProgress * 10;
+        const py = wallTop - 38 - puffProgress * 28;
+        ctx.fillStyle = `rgba(226, 232, 240, ${0.55 * (1 - puffProgress)})`;
+        ctx.fillRect(px - 4, py - 4, 8, 8);
+      }
+
+      // House wall
+      ctx.fillStyle = '#fef3c7';
+      ctx.fillRect(hx - houseW / 2, wallTop, houseW, houseH);
+      ctx.fillStyle = '#fde68a';
+      ctx.fillRect(hx - houseW / 2, wallTop, 6, houseH);
+
+      // Simple pitched roof
+      ctx.fillStyle = '#dc2626';
+      ctx.beginPath();
+      ctx.moveTo(hx - houseW / 2 - 10, wallTop + 2);
+      ctx.lineTo(hx, wallTop - 36);
+      ctx.lineTo(hx + houseW / 2 + 10, wallTop + 2);
+      ctx.closePath();
+      ctx.fill();
+
+      // Door
+      ctx.fillStyle = '#78350f';
+      ctx.fillRect(hx - 24, groundY - 30, 18, 30);
+      ctx.fillStyle = '#fbbf24';
+      ctx.fillRect(hx - 10, groundY - 16, 3, 3);
+
+      // Warm lit window
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(hx + 8, wallTop + 14, 22, 20);
+      ctx.fillStyle = '#fde047';
+      ctx.fillRect(hx + 10, wallTop + 16, 18, 16);
+      ctx.fillStyle = '#78350f';
+      ctx.fillRect(hx + 18, wallTop + 16, 2, 16);
+      ctx.fillRect(hx + 10, wallTop + 23, 18, 2);
+
+      // Simple wooden garden fence next to the house
+      ctx.fillStyle = '#92400e';
+      const fenceStart = hx + houseW / 2 + 6;
+      const fenceCount = 5;
+      ctx.fillRect(fenceStart, groundY - 13, fenceCount * 12, 3);
+      for (let i = 0; i < fenceCount; i++) {
+        ctx.fillRect(fenceStart + i * 12, groundY - 20, 4, 20);
+      }
+    }
+
+    function drawHomeYardLandscape() {
+      const groundY = height - 64;
+
+      // Distant soft hills
+      ctx.fillStyle = currentWeather.id === 'snowy' ? '#94a3b8' : '#1e3a5f';
+      ctx.beginPath();
+      ctx.moveTo(0, height);
+      ctx.lineTo(0, height - 130);
+      ctx.lineTo(width * 0.25, height - 190);
+      ctx.lineTo(width * 0.52, height - 120);
+      ctx.lineTo(width * 0.78, height - 205);
+      ctx.lineTo(width, height - 135);
+      ctx.lineTo(width, height);
+      ctx.fill();
+
+      // Lush green grass yard
+      ctx.fillStyle = currentWeather.id === 'snowy' ? '#e2e8f0' : '#16a34a';
+      ctx.fillRect(0, groundY, width, height - groundY + 64);
+      ctx.fillStyle = currentWeather.id === 'snowy' ? '#cbd5e1' : '#22c55e';
+      ctx.fillRect(0, groundY, width, 6);
+
+      // Little grass tufts & flowers across the yard
+      for (let gx = 16; gx < width; gx += 34) {
+        ctx.fillStyle = currentWeather.id === 'snowy' ? '#cbd5e1' : '#15803d';
+        ctx.fillRect(gx, groundY - 4, 3, 4);
+        ctx.fillRect(gx + 5, groundY - 6, 3, 6);
+        if (gx % 102 === 16 && currentWeather.id !== 'snowy') {
+          ctx.fillStyle = gx % 204 === 16 ? '#fde047' : '#f472b6';
+          ctx.fillRect(gx + 2, groundY - 8, 3, 3);
+        }
+      }
+
+      // Trees in background
+      [0.05, 0.36, 0.72, 0.91].forEach(rx => {
+        const tx = width * rx;
+        ctx.fillStyle = '#451a03';
+        ctx.fillRect(tx - 2, groundY - 10, 4, 10);
+        ctx.fillStyle = currentWeather.id === 'snowy' ? '#cbd5e1' : '#14532d';
+        ctx.fillRect(tx - 11, groundY - 22, 22, 12);
+        ctx.fillRect(tx - 8, groundY - 32, 16, 10);
+        ctx.fillRect(tx - 4, groundY - 40, 8, 8);
+      });
+
+      drawSimpleHouse(groundY);
     }
 
     function drawLaunchpadAndLandscape(alt) {
@@ -858,8 +979,13 @@
       ctx.fillText(p.name, 0, -31);
 
       const spin = isCelebrating ? (p.celebrateTimer * 0.14) : 0;
-      const rot = spin + Math.sin(bobbingPhase * 0.8 + p.colorIdx) * (inSpace ? 0.14 : 0.05);
+      const rot = p.isWalking
+        ? 0
+        : spin + Math.sin(bobbingPhase * 0.8 + p.colorIdx) * (inSpace ? 0.14 : 0.05);
       ctx.rotate(rot);
+      if (p.isWalking && p.facing === -1) {
+        ctx.scale(-1, 1);
+      }
 
       // Helmet Antenna + Blinking Light
       ctx.fillStyle = '#94a3b8';
@@ -897,17 +1023,20 @@
       ctx.fillRect(-2, -16, 4, 2);
 
       // Animated Limbs
-      const armWave = Math.sin(bobbingPhase * 2 + p.colorIdx) * 2;
+      const walkSwing = p.isWalking ? Math.sin(bobbingPhase * 3.2 + p.colorIdx) * 3 : 0;
+      const armWave = p.isWalking ? walkSwing : Math.sin(bobbingPhase * 2 + p.colorIdx) * 2;
+      const leftLegLift = p.isWalking ? Math.max(0, walkSwing) : 0;
+      const rightLegLift = p.isWalking ? Math.max(0, -walkSwing) : 0;
       ctx.fillStyle = palette.suit;
       ctx.fillRect(-11, -2 + armWave, 4, 12);
       ctx.fillRect(7, -2 - armWave, 4, 12);
-      ctx.fillRect(-7, 14, 6, 9);
-      ctx.fillRect(1, 14, 6, 9);
+      ctx.fillRect(-7, 14 - leftLegLift, 6, 9);
+      ctx.fillRect(1, 14 - rightLegLift, 6, 9);
 
       // Boots
       ctx.fillStyle = '#334155';
-      ctx.fillRect(-8, 21, 7, 3);
-      ctx.fillRect(1, 21, 7, 3);
+      ctx.fillRect(-8, 21 - leftLegLift, 7, 3);
+      ctx.fillRect(1, 21 - rightLegLift, 7, 3);
 
       if (isClimbing) {
         ctx.fillStyle = '#38bdf8';
@@ -1148,9 +1277,13 @@
       const playerArr = Object.values(players);
       const myPlayer = players[myPeerId];
 
+      const isHomeYardScreen = activeScreen === 'apiKeyScreen' || activeScreen === 'modeScreen' || activeScreen === 'lobbyScreen';
+
       // Handle Rescue Rocket Return Sequence at end of game
-      let targetCam = myPlayer ? myPlayer.altitude : 0;
-      if (rescueRocket.active) {
+      let targetCam = isHomeYardScreen ? 0 : (myPlayer ? myPlayer.altitude : 0);
+      if (isHomeYardScreen) {
+        cameraAltitude = 0;
+      } else if (rescueRocket.active) {
         const statusEl = document.getElementById('rescueStatusBadge');
         if (rescueRocket.phase === 'approaching') {
           rescueRocket.y += (height * 0.45 - rescueRocket.y) * 0.06;
@@ -1276,7 +1409,11 @@
           ctx.fillRect(c.x + 12, c.y - 12, c.w - 24, 12);
         });
 
-        drawLaunchpadAndLandscape(alt);
+        if (isHomeYardScreen) {
+          drawHomeYardLandscape();
+        } else {
+          drawLaunchpadAndLandscape(alt);
+        }
         drawSkyCruiser(alt);
       }
 
@@ -1429,6 +1566,24 @@
       list.forEach((p, idx) => {
         if (typeof p.visualAltitude !== 'number') p.visualAltitude = p.altitude || 0;
         p.visualAltitude += ((p.altitude || 0) - p.visualAltitude) * 0.05;
+
+        if (isHomeYardScreen) {
+          const walker = getYardWalker(p.id || `walker_${idx}`, idx);
+          walker.xRatio += walker.dir * walker.speed;
+          if (walker.xRatio > 0.92) {
+            walker.xRatio = 0.92;
+            walker.dir = -1;
+          } else if (walker.xRatio < 0.08) {
+            walker.xRatio = 0.08;
+            walker.dir = 1;
+          }
+          const yardGroundY = height - 64;
+          const astroX = walker.xRatio * width;
+          const stepBob = Math.abs(Math.sin(bobbingPhase * 3.2 + idx)) * 2.5;
+          const astroY = yardGroundY - 24 - stepBob;
+          drawSingleAstronaut({ ...p, isWalking: true, facing: walker.dir }, astroX, astroY, false);
+          return;
+        }
 
         let astroX;
         if (list.length === 1) {
