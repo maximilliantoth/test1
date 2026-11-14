@@ -2319,7 +2319,15 @@
     let myNickname = 'Hráč';
 
     let players = {};
-    let currentWeather = WEATHERS[0];
+    let currentWeather = WEATHERS[Math.floor(Math.random() * WEATHERS.length)];
+
+    function setRandomWeather() {
+      const others = WEATHERS.filter(w => w.id !== currentWeather.id);
+      if (others.length > 0) {
+        currentWeather = others[Math.floor(Math.random() * others.length)];
+      }
+    }
+    setInterval(setRandomWeather, 25000);
     let currentRound = 0;
     const maxRounds = 7;
     let currentQuestions = [];
@@ -5258,23 +5266,8 @@ Vráť VÝHRADNE JSON pole objektov:
       document.getElementById('closeAnimalMarketBtn').addEventListener('click', closeAnimalMarketModal);
       document.getElementById('confirmAnimalMarketBtn').addEventListener('click', closeAnimalMarketModal);
 
-      // Google Auth & Account modal logic
-      document.getElementById('googleAuthBtn')?.addEventListener('click', () => {
-        if (currentGoogleUser) {
-          document.getElementById('accountModal')?.classList.remove('hidden');
-        } else {
-          signInWithGoogle();
-        }
-      });
-      document.getElementById('closeAccountBtn')?.addEventListener('click', () => {
-        document.getElementById('accountModal')?.classList.add('hidden');
-      });
-      document.getElementById('cancelAccountBtn')?.addEventListener('click', () => {
-        document.getElementById('accountModal')?.classList.add('hidden');
-      });
-      document.getElementById('logoutGoogleBtn')?.addEventListener('click', signOutGoogle);
-
       // Giftcode modal logic
+      const REDEEMED_GIFTCODES_KEY = 'pointless_redeemed_giftcodes';
       const giftcodeModal = document.getElementById('giftcodeModal');
       const giftcodeInput = document.getElementById('giftcodeInput');
       const giftcodeMsg = document.getElementById('giftcodeMsg');
@@ -5383,7 +5376,6 @@ Vráť VÝHRADNE JSON pole objektov:
         if (!document.getElementById('astronautModal').classList.contains('hidden')) return;
         if (!document.getElementById('farmModal').classList.contains('hidden')) return;
         if (!document.getElementById('giftcodeModal').classList.contains('hidden')) return;
-        if (!document.getElementById('accountModal').classList.contains('hidden')) return;
         if (!document.getElementById('coinsOfferModal').classList.contains('hidden')) return;
         if (!document.getElementById('deviceSelectModal').classList.contains('hidden')) return;
         if (isPointInBox(shopHitbox, e.clientX, e.clientY)) {
