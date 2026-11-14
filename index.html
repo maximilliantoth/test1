@@ -1500,7 +1500,6 @@
     }
 
     const farmAnimalWalkers = {};
-    const yardAnimalWalkers = {};
 
     function updateFarmStatusText() {
       const el = document.getElementById('farmStatusText');
@@ -1509,6 +1508,246 @@
         el.innerHTML = `Na farme ti pobehuje <strong class="text-emerald-300">${ownedAnimals.length}</strong> ${ownedAnimals.length === 1 ? 'zviera' : ownedAnimals.length < 5 ? 'zvieratá' : 'zvierat'}! Klikni na krabicu <strong class="text-amber-300">NA PREDAJ</strong> pre ďalšie.`;
       } else {
         el.innerHTML = 'Klikni na krabicu <strong class="text-amber-300">NA PREDAJ</strong> na ľavej poličke a pozri si zvieratá.';
+      }
+    }
+
+    // Pixel-art animals facing LEFT by default (origin at bottom-center: y=0 is feet)
+    function drawPixelAnimal(c, id, legSwing) {
+      const l1 = Math.round(legSwing);
+      const l2 = -l1;
+      const r = (x, y, w, h, col) => { c.fillStyle = col; c.fillRect(x, y, w, h); };
+
+      // Helper for 4-legged quadruped base
+      const drawQuad = (bodyCol, headCol, legCol, tailCol, hasSpots, spotCol, hasStripes, stripeCol) => {
+        // Tail
+        r(10, -16, 4, 3, tailCol);
+        r(13, -14, 2, 4, tailCol);
+        // Legs
+        r(-9 + l1, -6, 3, 6, legCol);
+        r(-4 + l2, -6, 3, 6, legCol);
+        r(3 + l2, -6, 3, 6, legCol);
+        r(8 + l1, -6, 3, 6, legCol);
+        // Body
+        r(-10, -16, 21, 11, bodyCol);
+        if (hasSpots) {
+          r(-5, -14, 4, 4, spotCol);
+          r(2, -13, 5, 4, spotCol);
+          r(-1, -10, 3, 3, spotCol);
+        }
+        if (hasStripes) {
+          r(-6, -16, 2, 9, stripeCol);
+          r(-1, -16, 2, 10, stripeCol);
+          r(4, -16, 2, 9, stripeCol);
+          r(8, -16, 2, 7, stripeCol);
+        }
+        // Head & snout
+        r(-15, -21, 9, 9, headCol);
+        r(-17, -17, 3, 4, headCol);
+        // Eye
+        r(-13, -19, 2, 2, '#0f172a');
+      };
+
+      switch (id) {
+        case 'chicken':
+          r(-3 + l1, -5, 2, 5, '#f59e0b');
+          r(2 + l2, -5, 2, 5, '#f59e0b');
+          r(-6, -13, 13, 8, '#f8fafc');
+          r(4, -15, 4, 4, '#f8fafc'); // tail
+          r(-3, -11, 6, 4, '#e2e8f0'); // wing
+          r(-8, -18, 6, 6, '#f8fafc'); // head
+          r(-7, -21, 4, 3, '#ef4444'); // comb
+          r(-11, -16, 3, 2, '#f97316'); // beak
+          r(-9, -14, 2, 2, '#ef4444'); // wattle
+          r(-7, -17, 1.5, 1.5, '#0f172a');
+          break;
+        case 'duck':
+          r(-3 + l1, -5, 2, 5, '#f97316');
+          r(2 + l2, -5, 2, 5, '#f97316');
+          r(-7, -12, 14, 7, '#f8fafc');
+          r(5, -14, 4, 3, '#cbd5e1');
+          r(-9, -19, 6, 8, '#15803d'); // green head
+          r(-13, -16, 4, 2, '#f97316'); // bill
+          r(-7, -17, 1.5, 1.5, '#0f172a');
+          break;
+        case 'rabbit':
+          r(-6 + l1, -4, 4, 4, '#f8fafc');
+          r(3 + l2, -4, 4, 4, '#f8fafc');
+          r(-7, -12, 13, 8, '#f8fafc');
+          r(6, -10, 3, 3, '#ffffff'); // fluffy tail
+          r(-10, -17, 7, 7, '#f8fafc');
+          r(-9, -25, 2, 8, '#f8fafc'); // ears
+          r(-6, -25, 2, 8, '#f8fafc');
+          r(-8, -23, 1, 5, '#fbcfe8');
+          r(-11, -14, 2, 2, '#f472b6'); // nose
+          r(-9, -16, 1.5, 1.5, '#0f172a');
+          break;
+        case 'goat':
+          drawQuad('#e2e8f0', '#e2e8f0', '#94a3b8', '#cbd5e1', false, '', false, '');
+          r(-13, -24, 2, 4, '#78350f'); // horns
+          r(-10, -24, 2, 4, '#78350f');
+          r(-15, -13, 2, 3, '#94a3b8'); // beard
+          break;
+        case 'sheep':
+          r(-8 + l1, -6, 3, 6, '#334155');
+          r(-3 + l2, -6, 3, 6, '#334155');
+          r(3 + l2, -6, 3, 6, '#334155');
+          r(7 + l1, -6, 3, 6, '#334155');
+          r(-10, -17, 20, 12, '#f8fafc'); // wool
+          r(-8, -19, 16, 2, '#ffffff');
+          r(-15, -17, 7, 7, '#1e293b'); // dark face
+          r(-13, -15, 1.5, 1.5, '#ffffff');
+          break;
+        case 'pig':
+          drawQuad('#f9a8d4', '#f9a8d4', '#f472b6', '#f472b6', false, '', false, '');
+          r(-18, -16, 3, 4, '#f472b6'); // snout
+          r(-13, -23, 3, 3, '#f472b6'); // ear
+          break;
+        case 'turkey':
+          r(2, -19, 10, 11, '#b91c1c'); // fan tail
+          r(4, -17, 7, 8, '#f59e0b');
+          r(-3 + l1, -5, 2, 5, '#d97706');
+          r(2 + l2, -5, 2, 5, '#d97706');
+          r(-6, -13, 12, 8, '#78350f');
+          r(-9, -19, 5, 7, '#991b1b');
+          r(-12, -17, 3, 2, '#f59e0b');
+          r(-10, -15, 2, 4, '#ef4444'); // snood
+          break;
+        case 'cow':
+          drawQuad('#f8fafc', '#f8fafc', '#cbd5e1', '#94a3b8', true, '#1e293b', false, '');
+          r(-17, -16, 4, 4, '#fbcfe8'); // pink muzzle
+          r(-14, -23, 2, 2, '#d6d3d1'); // horn
+          r(-10, -23, 2, 2, '#d6d3d1');
+          break;
+        case 'horse':
+          drawQuad('#92400e', '#92400e', '#78350f', '#451a03', false, '', false, '');
+          r(-10, -22, 4, 7, '#451a03'); // mane
+          r(-13, -23, 2, 3, '#92400e'); // ear
+          break;
+        case 'llama':
+          r(-8 + l1, -7, 3, 7, '#d6d3d1');
+          r(4 + l2, -7, 3, 7, '#d6d3d1');
+          r(-9, -16, 17, 9, '#fef3c7');
+          r(-10, -26, 5, 11, '#fef3c7'); // long neck
+          r(-14, -28, 7, 5, '#fef3c7'); // head
+          r(-10, -32, 2, 4, '#fde68a'); // ears
+          r(-12, -26, 1.5, 1.5, '#0f172a');
+          break;
+        case 'parrot':
+          r(-2 + l1, -4, 2, 4, '#64748b');
+          r(2 + l2, -4, 2, 4, '#64748b');
+          r(-4, -15, 8, 11, '#ef4444'); // red body
+          r(-1, -13, 6, 6, '#3b82f6'); // blue wing
+          r(-1, -14, 4, 2, '#facc15'); // yellow stripe
+          r(3, -7, 5, 3, '#2563eb'); // tail
+          r(-5, -20, 7, 6, '#ef4444'); // head
+          r(-8, -18, 3, 3, '#fde047'); // beak
+          r(-4, -19, 1.5, 1.5, '#0f172a');
+          break;
+        case 'flamingo':
+          r(-2 + l1, -10, 2, 10, '#f472b6');
+          r(2 + l2, -10, 2, 10, '#f472b6');
+          r(-5, -17, 11, 7, '#f472b6');
+          r(-7, -26, 3, 10, '#f9a8d4'); // long neck
+          r(-10, -28, 6, 4, '#f472b6');
+          r(-13, -27, 3, 2, '#1e293b'); // black beak tip
+          r(-9, -27, 1.5, 1.5, '#0f172a');
+          break;
+        case 'monkey':
+          r(9, -15, 5, 2, '#78350f'); // curled tail
+          r(12, -20, 2, 5, '#78350f');
+          r(-6 + l1, -6, 3, 6, '#78350f');
+          r(3 + l2, -6, 3, 6, '#78350f');
+          r(-7, -15, 14, 10, '#92400e');
+          r(-11, -22, 9, 8, '#92400e');
+          r(-10, -20, 6, 5, '#fde68a'); // tan face
+          r(-4, -21, 3, 3, '#fde68a'); // ear
+          r(-9, -19, 1.5, 1.5, '#0f172a');
+          break;
+        case 'sloth':
+          r(-7 + l1, -5, 4, 5, '#78716c');
+          r(3 + l2, -5, 4, 5, '#78716c');
+          r(-8, -14, 16, 10, '#a8a29e');
+          r(-12, -19, 8, 7, '#f5f5f4'); // cream face
+          r(-11, -17, 2, 2, '#44403c'); // eye patch
+          r(-8, -17, 2, 2, '#44403c');
+          break;
+        case 'croc':
+          r(10, -6, 8, 4, '#15803d'); // tail
+          r(-9 + l1, -3, 3, 3, '#166534');
+          r(3 + l2, -3, 3, 3, '#166534');
+          r(-10, -8, 21, 6, '#16a34a'); // low body
+          r(-10, -10, 16, 2, '#14532d'); // ridges
+          r(-18, -7, 9, 4, '#16a34a'); // long snout
+          r(-17, -4, 6, 1, '#ffffff'); // teeth
+          r(-12, -8, 2, 2, '#fde047'); // eye
+          break;
+        case 'zebra':
+          drawQuad('#f8fafc', '#f8fafc', '#e2e8f0', '#1e293b', false, '', true, '#0f172a');
+          r(-10, -22, 3, 6, '#0f172a'); // mane
+          break;
+        case 'kangaroo':
+          r(6, -6, 10, 4, '#b45309'); // thick tail
+          r(-4 + l1, -6, 4, 6, '#b45309');
+          r(1 + l2, -6, 4, 6, '#b45309');
+          r(-6, -17, 11, 12, '#d97706');
+          r(-6, -14, 4, 6, '#fde68a'); // pouch
+          r(-8, -24, 7, 7, '#d97706');
+          r(-5, -29, 2, 5, '#b45309'); // tall ears
+          r(-2, -29, 2, 5, '#b45309');
+          r(-7, -22, 1.5, 1.5, '#0f172a');
+          break;
+        case 'giraffe':
+          r(-8 + l1, -10, 3, 10, '#facc15');
+          r(5 + l2, -10, 3, 10, '#facc15');
+          r(-9, -18, 17, 9, '#facc15');
+          r(-5, -16, 4, 4, '#92400e');
+          r(2, -15, 4, 4, '#92400e');
+          r(-10, -34, 5, 17, '#facc15'); // tall neck
+          r(-9, -28, 3, 3, '#92400e');
+          r(-15, -36, 8, 5, '#facc15'); // head
+          r(-10, -39, 1.5, 3, '#78350f'); // ossicones
+          r(-13, -35, 1.5, 1.5, '#0f172a');
+          break;
+        case 'hippo':
+          drawQuad('#64748b', '#64748b', '#475569', '#475569', false, '', false, '');
+          r(-19, -16, 6, 6, '#94a3b8'); // wide snout
+          r(-13, -23, 2, 2, '#475569');
+          break;
+        case 'elephant':
+          r(-9 + l1, -8, 4, 8, '#64748b');
+          r(4 + l2, -8, 4, 8, '#64748b');
+          r(-10, -21, 20, 14, '#94a3b8'); // big body
+          r(-16, -23, 9, 10, '#94a3b8'); // head
+          r(-11, -21, 6, 8, '#64748b'); // big ear
+          r(-20, -17, 4, 10, '#94a3b8'); // trunk
+          r(-18, -14, 3, 2, '#f8fafc'); // tusk
+          r(-14, -20, 1.5, 1.5, '#0f172a');
+          break;
+        case 'leopard':
+          drawQuad('#facc15', '#facc15', '#eab308', '#ca8a04', true, '#451a03', false, '');
+          break;
+        case 'tiger':
+          drawQuad('#f97316', '#f97316', '#ea580c', '#ea580c', false, '', true, '#0f172a');
+          r(-16, -16, 3, 3, '#f8fafc'); // white muzzle
+          break;
+        case 'panda':
+          r(-8 + l1, -6, 4, 6, '#0f172a');
+          r(4 + l2, -6, 4, 6, '#0f172a');
+          r(-9, -17, 18, 12, '#f8fafc');
+          r(-9, -17, 5, 11, '#1e293b'); // black shoulder band
+          r(-14, -24, 9, 9, '#f8fafc'); // white head
+          r(-14, -26, 3, 3, '#0f172a'); // black ears
+          r(-8, -26, 3, 3, '#0f172a');
+          r(-13, -21, 3, 3, '#0f172a'); // eye patch
+          break;
+        case 'lion':
+          drawQuad('#f59e0b', '#f59e0b', '#d97706', '#92400e', false, '', false, '');
+          r(-14, -23, 10, 11, '#78350f'); // fluffy mane
+          r(-16, -21, 7, 7, '#fbbf24'); // face
+          r(-14, -19, 1.5, 1.5, '#0f172a');
+          break;
+        default:
+          drawQuad('#eab308', '#eab308', '#ca8a04', '#ca8a04', false, '', false, '');
       }
     }
 
@@ -1559,12 +1798,13 @@
       activeList.sort((a, b) => farmAnimalWalkers[a.id].y - farmAnimalWalkers[b.id].y);
       activeList.forEach(animal => {
         const wk = farmAnimalWalkers[animal.id];
-        const hop = Math.abs(Math.sin(t * 2.8 + wk.hopOffset)) * 4.5;
+        const hop = Math.abs(Math.sin(t * 2.8 + wk.hopOffset)) * 2.5;
+        const legSwing = Math.sin(t * 5.2 + wk.hopOffset) * 2;
 
         // Ground shadow
         fctx.fillStyle = 'rgba(0, 0, 0, 0.32)';
         fctx.beginPath();
-        fctx.ellipse(wk.x, wk.y + 4, 11, 4, 0, 0, Math.PI * 2);
+        fctx.ellipse(wk.x, wk.y + 1, 13, 4, 0, 0, Math.PI * 2);
         fctx.fill();
 
         fctx.save();
@@ -1572,10 +1812,7 @@
         if (wk.vx > 0) {
           fctx.scale(-1, 1);
         }
-        fctx.font = '26px "Apple Color Emoji", "Segoe UI Emoji", sans-serif';
-        fctx.textAlign = 'center';
-        fctx.textBaseline = 'bottom';
-        fctx.fillText(animal.icon, 0, 4);
+        drawPixelAnimal(fctx, animal.id, legSwing);
         fctx.restore();
       });
     }
@@ -2811,67 +3048,6 @@
       drawSimpleHouse(groundY);
       drawSimpleShop(groundY);
       drawSimpleFarm(groundY);
-      drawYardFarmAnimals(groundY);
-    }
-
-    function drawYardFarmAnimals(groundY) {
-      if (!ownedAnimals.length || !FARM_ANIMALS.length) return;
-      const isMobileMode = document.body.dataset.device === 'mobile';
-      const fontSize = isMobileMode ? 18 : 24;
-      const yt = Date.now() * 0.004;
-
-      const active = ownedAnimals
-        .map(id => FARM_ANIMALS.find(a => a.id === id))
-        .filter(Boolean);
-
-      active.forEach((animal, idx) => {
-        if (!yardAnimalWalkers[animal.id]) {
-          yardAnimalWalkers[animal.id] = {
-            xRatio: 0.12 + ((idx * 0.17) % 0.78),
-            yOff: 18 + ((idx * 9) % 28),
-            dir: idx % 2 === 0 ? 1 : -1,
-            speed: 0.0007 + (idx % 4) * 0.0002,
-            hopOffset: idx * 1.15
-          };
-        }
-        const yw = yardAnimalWalkers[animal.id];
-        yw.xRatio += yw.dir * yw.speed;
-        if (yw.xRatio > 0.95) {
-          yw.xRatio = 0.95;
-          yw.dir = -1;
-        } else if (yw.xRatio < 0.05) {
-          yw.xRatio = 0.05;
-          yw.dir = 1;
-        }
-        if (Math.random() < 0.002) {
-          yw.dir = -yw.dir;
-        }
-      });
-
-      // Sort by yOff so animals lower on the grass draw in front
-      active.sort((a, b) => yardAnimalWalkers[a.id].yOff - yardAnimalWalkers[b.id].yOff);
-
-      active.forEach(animal => {
-        const yw = yardAnimalWalkers[animal.id];
-        const ax = yw.xRatio * width;
-        const ay = groundY + yw.yOff;
-        const hop = Math.abs(Math.sin(yt * 2.4 + yw.hopOffset)) * (isMobileMode ? 2.5 : 3.5);
-
-        // Ground shadow
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
-        ctx.beginPath();
-        ctx.ellipse(ax, ay + 2, fontSize * 0.35, fontSize * 0.14, 0, 0, Math.PI * 2);
-        ctx.fill();
-
-        ctx.save();
-        ctx.translate(ax, ay - hop);
-        if (yw.dir > 0) ctx.scale(-1, 1);
-        ctx.font = `${fontSize}px "Apple Color Emoji", "Segoe UI Emoji", sans-serif`;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'bottom';
-        ctx.fillText(animal.icon, 0, 2);
-        ctx.restore();
-      });
     }
 
     function drawLaunchpadAndLandscape(alt) {
