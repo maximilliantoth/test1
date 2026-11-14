@@ -33,6 +33,9 @@ lava_suit | suit | 🔥 | Lávový oblek | Sopečný oblek so žeravými magma p
 hero_suit | suit | 🦸 | Superhrdina | Modro-červený oblek s vlajúcim plášťom | 2300
 knight_suit | suit | 👑 | Kráľovský rytier | Oceľové brnenie so zlatým erbom na hrudi | 2500
 messi_suit | suit | ⚽ | Messi 10 | Bielo-belasý pruhovaný majstrovský dres č. 10 | 2650
+ronaldo_suit | suit | ⚽ | CR7 Ronaldo | Legendárny portugalský dres č. 7 s prepracovaným vzhľadom | 2650
+neymar_suit | suit | 🌟 | Neymar Jr. | Modrý brazílsky dres č. 10 so zlatým lemom | 2650
+halloween_suit | suit | 🎃 | Halloweensky skin | Tekvicová hlava so svietiacimi očami a strašidelným plášťom | 2400
 rainbow_suit | suit | 🌈 | Dúhový skafander | Animovaný oblek meniaci všetky farby dúhy | 2850
 diamond_suit | suit | 💎 | Diamantový oblek | Trblietavý tyrkysový prémiový skafander | 3000
 
