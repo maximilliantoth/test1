@@ -164,9 +164,14 @@
       <div id="headerScore" class="hidden text-[10px] sm:text-xs pixel-font text-emerald-400 bg-slate-900/90 px-2.5 py-1.5 rounded border border-emerald-500/40">
         <span id="scoreVal">0</span> b
       </div>
-      <button id="shopBtn" title="Kozmický obchod" class="text-[10px] pixel-font text-yellow-300 hover:text-white bg-yellow-950/70 px-2.5 py-1.5 rounded border border-yellow-500/40 flex items-center gap-1">
-        🛒 <span id="headerCoinsVal">100</span> 🪙
-      </button>
+      <div class="flex items-center">
+        <button id="shopBtn" title="Kozmický obchod" class="text-[10px] pixel-font text-yellow-300 hover:text-white bg-yellow-950/70 px-2 py-1.5 rounded-l border border-yellow-500/40 flex items-center">
+          🛒
+        </button>
+        <button id="coinsOfferBtn" title="Špeciálna ponuka: 10 000 kamienkov" class="text-[10px] pixel-font text-yellow-300 hover:text-white bg-yellow-950/90 hover:bg-yellow-900/80 px-2 py-1.5 rounded-r border border-l-0 border-yellow-500/40 flex items-center gap-1">
+          <span id="headerCoinsVal">100</span> 🪙
+        </button>
+      </div>
       <button id="apiKeyBtn" title="Nastaviť API kľúč" class="text-[10px] pixel-font text-amber-300 hover:text-white bg-amber-950/70 px-2 py-1.5 rounded border border-amber-500/40">
         🔑 KĽÚČ
       </button>
@@ -459,6 +464,31 @@
         Tip: Kredity získavaš za správne odpovede (+10 🪙), Pointless (+40 🪙) a dokončenie hry (+25 🪙).
       </p>
       <button id="confirmShopBtn" class="pixel-btn py-2 text-xs w-full shrink-0">ZAVRIEŤ OBCHOD</button>
+    </div>
+  </div>
+
+  <!-- Modal: Ponuka kamienkov -->
+  <div id="coinsOfferModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="w-full max-w-sm pixel-box bg-slate-950 p-5 flex flex-col gap-3 text-center border-2 border-amber-400 panel-pop">
+      <div class="flex justify-between items-center border-b border-amber-700/60 pb-2">
+        <span class="pixel-font text-xs text-amber-300">💎 ŠPECIÁLNA PONUKA</span>
+        <button id="closeOfferBtn" class="text-amber-300 hover:text-white font-bold text-base px-2">✕</button>
+      </div>
+      <div class="p-4 border-2 border-amber-400/70 bg-gradient-to-b from-amber-950/50 to-slate-900 flex flex-col items-center gap-2">
+        <span class="text-[9px] pixel-font bg-red-600 text-white px-2 py-0.5 border border-red-300">🔥 MEGA BALÍK</span>
+        <div class="text-3xl mt-1">🪙💎🪙</div>
+        <div class="pixel-font text-base text-yellow-300">10 000 KAMIENKOV</div>
+        <div class="text-xs text-slate-300">Okamžite odomkne tie najlepšie skiny, UFO a doplnky v obchode!</div>
+        <div class="mt-2 px-4 py-1.5 bg-slate-950 border border-amber-500/60 pixel-font text-sm text-emerald-300">
+          5,99 €
+        </div>
+      </div>
+      <button id="buyOfferBtn" class="pixel-btn py-2.5 text-xs w-full !bg-emerald-600 !border-emerald-300 hover:!bg-emerald-500">
+        KÚPIŤ ZA 5,99 €
+      </button>
+      <button id="cancelOfferBtn" class="py-2 text-[10px] pixel-font border border-slate-700 bg-slate-900 hover:bg-slate-800 text-slate-300 w-full">
+        MOŽNO NESKÔR
+      </button>
     </div>
   </div>
 
@@ -3881,6 +3911,15 @@ Vráť VÝHRADNE JSON pole objektov:
       document.getElementById('closeShopBtn').addEventListener('click', closeShopModal);
       document.getElementById('confirmShopBtn').addEventListener('click', closeShopModal);
 
+      const offerModal = document.getElementById('coinsOfferModal');
+      const closeOfferModal = () => offerModal.classList.add('hidden');
+      document.getElementById('coinsOfferBtn').addEventListener('click', () => offerModal.classList.remove('hidden'));
+      document.getElementById('closeOfferBtn').addEventListener('click', closeOfferModal);
+      document.getElementById('cancelOfferBtn').addEventListener('click', closeOfferModal);
+      document.getElementById('buyOfferBtn').addEventListener('click', () => {
+        showToast('💳 Platby zatiaľ nie sú aktívne.');
+      });
+
       document.getElementById('closeAstronautBtn').addEventListener('click', closeAstronautModal);
       document.getElementById('confirmAstronautBtn').addEventListener('click', closeAstronautModal);
       document.getElementById('openShopFromHouseBtn').addEventListener('click', () => {
@@ -3912,6 +3951,7 @@ Vráť VÝHRADNE JSON pole objektov:
         if (e.target.closest('button, a, input, select, .pixel-box')) return;
         if (!document.getElementById('shopModal').classList.contains('hidden')) return;
         if (!document.getElementById('astronautModal').classList.contains('hidden')) return;
+        if (!document.getElementById('coinsOfferModal').classList.contains('hidden')) return;
         if (isPointInBox(shopHitbox, e.clientX, e.clientY)) {
           openShopModal();
         } else if (isPointInBox(houseHitbox, e.clientX, e.clientY)) {
