@@ -16,3 +16,4 @@ neon_suit | suit | 💠 | Neónový oblek | Žiarivý tyrkysový oblek | 110
 # STOPY JETPACKU (trail)
 rainbow_trail | trail | 🌈 | Dúhová stopa | Farebné častice z jetpacku | 90
 plasma_trail | trail | 🔥 | Plazmová stopa | Fialovo-ružová plazma | 70
+

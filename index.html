@@ -3043,6 +3043,7 @@ Vráť VÝHRADNE JSON pole objektov:
     // --- EVENT LISTENERS ---
     document.addEventListener('DOMContentLoaded', () => {
       loadQuestionsFromFile();
+      loadShopItemsFromFile();
       saveShopState();
       const savedNick = localStorage.getItem(NICK_KEY);
       if (savedNick) document.getElementById('nicknameInput').value = savedNick;
