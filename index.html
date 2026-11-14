@@ -656,6 +656,25 @@
       { x: 0.85, y: 0.42, speed: -0.00028 }
     ];
 
+    const ALTITUDE_MILESTONES = [
+      { alt: 500, label: '🌤️ STRATOSFÉRA', color: 'text-cyan-300', toast: '🚀 MÍĽNIK 500 m: Vstup do stratosféry!' },
+      { alt: 1000, label: '🛰️ NÍZKA OBEŽNÁ DRÁHA', color: 'text-indigo-300', toast: '🌌 MÍĽNIK 1 000 m: Kármánova hranica – Vesmír!' },
+      { alt: 2200, label: '☄️ PÁS ASTEROIDOV', color: 'text-amber-300', toast: '☄️ MÍĽNIK 2 200 m: Pás asteroidov!' },
+      { alt: 4500, label: '🕳️ HLBOKÝ VESMÍR', color: 'text-fuchsia-300', toast: '🕳️ MÍĽNIK 4 500 m: Hlboký vesmír & Čierna diera!' }
+    ];
+    let highestReachedMilestone = 0;
+
+    const skyCruiser = { x: 0.15, y: 0.34, speed: 0.00045 };
+    const asteroids = Array.from({ length: 14 }, () => ({
+      x: Math.random(),
+      y: 0.12 + Math.random() * 0.72,
+      r: 7 + Math.random() * 14,
+      speedX: (0.00018 + Math.random() * 0.00035) * (Math.random() > 0.5 ? 1 : -1),
+      rot: Math.random() * Math.PI * 2,
+      rotSpeed: (Math.random() - 0.5) * 0.015,
+      shade: Math.random() > 0.5 ? '#64748b' : '#475569'
+    }));
+
     function lerpColor(c1, c2, t) {
       const r = Math.round(c1[0] + (c2[0] - c1[0]) * t);
       const g = Math.round(c1[1] + (c2[1] - c1[1]) * t);
@@ -914,6 +933,198 @@
       });
     }
 
+    function drawSkyCruiser(alt) {
+      if (alt < 60 || alt > 780) return;
+      const alpha = alt < 140
+        ? (alt - 60) / 80
+        : alt > 650
+          ? (780 - alt) / 130
+          : 1;
+      if (alpha <= 0) return;
+
+      skyCruiser.x += skyCruiser.speed;
+      if (skyCruiser.x > 1.12) skyCruiser.x = -0.12;
+
+      const cx = skyCruiser.x * width;
+      const cy = skyCruiser.y * height + Math.sin(Date.now() * 0.002) * 6 + (alt - 250) * 0.12;
+
+      ctx.save();
+      ctx.globalAlpha = Math.max(0, Math.min(1, alpha));
+      if (currentWeather.id === 'sunny' || currentWeather.id === 'sunset') {
+        // Pixel-art hot air balloon
+        ctx.fillStyle = '#f43f5e';
+        ctx.fillRect(cx - 12, cy - 26, 24, 18);
+        ctx.fillStyle = '#fde047';
+        ctx.fillRect(cx - 8, cy - 26, 6, 18);
+        ctx.fillRect(cx + 2, cy - 26, 6, 18);
+        ctx.fillStyle = '#fb923c';
+        ctx.fillRect(cx - 8, cy - 8, 16, 6);
+        ctx.fillStyle = '#cbd5e1';
+        ctx.fillRect(cx - 5, cy - 2, 2, 6);
+        ctx.fillRect(cx + 3, cy - 2, 2, 6);
+        ctx.fillStyle = '#78350f';
+        ctx.fillRect(cx - 6, cy + 4, 12, 8);
+      } else {
+        // Pixel-art research plane
+        ctx.fillStyle = '#e2e8f0';
+        ctx.fillRect(cx - 16, cy - 3, 32, 6);
+        ctx.fillStyle = '#38bdf8';
+        ctx.fillRect(cx + 4, cy - 6, 8, 4);
+        ctx.fillStyle = '#94a3b8';
+        ctx.fillRect(cx - 16, cy - 10, 6, 7);
+        ctx.fillRect(cx - 4, cy + 3, 10, 4);
+        if (Math.floor(Date.now() / 350) % 2 === 0) {
+          ctx.fillStyle = '#ef4444';
+          ctx.fillRect(cx - 16, cy - 11, 3, 3);
+        }
+      }
+      ctx.restore();
+    }
+
+    function drawAurora(alt) {
+      if (alt < 650 || alt > 1650) return;
+      const alpha = alt < 950
+        ? (alt - 650) / 300
+        : alt > 1300
+          ? (1650 - alt) / 350
+          : 1;
+      if (alpha <= 0) return;
+
+      const time = Date.now() * 0.0012;
+      ctx.save();
+      for (let band = 0; band < 3; band++) {
+        const baseY = height * (0.14 + band * 0.07);
+        const grad = ctx.createLinearGradient(0, baseY - 45, 0, baseY + 55);
+        if (band % 2 === 0) {
+          grad.addColorStop(0, 'rgba(16, 185, 129, 0)');
+          grad.addColorStop(0.5, `rgba(52, 211, 153, ${0.22 * alpha})`);
+          grad.addColorStop(1, 'rgba(16, 185, 129, 0)');
+        } else {
+          grad.addColorStop(0, 'rgba(168, 85, 247, 0)');
+          grad.addColorStop(0.5, `rgba(192, 132, 252, ${0.18 * alpha})`);
+          grad.addColorStop(1, 'rgba(56, 189, 248, 0)');
+        }
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.moveTo(0, baseY + 55);
+        for (let x = 0; x <= width + 32; x += 32) {
+          const wave = Math.sin(x * 0.008 + time + band * 1.7) * 18 + Math.cos(x * 0.015 - time * 0.8) * 8;
+          ctx.lineTo(x, baseY + wave);
+        }
+        ctx.lineTo(width, baseY + 80);
+        ctx.lineTo(0, baseY + 80);
+        ctx.closePath();
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+
+    function drawEarthCurvature(alt) {
+      if (alt < 850 || alt > 2600) return;
+      const alpha = alt < 1150
+        ? (alt - 850) / 300
+        : alt > 2100
+          ? (2600 - alt) / 500
+          : 1;
+      if (alpha <= 0) return;
+
+      const radius = Math.max(width, height) * 1.35;
+      const progress = (alt - 850) / 1750;
+      const centerY = height + radius - 70 + progress * 150;
+
+      ctx.save();
+      ctx.globalAlpha = Math.max(0, Math.min(1, alpha));
+
+      // Atmospheric glow arc
+      const glow = ctx.createRadialGradient(width * 0.5, centerY, radius - 14, width * 0.5, centerY, radius + 28);
+      glow.addColorStop(0, 'rgba(56, 189, 248, 0)');
+      glow.addColorStop(0.55, 'rgba(56, 189, 248, 0.55)');
+      glow.addColorStop(1, 'rgba(56, 189, 248, 0)');
+      ctx.fillStyle = glow;
+      ctx.beginPath();
+      ctx.arc(width * 0.5, centerY, radius + 28, Math.PI * 1.15, Math.PI * 1.85);
+      ctx.fill();
+
+      // Earth limb
+      ctx.fillStyle = '#0c4a6e';
+      ctx.beginPath();
+      ctx.arc(width * 0.5, centerY, radius, Math.PI * 1.15, Math.PI * 1.85);
+      ctx.fill();
+
+      // Subtle continent patches
+      ctx.fillStyle = '#15803d';
+      ctx.beginPath();
+      ctx.arc(width * 0.36, centerY - radius + 28, 36, 0, Math.PI * 2);
+      ctx.arc(width * 0.62, centerY - radius + 34, 48, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.restore();
+    }
+
+    function drawAsteroidBelt(alt) {
+      if (alt < 2050 || alt > 4650) return;
+      const alpha = alt < 2350
+        ? (alt - 2050) / 300
+        : alt > 4250
+          ? (4650 - alt) / 400
+          : 1;
+      if (alpha <= 0) return;
+
+      ctx.save();
+      ctx.globalAlpha = Math.max(0, Math.min(1, alpha));
+      asteroids.forEach(a => {
+        a.x += a.speedX;
+        a.rot += a.rotSpeed;
+        if (a.x > 1.08) a.x = -0.08;
+        if (a.x < -0.08) a.x = 1.08;
+
+        const ax = a.x * width;
+        const ay = a.y * height;
+
+        ctx.save();
+        ctx.translate(ax, ay);
+        ctx.rotate(a.rot);
+        ctx.fillStyle = a.shade;
+        ctx.beginPath();
+        ctx.moveTo(-a.r, -a.r * 0.4);
+        ctx.lineTo(-a.r * 0.3, -a.r);
+        ctx.lineTo(a.r * 0.6, -a.r * 0.7);
+        ctx.lineTo(a.r, a.r * 0.2);
+        ctx.lineTo(a.r * 0.3, a.r * 0.9);
+        ctx.lineTo(-a.r * 0.7, a.r * 0.6);
+        ctx.closePath();
+        ctx.fill();
+
+        // Crater highlight
+        ctx.fillStyle = '#334155';
+        ctx.fillRect(-a.r * 0.35, -a.r * 0.2, Math.max(3, a.r * 0.35), Math.max(3, a.r * 0.35));
+        ctx.restore();
+      });
+      ctx.restore();
+    }
+
+    function updateAltitudeLayerAndMilestones(alt) {
+      const wBadge = document.getElementById('weatherBadge');
+      if (!wBadge) return;
+
+      let activeLayer = null;
+      for (const m of ALTITUDE_MILESTONES) {
+        if (alt >= m.alt) activeLayer = m;
+      }
+
+      if (activeLayer) {
+        wBadge.textContent = activeLayer.label;
+        wBadge.className = `text-[9px] font-mono tracking-wide ${activeLayer.color} uppercase`;
+        if (!rescueRocket.active && activeLayer.alt > highestReachedMilestone) {
+          highestReachedMilestone = activeLayer.alt;
+          showToast(activeLayer.toast);
+        }
+      } else {
+        wBadge.textContent = currentWeather.name;
+        wBadge.className = 'text-[9px] font-mono tracking-wide text-sky-300/85 uppercase';
+      }
+    }
+
     function drawBackground() {
       ctx.save();
       if (screenShake > 0.2) {
@@ -965,14 +1176,7 @@
       const alt = Math.min(7000, Math.max(0, cameraAltitude));
       const inSpace = alt >= 1000;
 
-      const wBadge = document.getElementById('weatherBadge');
-      if (inSpace) {
-        wBadge.textContent = '🌌 VÁKUUM VESMÍRU';
-        wBadge.className = 'text-[9px] font-mono tracking-wide text-indigo-400/85 uppercase';
-      } else {
-        wBadge.textContent = currentWeather.name;
-        wBadge.className = 'text-[9px] font-mono tracking-wide text-sky-300/85 uppercase';
-      }
+      updateAltitudeLayerAndMilestones(alt);
 
       let topCol, botCol;
       if (alt <= 500) {
@@ -1054,7 +1258,11 @@
         });
 
         drawLaunchpadAndLandscape(alt);
+        drawSkyCruiser(alt);
       }
+
+      drawAurora(alt);
+      drawEarthCurvature(alt);
 
       if (alt > 700) {
         const starAlpha = Math.min(1, (alt - 700) / 400);
@@ -1137,6 +1345,7 @@
           ctx.ellipse(width * 0.85, 240, 44, 11, Math.PI / -6, 0, Math.PI * 2);
           ctx.stroke();
         }
+        drawAsteroidBelt(alt);
         if (alt > 4500) {
           const bhX = width * 0.5;
           const bhY = 150;
@@ -1524,6 +1733,7 @@
         currentWeather = data.weather;
         currentQuestions = data.questions;
         currentRound = 0;
+        highestReachedMilestone = 0;
         document.getElementById('scoreVal').textContent = '0';
         document.getElementById('headerScore').classList.remove('hidden');
         showScreen('gameScreen');
@@ -1588,6 +1798,7 @@
       currentWeather = WEATHERS[Math.floor(Math.random() * WEATHERS.length)];
       currentQuestions = shuffle(QUESTION_BANK).slice(0, maxRounds);
       currentRound = 0;
+      highestReachedMilestone = 0;
 
       document.getElementById('scoreVal').textContent = '0';
       document.getElementById('headerScore').classList.remove('hidden');
@@ -1615,6 +1826,7 @@
       currentWeather = WEATHERS[Math.floor(Math.random() * WEATHERS.length)];
       currentQuestions = shuffle(QUESTION_BANK).slice(0, maxRounds);
       currentRound = 0;
+      highestReachedMilestone = 0;
 
       document.getElementById('scoreVal').textContent = '0';
       document.getElementById('headerScore').classList.remove('hidden');
