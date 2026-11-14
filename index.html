@@ -782,6 +782,62 @@
       }
     }
 
+    function drawSimpleShop(groundY) {
+      const sx = width - Math.max(76, Math.min(width * 0.18, 220));
+      const shopW = 92;
+      const shopH = 56;
+      const wallTop = groundY - shopH;
+
+      // Shop wall
+      ctx.fillStyle = '#e2e8f0';
+      ctx.fillRect(sx - shopW / 2, wallTop, shopW, shopH);
+      ctx.fillStyle = '#cbd5e1';
+      ctx.fillRect(sx + shopW / 2 - 6, wallTop, 6, shopH);
+
+      // Flat roof trim
+      ctx.fillStyle = '#1e293b';
+      ctx.fillRect(sx - shopW / 2 - 4, wallTop - 6, shopW + 8, 6);
+
+      // Signboard with "SHOP"
+      const signW = 58;
+      const signH = 18;
+      ctx.fillStyle = '#fbbf24';
+      ctx.fillRect(sx - signW / 2 - 2, wallTop - 26, signW + 4, signH + 4);
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(sx - signW / 2, wallTop - 24, signW, signH);
+      ctx.font = 'bold 11px "Press Start 2P", monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = '#fde047';
+      ctx.fillText('SHOP', sx, wallTop - 14);
+      ctx.textBaseline = 'alphabetic';
+
+      // Striped awning
+      const awningY = wallTop + 6;
+      const stripeCount = 8;
+      const stripeW = (shopW + 8) / stripeCount;
+      for (let i = 0; i < stripeCount; i++) {
+        ctx.fillStyle = i % 2 === 0 ? '#ef4444' : '#ffffff';
+        ctx.fillRect(sx - shopW / 2 - 4 + i * stripeW, awningY, stripeW, 10);
+      }
+
+      // Storefront window
+      ctx.fillStyle = '#0284c7';
+      ctx.fillRect(sx - shopW / 2 + 8, wallTop + 20, 38, 22);
+      ctx.fillStyle = '#7dd3fc';
+      ctx.fillRect(sx - shopW / 2 + 10, wallTop + 22, 34, 18);
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+      ctx.fillRect(sx - shopW / 2 + 13, wallTop + 24, 6, 12);
+
+      // Shop door
+      ctx.fillStyle = '#78350f';
+      ctx.fillRect(sx + 14, groundY - 32, 20, 32);
+      ctx.fillStyle = '#38bdf8';
+      ctx.fillRect(sx + 17, groundY - 28, 14, 12);
+      ctx.fillStyle = '#fbbf24';
+      ctx.fillRect(sx + 16, groundY - 14, 3, 3);
+    }
+
     function drawHomeYardLandscape() {
       const groundY = height - 64;
 
@@ -826,6 +882,7 @@
       });
 
       drawSimpleHouse(groundY);
+      drawSimpleShop(groundY);
     }
 
     function drawLaunchpadAndLandscape(alt) {
