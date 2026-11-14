@@ -440,6 +440,59 @@
     </div>
   </div>
 
+  <!-- Modal: Domček kozmonauta (Detailný náhľad) -->
+  <div id="astronautModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="w-full max-w-2xl pixel-box bg-slate-950 p-5 flex flex-col gap-3 text-left border-2 border-emerald-400 max-h-[90dvh] overflow-y-auto">
+      <div class="flex justify-between items-center border-b border-emerald-800/70 pb-2">
+        <div class="flex items-center gap-2">
+          <span class="pixel-font text-xs text-emerald-300">🏠 DOMČEK KOZMONAUTA</span>
+          <span id="astronautModalNick" class="text-[10px] pixel-font bg-emerald-950/80 text-emerald-200 border border-emerald-500/50 px-2 py-0.5">Kozmonaut</span>
+        </div>
+        <button id="closeAstronautBtn" class="text-emerald-300 hover:text-white font-bold text-base px-2">✕</button>
+      </div>
+
+      <div class="flex flex-col sm:flex-row gap-4 items-center sm:items-stretch">
+        <div class="relative rounded border-2 border-slate-700 bg-slate-900 overflow-hidden shrink-0 shadow-inner">
+          <canvas id="astronautPreviewCanvas" width="320" height="350" class="block w-[280px] h-[306px] sm:w-[320px] sm:h-[350px]"></canvas>
+        </div>
+
+        <div class="flex-1 w-full flex flex-col justify-between gap-3">
+          <div class="space-y-2.5">
+            <div class="p-2.5 border border-slate-800 bg-slate-900/80">
+              <div class="text-[9px] pixel-font text-slate-400 mb-1">AKTUÁLNA VÝBAVA</div>
+              <div class="space-y-1.5 text-xs">
+                <div class="flex items-center justify-between gap-2">
+                  <span class="text-slate-400">Prilba / Čiapka:</span>
+                  <span id="astroDetailHat" class="font-bold text-white text-right">Žiadna</span>
+                </div>
+                <div class="flex items-center justify-between gap-2">
+                  <span class="text-slate-400">Skafander:</span>
+                  <span id="astroDetailSuit" class="font-bold text-white text-right">Základný</span>
+                </div>
+                <div class="flex items-center justify-between gap-2">
+                  <span class="text-slate-400">Stopa jetpacku:</span>
+                  <span id="astroDetailTrail" class="font-bold text-white text-right">Štandardná</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="p-2.5 border border-slate-800 bg-slate-900/60 text-[11px] text-slate-300 leading-relaxed space-y-1">
+              <div class="text-[9px] pixel-font text-emerald-300 mb-1">ŠPECIFIKÁCIA OBLEKU</div>
+              <div>• Tlaková prilba s komunikačnou anténou a zrkadlovým priezorom</div>
+              <div>• Dvojitý kyslíkový jetpack s ukazovateľom tlaku</div>
+              <div>• Hrudný ovládací panel a zosilnené mesačné topánky</div>
+            </div>
+          </div>
+
+          <div class="flex flex-col gap-2 pt-1">
+            <button id="openShopFromHouseBtn" class="pixel-btn py-2 text-[10px] w-full">🛒 UPRAVIŤ V OBCHODE</button>
+            <button id="confirmAstronautBtn" class="py-2 text-[10px] pixel-font border border-slate-600 bg-slate-800 hover:bg-slate-700 text-slate-200 w-full">ZAVRIEŤ</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Modal: Pravidlá -->
   <div id="rulesModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
     <div class="w-full max-w-md pixel-box bg-slate-950 p-5 flex flex-col gap-3 text-left border-2 border-sky-400">
@@ -629,6 +682,385 @@
 
     function closeShopModal() {
       document.getElementById('shopModal').classList.add('hidden');
+    }
+
+    let astronautPreviewRaf = null;
+    const astroPreviewParticles = [];
+
+    function getMyAstronautAppearance() {
+      const me = players[myPeerId];
+      const nickInput = document.getElementById('nicknameInput')?.value?.trim();
+      const name = me?.name || nickInput || myNickname || 'Kozmonaut';
+      const colorIdx = typeof me?.colorIdx === 'number' ? me.colorIdx : 0;
+      const basePalette = SUIT_COLORS[colorIdx % SUIT_COLORS.length];
+      const cosmetics = me?.cosmetics || equippedCosmetics;
+      const palette = cosmetics.suit === 'gold_suit'
+        ? { suit: '#facc15', shade: '#ca8a04', highlight: '#fef08a', visor: '#0ea5e9', trim: '#fde047' }
+        : cosmetics.suit === 'neon_suit'
+          ? { suit: '#22d3ee', shade: '#0891b2', highlight: '#a5f3fc', visor: '#f43f5e', trim: '#67e8f9' }
+          : { suit: basePalette.suit, shade: '#94a3b8', highlight: '#ffffff', visor: basePalette.visor, trim: '#38bdf8' };
+      return { name, palette, cosmetics };
+    }
+
+    function updateAstronautModalDetails() {
+      const { name, cosmetics } = getMyAstronautAppearance();
+      const nickEl = document.getElementById('astronautModalNick');
+      if (nickEl) nickEl.textContent = name;
+
+      const findItemLabel = (id, fallback) => {
+        if (!id) return fallback;
+        const found = SHOP_ITEMS.find(item => item.id === id);
+        return found ? `${found.icon} ${found.name}` : id;
+      };
+
+      const hatEl = document.getElementById('astroDetailHat');
+      const suitEl = document.getElementById('astroDetailSuit');
+      const trailEl = document.getElementById('astroDetailTrail');
+      if (hatEl) hatEl.textContent = findItemLabel(cosmetics.hat, 'Žiadna');
+      if (suitEl) suitEl.textContent = findItemLabel(cosmetics.suit, 'Základný skafander');
+      if (trailEl) trailEl.textContent = findItemLabel(cosmetics.trail, 'Štandardná');
+    }
+
+    function drawDetailedAstronautPreview() {
+      const modal = document.getElementById('astronautModal');
+      const previewCanvas = document.getElementById('astronautPreviewCanvas');
+      if (!modal || modal.classList.contains('hidden') || !previewCanvas) {
+        astronautPreviewRaf = null;
+        return;
+      }
+
+      const pctx = previewCanvas.getContext('2d');
+      const w = previewCanvas.width;
+      const h = previewCanvas.height;
+      const now = Date.now();
+      const t = now * 0.003;
+      const { name, palette, cosmetics } = getMyAstronautAppearance();
+
+      // Hangar / space backdrop
+      const bgGrad = pctx.createLinearGradient(0, 0, 0, h);
+      bgGrad.addColorStop(0, '#020617');
+      bgGrad.addColorStop(0.65, '#0f172a');
+      bgGrad.addColorStop(1, '#1e293b');
+      pctx.fillStyle = bgGrad;
+      pctx.fillRect(0, 0, w, h);
+
+      // Subtle blueprint grid
+      pctx.strokeStyle = 'rgba(56, 189, 248, 0.07)';
+      pctx.lineWidth = 1;
+      for (let gx = 0; gx < w; gx += 20) {
+        pctx.beginPath();
+        pctx.moveTo(gx, 0);
+        pctx.lineTo(gx, h);
+        pctx.stroke();
+      }
+      for (let gy = 0; gy < h; gy += 20) {
+        pctx.beginPath();
+        pctx.moveTo(0, gy);
+        pctx.lineTo(w, gy);
+        pctx.stroke();
+      }
+
+      // Twinkling stars in upper backdrop
+      for (let i = 0; i < 24; i++) {
+        const sx = ((i * 73 + 19) % (w - 20)) + 10;
+        const sy = ((i * 47 + 13) % (h - 110)) + 10;
+        const alpha = 0.25 + 0.55 * (0.5 + 0.5 * Math.sin(t * 1.4 + i));
+        pctx.fillStyle = `rgba(226, 232, 240, ${alpha})`;
+        pctx.fillRect(sx, sy, i % 4 === 0 ? 3 : 2, i % 4 === 0 ? 3 : 2);
+      }
+
+      // Launch pad platform
+      const padY = h - 42;
+      pctx.fillStyle = '#0f172a';
+      pctx.beginPath();
+      pctx.ellipse(w / 2, padY + 6, 94, 16, 0, 0, Math.PI * 2);
+      pctx.fill();
+      pctx.strokeStyle = '#34d399';
+      pctx.lineWidth = 2;
+      pctx.beginPath();
+      pctx.ellipse(w / 2, padY + 4, 88, 13, 0, 0, Math.PI * 2);
+      pctx.stroke();
+
+      const floatY = Math.sin(t) * 6;
+      const cx = w / 2 + 8;
+      const cy = h * 0.54 + floatY;
+
+      // Ground shadow
+      pctx.fillStyle = 'rgba(2, 6, 23, 0.55)';
+      const shadowScale = 1 - floatY * 0.015;
+      pctx.beginPath();
+      pctx.ellipse(w / 2, padY + 4, 52 * shadowScale, 8 * shadowScale, 0, 0, Math.PI * 2);
+      pctx.fill();
+
+      // Jetpack particles
+      let trailColor = Math.random() > 0.4 ? '#38bdf8' : '#f59e0b';
+      if (cosmetics.trail === 'rainbow_trail') {
+        const rainbow = ['#ef4444', '#f97316', '#fde047', '#4ade80', '#38bdf8', '#c084fc'];
+        trailColor = rainbow[Math.floor(Math.random() * rainbow.length)];
+      } else if (cosmetics.trail === 'plasma_trail') {
+        trailColor = Math.random() > 0.5 ? '#e879f9' : '#a855f7';
+      }
+      if (Math.random() > 0.25) {
+        astroPreviewParticles.push({
+          x: cx - 52 + (Math.random() * 14 - 7),
+          y: cy + 36 + Math.random() * 6,
+          vx: -0.6 - Math.random() * 0.8,
+          vy: 1.6 + Math.random() * 1.6,
+          size: 4 + Math.random() * 5,
+          life: 1,
+          color: trailColor
+        });
+      }
+      for (let i = astroPreviewParticles.length - 1; i >= 0; i--) {
+        const pt = astroPreviewParticles[i];
+        pt.x += pt.vx;
+        pt.y += pt.vy;
+        pt.life -= 0.032;
+        if (pt.life <= 0) {
+          astroPreviewParticles.splice(i, 1);
+        } else {
+          pctx.globalAlpha = pt.life;
+          pctx.fillStyle = pt.color;
+          pctx.fillRect(pt.x, pt.y, pt.size, pt.size);
+        }
+      }
+      pctx.globalAlpha = 1;
+
+      pctx.save();
+      pctx.translate(cx, cy);
+
+      // --- BACKPACK / JETPACK (detailed dual tank) ---
+      pctx.fillStyle = '#334155';
+      pctx.fillRect(-68, -44, 34, 82);
+      pctx.fillStyle = '#64748b';
+      pctx.fillRect(-64, -40, 26, 74);
+      // Tank highlights & bands
+      pctx.fillStyle = '#94a3b8';
+      pctx.fillRect(-60, -36, 7, 64);
+      pctx.fillStyle = '#0f172a';
+      pctx.fillRect(-68, -14, 34, 6);
+      pctx.fillRect(-68, 14, 34, 6);
+      // Pressure gauge dial on backpack
+      pctx.fillStyle = '#e2e8f0';
+      pctx.beginPath();
+      pctx.arc(-51, -26, 7, 0, Math.PI * 2);
+      pctx.fill();
+      pctx.strokeStyle = '#ef4444';
+      pctx.lineWidth = 1.5;
+      pctx.beginPath();
+      pctx.moveTo(-51, -26);
+      pctx.lineTo(-51 + Math.cos(t * 2) * 5, -26 + Math.sin(t * 2) * 5);
+      pctx.stroke();
+      // Thruster nozzles
+      pctx.fillStyle = '#1e293b';
+      pctx.fillRect(-63, 38, 12, 8);
+      pctx.fillRect(-48, 38, 12, 8);
+      pctx.fillStyle = trailColor;
+      pctx.fillRect(-60, 46, 6, 4 + Math.random() * 6);
+      pctx.fillRect(-45, 46, 6, 4 + Math.random() * 6);
+
+      // --- LEGS & MOON BOOTS ---
+      const legShade = palette.shade;
+      // Left & right legs
+      pctx.fillStyle = palette.suit;
+      pctx.fillRect(-32, 48, 26, 44);
+      pctx.fillRect(6, 48, 26, 44);
+      // Knee pads & ribbed joints
+      pctx.fillStyle = legShade;
+      pctx.fillRect(-32, 64, 26, 10);
+      pctx.fillRect(6, 64, 26, 10);
+      pctx.fillStyle = '#1e293b';
+      pctx.fillRect(-30, 68, 22, 2);
+      pctx.fillRect(8, 68, 22, 2);
+      // Heavy boots
+      pctx.fillStyle = '#334155';
+      pctx.fillRect(-36, 90, 32, 18);
+      pctx.fillRect(4, 90, 32, 18);
+      pctx.fillStyle = '#475569';
+      pctx.fillRect(-36, 90, 32, 6);
+      pctx.fillRect(4, 90, 32, 6);
+      // Thick ribbed soles
+      pctx.fillStyle = '#0f172a';
+      pctx.fillRect(-38, 106, 36, 7);
+      pctx.fillRect(2, 106, 36, 7);
+
+      // --- TORSO & SUIT DETAILS ---
+      pctx.fillStyle = palette.suit;
+      pctx.fillRect(-36, -24, 72, 74);
+      // Side shading & highlight
+      pctx.fillStyle = palette.shade;
+      pctx.fillRect(-36, -24, 10, 74);
+      pctx.fillStyle = palette.highlight;
+      pctx.globalAlpha = 0.35;
+      pctx.fillRect(22, -22, 8, 70);
+      pctx.globalAlpha = 1;
+
+      // Utility belt with metallic buckle & pouches
+      pctx.fillStyle = '#0f172a';
+      pctx.fillRect(-36, 22, 72, 12);
+      pctx.fillStyle = '#94a3b8';
+      pctx.fillRect(-10, 20, 20, 16);
+      pctx.fillStyle = palette.trim;
+      pctx.fillRect(-5, 24, 10, 8);
+      pctx.fillStyle = '#334155';
+      pctx.fillRect(-32, 20, 12, 16);
+      pctx.fillRect(20, 20, 12, 16);
+
+      // Chest Control Unit (CCU)
+      pctx.fillStyle = '#1e293b';
+      pctx.fillRect(-20, -10, 40, 26);
+      pctx.strokeStyle = '#64748b';
+      pctx.lineWidth = 2;
+      pctx.strokeRect(-20, -10, 40, 26);
+      // Blinking status LEDs
+      const blinkA = Math.floor(now / 350) % 2 === 0;
+      pctx.fillStyle = blinkA ? '#ef4444' : '#7f1d1d';
+      pctx.fillRect(-14, -4, 7, 7);
+      pctx.fillStyle = blinkA ? '#14532d' : '#4ade80';
+      pctx.fillRect(-3, -4, 7, 7);
+      pctx.fillStyle = '#38bdf8';
+      pctx.fillRect(8, -4, 7, 7);
+      // Mini telemetry bar
+      pctx.fillStyle = '#0f172a';
+      pctx.fillRect(-14, 7, 28, 5);
+      pctx.fillStyle = '#34d399';
+      pctx.fillRect(-13, 8, 12 + Math.sin(t * 2.5) * 10, 3);
+
+      // --- ARMS & GLOVES ---
+      const armBob = Math.sin(t * 1.3) * 3;
+      // Left arm
+      pctx.fillStyle = palette.suit;
+      pctx.fillRect(-52, -18 + armBob, 16, 48);
+      pctx.fillStyle = palette.shade;
+      pctx.fillRect(-52, 4 + armBob, 16, 6);
+      pctx.fillStyle = '#334155';
+      pctx.fillRect(-54, 28 + armBob, 18, 14);
+      // Right arm
+      pctx.fillStyle = palette.suit;
+      pctx.fillRect(36, -18 - armBob, 16, 48);
+      pctx.fillStyle = palette.shade;
+      pctx.fillRect(36, 4 - armBob, 16, 6);
+      pctx.fillStyle = '#334155';
+      pctx.fillRect(36, 28 - armBob, 18, 14);
+      // Shoulder mission patch
+      pctx.fillStyle = '#ef4444';
+      pctx.fillRect(39, -12 - armBob, 10, 8);
+      pctx.fillStyle = '#fde047';
+      pctx.fillRect(42, -10 - armBob, 4, 4);
+
+      // --- NECK RING ---
+      pctx.fillStyle = '#475569';
+      pctx.fillRect(-26, -32, 52, 10);
+      pctx.fillStyle = '#94a3b8';
+      pctx.fillRect(-22, -30, 44, 4);
+
+      // --- HELMET ---
+      // Antenna & blinking beacon
+      pctx.fillStyle = '#94a3b8';
+      pctx.fillRect(-6, -124, 5, 24);
+      pctx.fillStyle = Math.floor(now / 300) % 2 === 0 ? '#ef4444' : '#38bdf8';
+      pctx.beginPath();
+      pctx.arc(-3.5, -127, 5, 0, Math.PI * 2);
+      pctx.fill();
+
+      // Helmet shell
+      pctx.fillStyle = palette.suit;
+      pctx.fillRect(-40, -96, 80, 64);
+      pctx.fillRect(-32, -104, 64, 10);
+      pctx.fillStyle = palette.shade;
+      pctx.fillRect(-40, -96, 10, 64);
+      // Side comm pods
+      pctx.fillStyle = '#475569';
+      pctx.fillRect(-46, -74, 8, 22);
+      pctx.fillRect(38, -74, 8, 22);
+
+      // --- VISOR (reflective gradient + glint) ---
+      const visorGrad = pctx.createLinearGradient(-22, -88, 34, -44);
+      visorGrad.addColorStop(0, palette.visor);
+      visorGrad.addColorStop(1, '#0f172a');
+      pctx.fillStyle = '#0f172a';
+      pctx.fillRect(-24, -88, 56, 44);
+      pctx.fillStyle = visorGrad;
+      pctx.fillRect(-20, -84, 48, 36);
+      // Visor glass reflection
+      pctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
+      pctx.fillRect(-14, -78, 16, 5);
+      pctx.fillRect(-14, -71, 7, 4);
+      // Subtle star reflection in visor
+      pctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+      pctx.fillRect(16, -60, 4, 4);
+
+      // --- EQUIPPED HAT (high-detail versions) ---
+      if (cosmetics.hat === 'crown') {
+        pctx.fillStyle = '#eab308';
+        pctx.fillRect(-30, -118, 60, 16);
+        pctx.fillStyle = '#facc15';
+        pctx.fillRect(-30, -134, 12, 18);
+        pctx.fillRect(-6, -140, 12, 24);
+        pctx.fillRect(18, -134, 12, 18);
+        // Gems
+        pctx.fillStyle = '#ef4444';
+        pctx.fillRect(-3, -114, 6, 6);
+        pctx.fillStyle = '#38bdf8';
+        pctx.fillRect(-21, -114, 6, 6);
+        pctx.fillRect(15, -114, 6, 6);
+      } else if (cosmetics.hat === 'cowboy') {
+        pctx.fillStyle = '#78350f';
+        pctx.fillRect(-52, -110, 104, 10);
+        pctx.fillStyle = '#92400e';
+        pctx.fillRect(-30, -138, 60, 28);
+        pctx.fillStyle = '#fbbf24';
+        pctx.fillRect(-30, -118, 60, 6);
+        pctx.fillStyle = '#fde047';
+        pctx.fillRect(-4, -119, 8, 8);
+      } else if (cosmetics.hat === 'headphones') {
+        pctx.fillStyle = '#0284c7';
+        pctx.fillRect(-44, -112, 88, 12);
+        pctx.fillStyle = '#38bdf8';
+        pctx.fillRect(-40, -110, 80, 5);
+        pctx.fillStyle = '#e11d48';
+        pctx.fillRect(-52, -88, 14, 38);
+        pctx.fillRect(38, -88, 14, 38);
+        pctx.fillStyle = '#fda4af';
+        pctx.fillRect(-48, -80, 6, 22);
+        pctx.fillRect(42, -80, 6, 22);
+      } else if (cosmetics.hat === 'tophat') {
+        pctx.fillStyle = '#0f172a';
+        pctx.fillRect(-46, -110, 92, 10);
+        pctx.fillRect(-28, -150, 56, 40);
+        pctx.fillStyle = '#1e293b';
+        pctx.fillRect(-22, -146, 12, 32);
+        pctx.fillStyle = '#dc2626';
+        pctx.fillRect(-28, -120, 56, 8);
+        pctx.fillStyle = '#facc15';
+        pctx.fillRect(-6, -121, 12, 10);
+      }
+
+      pctx.restore();
+
+      // Nameplate at top of preview
+      pctx.font = 'bold 11px "Press Start 2P", monospace';
+      pctx.textAlign = 'center';
+      pctx.fillStyle = '#fde047';
+      pctx.fillText(name, w / 2, 24);
+
+      astronautPreviewRaf = requestAnimationFrame(drawDetailedAstronautPreview);
+    }
+
+    function openAstronautModal() {
+      updateAstronautModalDetails();
+      document.getElementById('astronautModal').classList.remove('hidden');
+      if (!astronautPreviewRaf) {
+        drawDetailedAstronautPreview();
+      }
+    }
+
+    function closeAstronautModal() {
+      document.getElementById('astronautModal').classList.add('hidden');
+      if (astronautPreviewRaf) {
+        cancelAnimationFrame(astronautPreviewRaf);
+        astronautPreviewRaf = null;
+      }
     }
 
     const SUIT_COLORS = [
@@ -909,11 +1341,15 @@
       return yardWalkerState[id];
     }
 
+    let houseHitbox = null;
+    let isHouseHovered = false;
+
     function drawSimpleHouse(groundY) {
       const hx = Math.max(76, Math.min(width * 0.18, 220));
       const houseW = 84;
       const houseH = 54;
       const wallTop = groundY - houseH;
+      houseHitbox = { x: hx - houseW / 2 - 10, y: wallTop - 38, w: houseW + 20, h: houseH + 40 };
 
       // Chimney & gentle smoke puffs
       ctx.fillStyle = '#991b1b';
@@ -964,6 +1400,23 @@
       ctx.fillRect(fenceStart, groundY - 13, fenceCount * 12, 3);
       for (let i = 0; i < fenceCount; i++) {
         ctx.fillRect(fenceStart + i * 12, groundY - 20, 4, 20);
+      }
+
+      if (isHouseHovered) {
+        const badgeW = 128;
+        const badgeH = 18;
+        const badgeY = wallTop - 52;
+        ctx.fillStyle = 'rgba(2, 6, 23, 0.9)';
+        ctx.fillRect(hx - badgeW / 2, badgeY, badgeW, badgeH);
+        ctx.strokeStyle = '#34d399';
+        ctx.lineWidth = 1.5;
+        ctx.strokeRect(hx - badgeW / 2, badgeY, badgeW, badgeH);
+        ctx.font = 'bold 9px Inter, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = '#6ee7b7';
+        ctx.fillText('👨‍🚀 MÔJ KOZMONAUT', hx, badgeY + badgeH / 2 + 0.5);
+        ctx.textBaseline = 'alphabetic';
       }
     }
 
@@ -3119,27 +3572,41 @@ Vráť VÝHRADNE JSON pole objektov:
       document.getElementById('closeShopBtn').addEventListener('click', closeShopModal);
       document.getElementById('confirmShopBtn').addEventListener('click', closeShopModal);
 
-      const isPointInShop = (cx, cy) => {
-        if (!shopHitbox) return false;
+      document.getElementById('closeAstronautBtn').addEventListener('click', closeAstronautModal);
+      document.getElementById('confirmAstronautBtn').addEventListener('click', closeAstronautModal);
+      document.getElementById('openShopFromHouseBtn').addEventListener('click', () => {
+        closeAstronautModal();
+        openShopModal();
+      });
+
+      const isPointInBox = (box, cx, cy) => {
+        if (!box) return false;
         const onYard = activeScreen === 'apiKeyScreen' || activeScreen === 'modeScreen' || activeScreen === 'lobbyScreen';
         if (!onYard) return false;
-        return cx >= shopHitbox.x && cx <= shopHitbox.x + shopHitbox.w &&
-               cy >= shopHitbox.y && cy <= shopHitbox.y + shopHitbox.h;
+        return cx >= box.x && cx <= box.x + box.w &&
+               cy >= box.y && cy <= box.y + box.h;
       };
 
       document.addEventListener('mousemove', (e) => {
         if (e.target.closest('button, a, input, select, .pixel-box')) {
+          isHouseHovered = false;
           document.body.style.cursor = '';
           return;
         }
-        document.body.style.cursor = isPointInShop(e.clientX, e.clientY) ? 'pointer' : '';
+        const overShop = isPointInBox(shopHitbox, e.clientX, e.clientY);
+        const overHouse = isPointInBox(houseHitbox, e.clientX, e.clientY);
+        isHouseHovered = overHouse;
+        document.body.style.cursor = (overShop || overHouse) ? 'pointer' : '';
       });
 
       document.addEventListener('click', (e) => {
         if (e.target.closest('button, a, input, select, .pixel-box')) return;
         if (!document.getElementById('shopModal').classList.contains('hidden')) return;
-        if (isPointInShop(e.clientX, e.clientY)) {
+        if (!document.getElementById('astronautModal').classList.contains('hidden')) return;
+        if (isPointInBox(shopHitbox, e.clientX, e.clientY)) {
           openShopModal();
+        } else if (isPointInBox(houseHitbox, e.clientX, e.clientY)) {
+          openAstronautModal();
         }
       });
     });
