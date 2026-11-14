@@ -493,11 +493,9 @@
               </div>
             </div>
 
-            <div class="p-2.5 border border-slate-800 bg-slate-900/60 text-[11px] text-slate-300 leading-relaxed space-y-1">
-              <div class="text-[9px] pixel-font text-emerald-300 mb-1">ŠPECIFIKÁCIA OBLEKU</div>
-              <div>• Tlaková prilba s komunikačnou anténou a zrkadlovým priezorom</div>
-              <div>• Dvojitý kyslíkový jetpack s ukazovateľom tlaku</div>
-              <div>• Hrudný ovládací panel a zosilnené mesačné topánky</div>
+            <div class="p-2.5 border border-slate-800 bg-slate-900/60 flex flex-col gap-2">
+              <div class="text-[9px] pixel-font text-emerald-300">👕 VLASTNENÉ SKINY (SKAFANDRE)</div>
+              <div id="astroOwnedSuitsList" class="grid grid-cols-1 gap-1.5 max-h-36 overflow-y-auto pr-1"></div>
             </div>
           </div>
 
@@ -736,6 +734,50 @@
       if (hatEl) hatEl.textContent = findItemLabel(cosmetics.hat, 'Žiadna');
       if (suitEl) suitEl.textContent = findItemLabel(cosmetics.suit, 'Základný skafander');
       if (trailEl) trailEl.textContent = findItemLabel(cosmetics.trail, 'Štandardná');
+
+      const ownedSuitsEl = document.getElementById('astroOwnedSuitsList');
+      if (ownedSuitsEl) {
+        ownedSuitsEl.innerHTML = '';
+        const ownedSuits = SHOP_ITEMS.filter(item => item.slot === 'suit' && ownedItems.includes(item.id));
+        const activeSuitId = equippedCosmetics.suit || null;
+
+        const createSuitBtn = (suitId, icon, label, isActive) => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = `w-full px-2.5 py-1.5 border text-left text-xs flex items-center justify-between gap-2 transition-colors ${
+            isActive
+              ? 'border-emerald-400 bg-emerald-950/60 text-emerald-200'
+              : 'border-slate-700 bg-slate-950/70 hover:border-sky-400 text-slate-200'
+          }`;
+          btn.innerHTML = `
+            <span class="flex items-center gap-2 truncate">
+              <span>${icon}</span>
+              <span class="font-bold truncate">${label}</span>
+            </span>
+            <span class="text-[9px] pixel-font shrink-0 ${isActive ? 'text-emerald-300' : 'text-slate-400'}">
+              ${isActive ? 'OBLEČENÝ' : 'OBLIECT'}
+            </span>
+          `;
+          btn.addEventListener('click', () => {
+            equippedCosmetics.suit = suitId;
+            saveShopState();
+            updateAstronautModalDetails();
+          });
+          return btn;
+        };
+
+        ownedSuitsEl.appendChild(createSuitBtn(null, '🧑‍🚀', 'Základný skafander', activeSuitId === null));
+        ownedSuits.forEach(suit => {
+          ownedSuitsEl.appendChild(createSuitBtn(suit.id, suit.icon, suit.name, activeSuitId === suit.id));
+        });
+
+        if (ownedSuits.length === 0) {
+          const emptyHint = document.createElement('div');
+          emptyHint.className = 'text-[10px] text-slate-400 pt-1';
+          emptyHint.textContent = 'Ďalšie skafandre si môžeš kúpiť v Kozmickom shope.';
+          ownedSuitsEl.appendChild(emptyHint);
+        }
+      }
     }
 
     function drawDetailedAstronautPreview() {
@@ -1114,7 +1156,8 @@
       astronautPreviewRaf = requestAnimationFrame(drawDetailedAstronautPreview);
     }
 
-    function openAstronautModal() {
+    async function openAstronautModal() {
+      await ensureShopItemsLoaded();
       updateAstronautModalDetails();
       document.getElementById('astronautModal').classList.remove('hidden');
       if (!astronautPreviewRaf) {
