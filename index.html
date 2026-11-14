@@ -604,6 +604,28 @@
     </div>
   </div>
 
+  <!-- Modal: Interiér farmy -->
+  <div id="farmModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 hidden">
+    <div class="w-full max-w-2xl pixel-box bg-slate-950 p-3.5 sm:p-5 flex flex-col gap-2.5 sm:gap-3 text-left border-2 border-red-400 max-h-[90dvh] overflow-y-auto">
+      <div class="flex justify-between items-center border-b border-red-900/70 pb-2">
+        <div class="flex items-center gap-2">
+          <span class="pixel-font text-[10px] sm:text-xs text-red-300">🏡 INTERIÉR FARMY</span>
+          <span class="text-[9px] sm:text-[10px] pixel-font bg-red-950/80 text-red-200 border border-red-500/50 px-2 py-0.5">Stodola</span>
+        </div>
+        <button id="closeFarmBtn" class="text-red-300 hover:text-white font-bold text-base px-2">✕</button>
+      </div>
+
+      <div class="relative rounded border-2 border-amber-900/80 bg-amber-950/40 overflow-hidden shadow-inner">
+        <canvas id="farmInteriorCanvas" width="560" height="320" class="block w-full h-auto aspect-[7/4]"></canvas>
+      </div>
+
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-2 pt-1">
+        <span class="text-xs text-slate-300">Zatiaľ prázdna stodola — čoskoro tu budú bývať tvoje zvieratá.</span>
+        <button id="confirmFarmBtn" class="py-2 px-5 text-[10px] pixel-font border border-slate-600 bg-slate-800 hover:bg-slate-700 text-slate-200 w-full sm:w-auto shrink-0">ZAVRIEŤ</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Modal: Pravidlá -->
   <div id="rulesModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
     <div class="w-full max-w-md pixel-box bg-slate-950 p-5 flex flex-col gap-3 text-left border-2 border-sky-400">
@@ -1374,6 +1396,298 @@
       }
     }
 
+    let farmInteriorRaf = null;
+
+    function drawFarmInterior() {
+      const canvas = document.getElementById('farmInteriorCanvas');
+      if (!canvas) return;
+      const modal = document.getElementById('farmModal');
+      if (!modal || modal.classList.contains('hidden')) {
+        farmInteriorRaf = null;
+        return;
+      }
+
+      const fctx = canvas.getContext('2d');
+      const w = canvas.width;
+      const h = canvas.height;
+      const floorY = 228;
+      const loftY = 98;
+      const t = Date.now() * 0.003;
+
+      fctx.clearRect(0, 0, w, h);
+
+      // 1. Back wooden plank wall
+      fctx.fillStyle = '#5c2b16';
+      fctx.fillRect(0, 0, w, floorY);
+      for (let y = 0; y < floorY; y += 16) {
+        fctx.fillStyle = y % 32 === 0 ? '#6b321a' : '#532613';
+        fctx.fillRect(0, y, w, 14);
+        fctx.fillStyle = '#3b180a';
+        fctx.fillRect(0, y + 14, w, 2);
+      }
+
+      // Vertical plank seams
+      fctx.fillStyle = 'rgba(42, 16, 6, 0.45)';
+      for (let x = 24; x < w; x += 64) {
+        fctx.fillRect(x, 0, 2, floorY);
+      }
+
+      // 2. Side angled walls / barn perspective
+      fctx.fillStyle = '#451d0d';
+      fctx.beginPath();
+      fctx.moveTo(0, 0);
+      fctx.lineTo(42, 34);
+      fctx.lineTo(42, floorY);
+      fctx.lineTo(0, h);
+      fctx.closePath();
+      fctx.fill();
+
+      fctx.beginPath();
+      fctx.moveTo(w, 0);
+      fctx.lineTo(w - 42, 34);
+      fctx.lineTo(w - 42, floorY);
+      fctx.lineTo(w, h);
+      fctx.closePath();
+      fctx.fill();
+
+      // 3. Barn roof rafters & ceiling shadow
+      fctx.fillStyle = '#2d1207';
+      fctx.beginPath();
+      fctx.moveTo(0, 0);
+      fctx.lineTo(w, 0);
+      fctx.lineTo(w - 42, 36);
+      fctx.lineTo(42, 36);
+      fctx.closePath();
+      fctx.fill();
+
+      // Diagonal timber roof trusses
+      fctx.strokeStyle = '#3e1a0b';
+      fctx.lineWidth = 8;
+      fctx.beginPath();
+      fctx.moveTo(42, 36);
+      fctx.lineTo(w * 0.3, 0);
+      fctx.moveTo(w - 42, 36);
+      fctx.lineTo(w * 0.7, 0);
+      fctx.stroke();
+
+      // 4. Back barn window (shows sky & distant mountain peak outside)
+      const winX = w / 2 - 44;
+      const winY = 120;
+      const winW = 88;
+      const winH = 62;
+      fctx.fillStyle = '#f8fafc';
+      fctx.fillRect(winX - 4, winY - 4, winW + 8, winH + 8);
+      // Sky inside window
+      const skyGrad = fctx.createLinearGradient(0, winY, 0, winY + winH);
+      skyGrad.addColorStop(0, '#38bdf8');
+      skyGrad.addColorStop(1, '#bae6fd');
+      fctx.fillStyle = skyGrad;
+      fctx.fillRect(winX, winY, winW, winH);
+      // Distant mountain in window
+      fctx.fillStyle = '#475569';
+      fctx.beginPath();
+      fctx.moveTo(winX, winY + winH);
+      fctx.lineTo(winX + 26, winY + 26);
+      fctx.lineTo(winX + 54, winY + 46);
+      fctx.lineTo(winX + 74, winY + 18);
+      fctx.lineTo(winX + winW, winY + 38);
+      fctx.lineTo(winX + winW, winY + winH);
+      fctx.closePath();
+      fctx.fill();
+      // Snow cap in window
+      fctx.fillStyle = '#ffffff';
+      fctx.beginPath();
+      fctx.moveTo(winX + 74, winY + 18);
+      fctx.lineTo(winX + 66, winY + 28);
+      fctx.lineTo(winX + 82, winY + 28);
+      fctx.closePath();
+      fctx.fill();
+      // White window crossbars
+      fctx.fillStyle = '#f8fafc';
+      fctx.fillRect(winX + winW / 2 - 2, winY, 4, winH);
+      fctx.fillRect(winX, winY + winH / 2 - 2, winW, 4);
+
+      // 5. Upper Hayloft Balcony (left & right wings)
+      fctx.fillStyle = '#3b180a';
+      fctx.fillRect(42, loftY, 150, 10);
+      fctx.fillRect(w - 192, loftY, 150, 10);
+      fctx.fillStyle = '#78350f';
+      fctx.fillRect(42, loftY - 3, 150, 4);
+      fctx.fillRect(w - 192, loftY - 3, 150, 4);
+
+      // Helper: draw stacked hay bale
+      function drawHayBale(bx, by, bw, bh) {
+        fctx.fillStyle = '#eab308';
+        fctx.fillRect(bx, by, bw, bh);
+        fctx.fillStyle = '#ca8a04';
+        fctx.fillRect(bx, by + bh - 4, bw, 4);
+        fctx.fillStyle = '#a16207';
+        fctx.fillRect(bx + 6, by, 2, bh);
+        fctx.fillRect(bx + bw - 8, by, 2, bh);
+        fctx.fillStyle = '#fef08a';
+        fctx.fillRect(bx + 2, by + 2, bw - 6, 2);
+      }
+
+      // Hay bales on left & right lofts
+      drawHayBale(58, loftY - 24, 38, 22);
+      drawHayBale(99, loftY - 24, 38, 22);
+      drawHayBale(76, loftY - 46, 38, 22);
+      drawHayBale(w - 172, loftY - 24, 38, 22);
+      drawHayBale(w - 131, loftY - 24, 38, 22);
+      drawHayBale(w - 150, loftY - 46, 38, 22);
+
+      // Heavy vertical wooden support posts
+      const posts = [42, 184, w - 196, w - 54];
+      posts.forEach(px => {
+        fctx.fillStyle = '#3b180a';
+        fctx.fillRect(px, 34, 12, floorY - 34);
+        fctx.fillStyle = '#5c2b16';
+        fctx.fillRect(px + 2, 34, 4, floorY - 34);
+      });
+
+      // Wooden ladder up to left hayloft
+      const ladX = 152;
+      fctx.fillStyle = '#92400e';
+      fctx.fillRect(ladX, loftY - 4, 4, floorY - loftY + 4);
+      fctx.fillRect(ladX + 20, loftY - 4, 4, floorY - loftY + 4);
+      for (let ry = loftY + 12; ry < floorY; ry += 18) {
+        fctx.fillStyle = '#b45309';
+        fctx.fillRect(ladX + 2, ry, 20, 3);
+      }
+
+      // 6. Barn Wooden Floor
+      const floorGrad = fctx.createLinearGradient(0, floorY, 0, h);
+      floorGrad.addColorStop(0, '#78350f');
+      floorGrad.addColorStop(1, '#451a03');
+      fctx.fillStyle = floorGrad;
+      fctx.fillRect(0, floorY, w, h - floorY);
+
+      // Floor perspective plank lines
+      fctx.strokeStyle = 'rgba(28, 10, 2, 0.55)';
+      fctx.lineWidth = 2;
+      for (let i = -4; i <= 4; i++) {
+        fctx.beginPath();
+        fctx.moveTo(w / 2 + i * 56, floorY);
+        fctx.lineTo(w / 2 + i * 92, h);
+        fctx.stroke();
+      }
+      for (let y = floorY + 18; y < h; y += 22) {
+        fctx.fillStyle = 'rgba(28, 10, 2, 0.35)';
+        fctx.fillRect(0, y, w, 2);
+      }
+
+      // 7. Three Empty Animal Stalls (left, center, right) ready for animals
+      const stalls = [
+        { x: 54, w: 126 },
+        { x: 217, w: 126 },
+        { x: 380, w: 126 }
+      ];
+      stalls.forEach(st => {
+        // Golden straw bedding inside each stall
+        fctx.fillStyle = '#ca8a04';
+        fctx.fillRect(st.x + 8, floorY + 6, st.w - 16, 44);
+        fctx.fillStyle = '#eab308';
+        for (let sx = st.x + 12; sx < st.x + st.w - 16; sx += 14) {
+          fctx.fillRect(sx, floorY + 10 + (sx % 7), 9, 3);
+          fctx.fillRect(sx + 4, floorY + 24 + (sx % 5), 10, 3);
+          fctx.fillRect(sx + 2, floorY + 38 + (sx % 6), 8, 3);
+        }
+
+        // Wooden stall fence / gate
+        const gateY = floorY - 34;
+        fctx.fillStyle = '#92400e';
+        fctx.fillRect(st.x, gateY, 6, 46);
+        fctx.fillRect(st.x + st.w - 6, gateY, 6, 46);
+        fctx.fillStyle = '#b45309';
+        fctx.fillRect(st.x, gateY + 6, st.w, 5);
+        fctx.fillRect(st.x, gateY + 20, st.w, 5);
+        fctx.fillRect(st.x, gateY + 34, st.w, 5);
+
+        // Feeding trough at the front corner of each stall
+        fctx.fillStyle = '#451a03';
+        fctx.fillRect(st.x + 14, floorY + 34, 38, 14);
+        fctx.fillStyle = '#78350f';
+        fctx.fillRect(st.x + 16, floorY + 36, 34, 5);
+      });
+
+      // 8. Barn props: Wooden barrel & pitchfork on the right, water bucket on the left
+      // Water bucket
+      fctx.fillStyle = '#64748b';
+      fctx.fillRect(190, floorY + 26, 18, 18);
+      fctx.fillStyle = '#94a3b8';
+      fctx.fillRect(189, floorY + 24, 20, 3);
+      fctx.fillStyle = '#38bdf8';
+      fctx.fillRect(192, floorY + 27, 14, 3);
+
+      // Wooden barrel
+      fctx.fillStyle = '#78350f';
+      fctx.fillRect(w - 58, floorY + 10, 26, 34);
+      fctx.fillStyle = '#451a03';
+      fctx.fillRect(w - 58, floorY + 16, 26, 3);
+      fctx.fillRect(w - 58, floorY + 34, 26, 3);
+
+      // Pitchfork leaning against right post
+      fctx.strokeStyle = '#b45309';
+      fctx.lineWidth = 3;
+      fctx.beginPath();
+      fctx.moveTo(w - 72, floorY + 14);
+      fctx.lineTo(w - 58, floorY - 52);
+      fctx.stroke();
+      fctx.strokeStyle = '#94a3b8';
+      fctx.lineWidth = 2;
+      fctx.beginPath();
+      fctx.moveTo(w - 64, floorY - 52);
+      fctx.lineTo(w - 52, floorY - 52);
+      fctx.moveTo(w - 64, floorY - 52);
+      fctx.lineTo(w - 66, floorY - 64);
+      fctx.moveTo(w - 58, floorY - 52);
+      fctx.lineTo(w - 58, floorY - 65);
+      fctx.moveTo(w - 52, floorY - 52);
+      fctx.lineTo(w - 50, floorY - 64);
+      fctx.stroke();
+
+      // 9. Hanging Warm Barn Lantern from center ceiling
+      const lx = w / 2;
+      const ly = 56;
+      fctx.strokeStyle = '#1e293b';
+      fctx.lineWidth = 2;
+      fctx.beginPath();
+      fctx.moveTo(lx, 0);
+      fctx.lineTo(lx, ly);
+      fctx.stroke();
+
+      const glowPulse = 0.22 + Math.sin(t * 2) * 0.04;
+      const lanternGlow = fctx.createRadialGradient(lx, ly + 10, 4, lx, ly + 10, 155);
+      lanternGlow.addColorStop(0, `rgba(253, 224, 71, ${glowPulse})`);
+      lanternGlow.addColorStop(1, 'rgba(253, 224, 71, 0)');
+      fctx.fillStyle = lanternGlow;
+      fctx.fillRect(0, 0, w, h);
+
+      fctx.fillStyle = '#1e293b';
+      fctx.fillRect(lx - 7, ly, 14, 4);
+      fctx.fillStyle = '#fde047';
+      fctx.fillRect(lx - 5, ly + 4, 10, 12);
+      fctx.fillStyle = '#1e293b';
+      fctx.fillRect(lx - 7, ly + 16, 14, 4);
+
+      farmInteriorRaf = requestAnimationFrame(drawFarmInterior);
+    }
+
+    function openFarmModal() {
+      document.getElementById('farmModal').classList.remove('hidden');
+      if (!farmInteriorRaf) {
+        drawFarmInterior();
+      }
+    }
+
+    function closeFarmModal() {
+      document.getElementById('farmModal').classList.add('hidden');
+      if (farmInteriorRaf) {
+        cancelAnimationFrame(farmInteriorRaf);
+        farmInteriorRaf = null;
+      }
+    }
+
     const SUIT_COLORS = [
       { suit: '#f8fafc', visor: '#fbbf24', badge: '⚪ Biela' },
       { suit: '#38bdf8', visor: '#f43f5e', badge: '🔵 Modrá' },
@@ -1823,6 +2137,9 @@
       ctx.restore();
     }
 
+    let farmHitbox = null;
+    let isFarmHovered = false;
+
     function drawSimpleFarm(groundY) {
       const isMobileMode = document.body.dataset.device === 'mobile';
       const scale = isMobileMode ? 0.64 : 1;
@@ -1839,6 +2156,13 @@
       const barnW = 76;
       const barnH = 50;
       const wallTop = groundY - barnH;
+
+      farmHitbox = {
+        x: fx - (barnW / 2 + 22) * scale,
+        y: groundY - (barnH + 34) * scale,
+        w: (barnW + 64) * scale,
+        h: (barnH + 36) * scale
+      };
 
       ctx.save();
       ctx.translate(fx, groundY);
@@ -1943,6 +2267,23 @@
       ctx.fillRect(fenceStart + 8, groundY - 10, 14, 10);
       ctx.fillStyle = '#ca8a04';
       ctx.fillRect(fenceStart + 8, groundY - 6, 14, 2);
+
+      if (isFarmHovered) {
+        const badgeW = 104;
+        const badgeH = 18;
+        const badgeY = wallTop - 48;
+        ctx.fillStyle = 'rgba(2, 6, 23, 0.9)';
+        ctx.fillRect(fx - badgeW / 2, badgeY, badgeW, badgeH);
+        ctx.strokeStyle = '#f87171';
+        ctx.lineWidth = 1.5;
+        ctx.strokeRect(fx - badgeW / 2, badgeY, badgeW, badgeH);
+        ctx.font = 'bold 9px Inter, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = '#fca5a5';
+        ctx.fillText('🏡 MOJA FARMA', fx, badgeY + badgeH / 2 + 0.5);
+        ctx.textBaseline = 'alphabetic';
+      }
 
       ctx.restore();
     }
@@ -4359,6 +4700,8 @@ Vráť VÝHRADNE JSON pole objektov:
         closeAstronautModal();
         openShopModal();
       });
+      document.getElementById('closeFarmBtn').addEventListener('click', closeFarmModal);
+      document.getElementById('confirmFarmBtn').addEventListener('click', closeFarmModal);
 
       const isPointInBox = (box, cx, cy) => {
         if (!box) return false;
@@ -4371,25 +4714,31 @@ Vráť VÝHRADNE JSON pole objektov:
       document.addEventListener('mousemove', (e) => {
         if (e.target.closest('button, a, input, select, .pixel-box')) {
           isHouseHovered = false;
+          isFarmHovered = false;
           document.body.style.cursor = '';
           return;
         }
         const overShop = isPointInBox(shopHitbox, e.clientX, e.clientY);
         const overHouse = isPointInBox(houseHitbox, e.clientX, e.clientY);
+        const overFarm = isPointInBox(farmHitbox, e.clientX, e.clientY);
         isHouseHovered = overHouse;
-        document.body.style.cursor = (overShop || overHouse) ? 'pointer' : '';
+        isFarmHovered = overFarm;
+        document.body.style.cursor = (overShop || overHouse || overFarm) ? 'pointer' : '';
       });
 
       document.addEventListener('click', (e) => {
         if (e.target.closest('button, a, input, select, .pixel-box')) return;
         if (!document.getElementById('shopModal').classList.contains('hidden')) return;
         if (!document.getElementById('astronautModal').classList.contains('hidden')) return;
+        if (!document.getElementById('farmModal').classList.contains('hidden')) return;
         if (!document.getElementById('coinsOfferModal').classList.contains('hidden')) return;
         if (!document.getElementById('deviceSelectModal').classList.contains('hidden')) return;
         if (isPointInBox(shopHitbox, e.clientX, e.clientY)) {
           openShopModal();
         } else if (isPointInBox(houseHitbox, e.clientX, e.clientY)) {
           openAstronautModal();
+        } else if (isPointInBox(farmHitbox, e.clientX, e.clientY)) {
+          openFarmModal();
         }
       });
     });
