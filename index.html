@@ -713,7 +713,9 @@
         ? { suit: '#facc15', shade: '#ca8a04', highlight: '#fef08a', visor: '#0ea5e9', trim: '#fde047' }
         : cosmetics.suit === 'neon_suit'
           ? { suit: '#22d3ee', shade: '#0891b2', highlight: '#a5f3fc', visor: '#f43f5e', trim: '#67e8f9' }
-          : { suit: basePalette.suit, shade: '#94a3b8', highlight: '#ffffff', visor: basePalette.visor, trim: '#38bdf8' };
+          : cosmetics.suit === 'r9_suit'
+            ? { suit: '#facc15', shade: '#ca8a04', highlight: '#fef08a', visor: '#1d4ed8', trim: '#16a34a' }
+            : { suit: basePalette.suit, shade: '#94a3b8', highlight: '#ffffff', visor: basePalette.visor, trim: '#38bdf8' };
       return { name, palette, cosmetics };
     }
 
@@ -921,16 +923,35 @@
       pctx.fillRect(-60, 46, 6, 4 + Math.random() * 6);
       pctx.fillRect(-45, 46, 6, 4 + Math.random() * 6);
 
-      // --- LEGS & MOON BOOTS (or Mini UFO seat) ---
+      // --- LEGS & MOON BOOTS (or Mini UFO seat / R9 kit) ---
+      const isR9 = cosmetics.suit === 'r9_suit';
       const legShade = palette.shade;
       if (hasMiniUfo) {
         // Sitting legs tucked forward on UFO
-        pctx.fillStyle = palette.suit;
+        pctx.fillStyle = isR9 ? '#1e40af' : palette.suit;
         pctx.fillRect(-28, 44, 24, 18);
         pctx.fillRect(6, 44, 24, 18);
-        pctx.fillStyle = '#334155';
+        pctx.fillStyle = isR9 ? '#f8fafc' : '#334155';
         pctx.fillRect(-24, 58, 22, 12);
         pctx.fillRect(10, 58, 22, 12);
+      } else if (isR9) {
+        // Blue Brazil shorts
+        pctx.fillStyle = '#1e40af';
+        pctx.fillRect(-34, 46, 30, 22);
+        pctx.fillRect(4, 46, 30, 22);
+        pctx.fillStyle = '#1e3a8a';
+        pctx.fillRect(-34, 46, 8, 22);
+        // White socks
+        pctx.fillStyle = '#f8fafc';
+        pctx.fillRect(-30, 68, 22, 26);
+        pctx.fillRect(8, 68, 22, 26);
+        // Football cleats
+        pctx.fillStyle = '#94a3b8';
+        pctx.fillRect(-32, 94, 26, 8);
+        pctx.fillRect(6, 94, 26, 8);
+        pctx.fillStyle = '#0f172a';
+        pctx.fillRect(-34, 102, 30, 10);
+        pctx.fillRect(4, 102, 30, 10);
       } else {
         // Left & right legs
         pctx.fillStyle = palette.suit;
@@ -967,100 +988,155 @@
       pctx.fillRect(22, -22, 8, 70);
       pctx.globalAlpha = 1;
 
-      // Utility belt with metallic buckle & pouches
-      pctx.fillStyle = '#0f172a';
-      pctx.fillRect(-36, 22, 72, 12);
-      pctx.fillStyle = '#94a3b8';
-      pctx.fillRect(-10, 20, 20, 16);
-      pctx.fillStyle = palette.trim;
-      pctx.fillRect(-5, 24, 10, 8);
-      pctx.fillStyle = '#334155';
-      pctx.fillRect(-32, 20, 12, 16);
-      pctx.fillRect(20, 20, 12, 16);
+      if (isR9) {
+        // Brazil jersey green collar & side stripe + blue crest
+        pctx.fillStyle = '#16a34a';
+        pctx.fillRect(-16, -24, 8, 8);
+        pctx.fillRect(8, -24, 8, 8);
+        pctx.fillRect(-10, -14, 8, 8);
+        pctx.fillRect(2, -14, 8, 8);
+        pctx.fillRect(-32, -8, 6, 44);
+        pctx.fillStyle = '#1d4ed8';
+        pctx.fillRect(14, -10, 10, 10);
+        // Number 9 on jersey
+        pctx.fillStyle = '#16a34a';
+        pctx.font = 'bold 20px "Press Start 2P", monospace';
+        pctx.textAlign = 'center';
+        pctx.fillText('9', 0, 26);
+      } else {
+        // Utility belt with metallic buckle & pouches
+        pctx.fillStyle = '#0f172a';
+        pctx.fillRect(-36, 22, 72, 12);
+        pctx.fillStyle = '#94a3b8';
+        pctx.fillRect(-10, 20, 20, 16);
+        pctx.fillStyle = palette.trim;
+        pctx.fillRect(-5, 24, 10, 8);
+        pctx.fillStyle = '#334155';
+        pctx.fillRect(-32, 20, 12, 16);
+        pctx.fillRect(20, 20, 12, 16);
 
-      // Chest Control Unit (CCU)
-      pctx.fillStyle = '#1e293b';
-      pctx.fillRect(-20, -10, 40, 26);
-      pctx.strokeStyle = '#64748b';
-      pctx.lineWidth = 2;
-      pctx.strokeRect(-20, -10, 40, 26);
-      // Blinking status LEDs
-      const blinkA = Math.floor(now / 350) % 2 === 0;
-      pctx.fillStyle = blinkA ? '#ef4444' : '#7f1d1d';
-      pctx.fillRect(-14, -4, 7, 7);
-      pctx.fillStyle = blinkA ? '#14532d' : '#4ade80';
-      pctx.fillRect(-3, -4, 7, 7);
-      pctx.fillStyle = '#38bdf8';
-      pctx.fillRect(8, -4, 7, 7);
-      // Mini telemetry bar
-      pctx.fillStyle = '#0f172a';
-      pctx.fillRect(-14, 7, 28, 5);
-      pctx.fillStyle = '#34d399';
-      pctx.fillRect(-13, 8, 12 + Math.sin(t * 2.5) * 10, 3);
+        // Chest Control Unit (CCU)
+        pctx.fillStyle = '#1e293b';
+        pctx.fillRect(-20, -10, 40, 26);
+        pctx.strokeStyle = '#64748b';
+        pctx.lineWidth = 2;
+        pctx.strokeRect(-20, -10, 40, 26);
+        // Blinking status LEDs
+        const blinkA = Math.floor(now / 350) % 2 === 0;
+        pctx.fillStyle = blinkA ? '#ef4444' : '#7f1d1d';
+        pctx.fillRect(-14, -4, 7, 7);
+        pctx.fillStyle = blinkA ? '#14532d' : '#4ade80';
+        pctx.fillRect(-3, -4, 7, 7);
+        pctx.fillStyle = '#38bdf8';
+        pctx.fillRect(8, -4, 7, 7);
+        // Mini telemetry bar
+        pctx.fillStyle = '#0f172a';
+        pctx.fillRect(-14, 7, 28, 5);
+        pctx.fillStyle = '#34d399';
+        pctx.fillRect(-13, 8, 12 + Math.sin(t * 2.5) * 10, 3);
+      }
 
       // --- ARMS & GLOVES ---
       const armBob = Math.sin(t * 1.3) * 3;
       // Left arm
       pctx.fillStyle = palette.suit;
-      pctx.fillRect(-52, -18 + armBob, 16, 48);
-      pctx.fillStyle = palette.shade;
-      pctx.fillRect(-52, 4 + armBob, 16, 6);
-      pctx.fillStyle = '#334155';
-      pctx.fillRect(-54, 28 + armBob, 18, 14);
+      pctx.fillRect(-52, -18 + armBob, 16, isR9 ? 22 : 48);
+      if (isR9) {
+        pctx.fillStyle = '#c68662';
+        pctx.fillRect(-52, 4 + armBob, 16, 36);
+      } else {
+        pctx.fillStyle = palette.shade;
+        pctx.fillRect(-52, 4 + armBob, 16, 6);
+        pctx.fillStyle = '#334155';
+        pctx.fillRect(-54, 28 + armBob, 18, 14);
+      }
       // Right arm
       pctx.fillStyle = palette.suit;
-      pctx.fillRect(36, -18 - armBob, 16, 48);
-      pctx.fillStyle = palette.shade;
-      pctx.fillRect(36, 4 - armBob, 16, 6);
-      pctx.fillStyle = '#334155';
-      pctx.fillRect(36, 28 - armBob, 18, 14);
-      // Shoulder mission patch
-      pctx.fillStyle = '#ef4444';
-      pctx.fillRect(39, -12 - armBob, 10, 8);
-      pctx.fillStyle = '#fde047';
-      pctx.fillRect(42, -10 - armBob, 4, 4);
+      pctx.fillRect(36, -18 - armBob, 16, isR9 ? 22 : 48);
+      if (isR9) {
+        pctx.fillStyle = '#c68662';
+        pctx.fillRect(36, 4 - armBob, 16, 36);
+      } else {
+        pctx.fillStyle = palette.shade;
+        pctx.fillRect(36, 4 - armBob, 16, 6);
+        pctx.fillStyle = '#334155';
+        pctx.fillRect(36, 28 - armBob, 18, 14);
+        // Shoulder mission patch
+        pctx.fillStyle = '#ef4444';
+        pctx.fillRect(39, -12 - armBob, 10, 8);
+        pctx.fillStyle = '#fde047';
+        pctx.fillRect(42, -10 - armBob, 4, 4);
+      }
 
       // --- NECK RING ---
-      pctx.fillStyle = '#475569';
+      pctx.fillStyle = isR9 ? '#a66846' : '#475569';
       pctx.fillRect(-26, -32, 52, 10);
-      pctx.fillStyle = '#94a3b8';
-      pctx.fillRect(-22, -30, 44, 4);
+      if (!isR9) {
+        pctx.fillStyle = '#94a3b8';
+        pctx.fillRect(-22, -30, 44, 4);
+      }
 
-      // --- HELMET ---
-      // Antenna & blinking beacon
-      pctx.fillStyle = '#94a3b8';
-      pctx.fillRect(-6, -124, 5, 24);
-      pctx.fillStyle = Math.floor(now / 300) % 2 === 0 ? '#ef4444' : '#38bdf8';
-      pctx.beginPath();
-      pctx.arc(-3.5, -127, 5, 0, Math.PI * 2);
-      pctx.fill();
+      // --- HELMET (or R9 Head) ---
+      if (isR9) {
+        // R9 pixel head & iconic 2002 haircut
+        pctx.fillStyle = '#c68662';
+        pctx.fillRect(-38, -98, 76, 68);
+        pctx.fillRect(-30, -106, 60, 10);
+        // Side shading & ear
+        pctx.fillStyle = '#a66846';
+        pctx.fillRect(-38, -98, 12, 68);
+        pctx.fillRect(-44, -68, 6, 12);
+        // Iconic R9 black fringe on forehead
+        pctx.fillStyle = '#0f172a';
+        pctx.fillRect(-10, -102, 44, 10);
+        pctx.fillRect(-2, -94, 34, 6);
+        // Eyebrows
+        pctx.fillRect(-16, -80, 18, 5);
+        pctx.fillRect(14, -80, 18, 5);
+        // Eyes
+        pctx.fillRect(-12, -70, 7, 7);
+        pctx.fillRect(18, -70, 7, 7);
+        // Big white R9 smile
+        pctx.fillStyle = '#ffffff';
+        pctx.fillRect(-8, -54, 32, 12);
+        pctx.fillStyle = '#e2e8f0';
+        pctx.fillRect(-8, -46, 32, 4);
+      } else {
+        // Antenna & blinking beacon
+        pctx.fillStyle = '#94a3b8';
+        pctx.fillRect(-6, -124, 5, 24);
+        pctx.fillStyle = Math.floor(now / 300) % 2 === 0 ? '#ef4444' : '#38bdf8';
+        pctx.beginPath();
+        pctx.arc(-3.5, -127, 5, 0, Math.PI * 2);
+        pctx.fill();
 
-      // Helmet shell
-      pctx.fillStyle = palette.suit;
-      pctx.fillRect(-40, -96, 80, 64);
-      pctx.fillRect(-32, -104, 64, 10);
-      pctx.fillStyle = palette.shade;
-      pctx.fillRect(-40, -96, 10, 64);
-      // Side comm pods
-      pctx.fillStyle = '#475569';
-      pctx.fillRect(-46, -74, 8, 22);
-      pctx.fillRect(38, -74, 8, 22);
+        // Helmet shell
+        pctx.fillStyle = palette.suit;
+        pctx.fillRect(-40, -96, 80, 64);
+        pctx.fillRect(-32, -104, 64, 10);
+        pctx.fillStyle = palette.shade;
+        pctx.fillRect(-40, -96, 10, 64);
+        // Side comm pods
+        pctx.fillStyle = '#475569';
+        pctx.fillRect(-46, -74, 8, 22);
+        pctx.fillRect(38, -74, 8, 22);
 
-      // --- VISOR (reflective gradient + glint) ---
-      const visorGrad = pctx.createLinearGradient(-22, -88, 34, -44);
-      visorGrad.addColorStop(0, palette.visor);
-      visorGrad.addColorStop(1, '#0f172a');
-      pctx.fillStyle = '#0f172a';
-      pctx.fillRect(-24, -88, 56, 44);
-      pctx.fillStyle = visorGrad;
-      pctx.fillRect(-20, -84, 48, 36);
-      // Visor glass reflection
-      pctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
-      pctx.fillRect(-14, -78, 16, 5);
-      pctx.fillRect(-14, -71, 7, 4);
-      // Subtle star reflection in visor
-      pctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
-      pctx.fillRect(16, -60, 4, 4);
+        // --- VISOR (reflective gradient + glint) ---
+        const visorGrad = pctx.createLinearGradient(-22, -88, 34, -44);
+        visorGrad.addColorStop(0, palette.visor);
+        visorGrad.addColorStop(1, '#0f172a');
+        pctx.fillStyle = '#0f172a';
+        pctx.fillRect(-24, -88, 56, 44);
+        pctx.fillStyle = visorGrad;
+        pctx.fillRect(-20, -84, 48, 36);
+        // Visor glass reflection
+        pctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
+        pctx.fillRect(-14, -78, 16, 5);
+        pctx.fillRect(-14, -71, 7, 4);
+        // Subtle star reflection in visor
+        pctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+        pctx.fillRect(16, -60, 4, 4);
+      }
 
       // --- EQUIPPED HAT (high-detail versions) ---
       if (cosmetics.hat === 'crown') {
@@ -1776,7 +1852,10 @@
         ? { suit: '#facc15', visor: '#0ea5e9' }
         : cosmetics.suit === 'neon_suit'
           ? { suit: '#22d3ee', visor: '#f43f5e' }
-          : basePalette;
+          : cosmetics.suit === 'r9_suit'
+            ? { suit: '#facc15', visor: '#1d4ed8' }
+            : basePalette;
+      const isR9 = cosmetics.suit === 'r9_suit';
       const isClimbing = (p.altitude - p.visualAltitude) > 2;
       const isCelebrating = (p.celebrateTimer || 0) > 0;
       if (isCelebrating) p.celebrateTimer--;
@@ -1837,11 +1916,13 @@
         ctx.scale(-1, 1);
       }
 
-      // Helmet Antenna + Blinking Light
-      ctx.fillStyle = '#94a3b8';
-      ctx.fillRect(-2, -28, 2, 6);
-      ctx.fillStyle = Math.floor(Date.now() / 300) % 2 === 0 ? '#ef4444' : '#38bdf8';
-      ctx.fillRect(-3, -30, 4, 3);
+      if (!isR9) {
+        // Helmet Antenna + Blinking Light
+        ctx.fillStyle = '#94a3b8';
+        ctx.fillRect(-2, -28, 2, 6);
+        ctx.fillStyle = Math.floor(Date.now() / 300) % 2 === 0 ? '#ef4444' : '#38bdf8';
+        ctx.fillRect(-3, -30, 4, 3);
+      }
 
       // Backpack
       ctx.fillStyle = '#475569';
@@ -1853,18 +1934,45 @@
       ctx.fillStyle = palette.suit;
       ctx.fillRect(-8, -4, 16, 18);
 
-      // Belt & chest light
-      ctx.fillStyle = '#0f172a';
-      ctx.fillRect(-8, 5, 16, 3);
-      ctx.fillStyle = '#ef4444';
-      ctx.fillRect(-4, -1, 3, 3);
-      ctx.fillStyle = '#38bdf8';
-      ctx.fillRect(1, -1, 3, 3);
+      if (isR9) {
+        // Brazil jersey green trim & blue crest
+        ctx.fillStyle = '#16a34a';
+        ctx.fillRect(-4, -4, 3, 2);
+        ctx.fillRect(1, -4, 3, 2);
+        ctx.fillRect(-7, 0, 2, 10);
+        ctx.fillStyle = '#1d4ed8';
+        ctx.fillRect(3, 0, 3, 3);
+      } else {
+        // Belt & chest light
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(-8, 5, 16, 3);
+        ctx.fillStyle = '#ef4444';
+        ctx.fillRect(-4, -1, 3, 3);
+        ctx.fillStyle = '#38bdf8';
+        ctx.fillRect(1, -1, 3, 3);
+      }
 
-      // Helmet
-      ctx.fillStyle = palette.suit;
-      ctx.fillRect(-9, -20, 18, 15);
-      ctx.fillRect(-7, -22, 14, 2);
+      // Helmet (or R9 Head)
+      if (isR9) {
+        ctx.fillStyle = '#c68662';
+        ctx.fillRect(-9, -20, 18, 16);
+        ctx.fillRect(-7, -22, 14, 2);
+        // R9 iconic black fringe
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(-2, -21, 9, 3);
+        // Eyebrows & eyes
+        ctx.fillRect(-3, -16, 4, 1);
+        ctx.fillRect(3, -16, 4, 1);
+        ctx.fillRect(-2, -14, 2, 2);
+        ctx.fillRect(4, -14, 2, 2);
+        // Smile
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(-1, -10, 7, 3);
+      } else {
+        ctx.fillStyle = palette.suit;
+        ctx.fillRect(-9, -20, 18, 15);
+        ctx.fillRect(-7, -22, 14, 2);
+      }
 
       // Equipped Hat
       if (cosmetics.hat === 'crown') {
@@ -1895,13 +2003,15 @@
         ctx.fillRect(-7, -26, 14, 2);
       }
 
-      // Visor
-      ctx.fillStyle = inSpace ? palette.visor : '#0ea5e9';
-      ctx.fillRect(-4, -17, 12, 9);
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(-2, -16, 4, 2);
+      // Visor (skip for R9 face)
+      if (!isR9) {
+        ctx.fillStyle = inSpace ? palette.visor : '#0ea5e9';
+        ctx.fillRect(-4, -17, 12, 9);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(-2, -16, 4, 2);
+      }
 
-      // Pixel Sunglasses (rendered over visor)
+      // Pixel Sunglasses (rendered over visor or R9 face)
       if (cosmetics.hat === 'cool_shades') {
         ctx.fillStyle = '#020617';
         ctx.fillRect(-9, -15, 5, 2);
@@ -1919,11 +2029,17 @@
       const leftLegLift = p.isWalking ? Math.max(0, walkSwing) : 0;
       const rightLegLift = p.isWalking ? Math.max(0, -walkSwing) : 0;
       ctx.fillStyle = palette.suit;
-      ctx.fillRect(-11, -2 + armWave, 4, 12);
-      ctx.fillRect(7, -2 - armWave, 4, 12);
+      ctx.fillRect(-11, -2 + armWave, 4, isR9 ? 5 : 12);
+      ctx.fillRect(7, -2 - armWave, 4, isR9 ? 5 : 12);
+      if (isR9) {
+        ctx.fillStyle = '#c68662';
+        ctx.fillRect(-11, 3 + armWave, 4, 7);
+        ctx.fillRect(7, 3 - armWave, 4, 7);
+      }
 
       if (hasMiniUfo) {
         // Sitting legs + Mini UFO saucer underneath
+        ctx.fillStyle = isR9 ? '#1e40af' : palette.suit;
         ctx.fillRect(-7, 12, 6, 5);
         ctx.fillRect(1, 12, 6, 5);
         ctx.fillStyle = 'rgba(56, 189, 248, 0.35)';
@@ -1941,7 +2057,19 @@
         });
         ctx.fillStyle = 'rgba(74, 222, 128, 0.5)';
         ctx.fillRect(-8, 22, 16, 2);
+      } else if (isR9) {
+        // R9 blue shorts, white socks, cleats
+        ctx.fillStyle = '#1e40af';
+        ctx.fillRect(-7, 14 - leftLegLift, 6, 4);
+        ctx.fillRect(1, 14 - rightLegLift, 6, 4);
+        ctx.fillStyle = '#f8fafc';
+        ctx.fillRect(-7, 18 - leftLegLift, 6, 4);
+        ctx.fillRect(1, 18 - rightLegLift, 6, 4);
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(-8, 22 - leftLegLift, 7, 2);
+        ctx.fillRect(1, 22 - rightLegLift, 7, 2);
       } else {
+        ctx.fillStyle = palette.suit;
         ctx.fillRect(-7, 14 - leftLegLift, 6, 9);
         ctx.fillRect(1, 14 - rightLegLift, 6, 9);
 

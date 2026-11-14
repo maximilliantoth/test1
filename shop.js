@@ -22,6 +22,7 @@ cool_shades | hat | 🕶️ | Pixelové okuliare | Štýlové čierne pixelové 
 # SKAFANDRE (suit)
 gold_suit | suit | ✨ | Zlatý skafander | Prémiový zlatý oblek | 3000
 neon_suit | suit | 💠 | Neónový oblek | Žiarivý tyrkysový oblek | 1500
+r9_suit | suit | ⚽ | R9 | Legendárny brazílsky futbalový skin | 2000
 
 # STOPY JETPACKU A DOPRAVA (trail)
 rainbow_trail | trail | 🌈 | Dúhová stopa | Farebné častice z jetpacku | 1000
