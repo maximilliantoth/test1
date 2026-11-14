@@ -207,6 +207,9 @@
       <button id="apiKeyBtn" title="Nastaviť API kľúč" class="text-[10px] pixel-font text-amber-300 hover:text-white bg-amber-950/70 px-2 py-1.5 rounded border border-amber-500/40">
         🔑<span class="hidden sm:inline"> KĽÚČ</span>
       </button>
+      <button id="giftcodeBtn" title="Zadať Giftcode" class="text-[10px] pixel-font text-pink-300 hover:text-white bg-pink-950/70 hover:bg-pink-900/70 px-1.5 sm:px-2 py-1.5 rounded border border-pink-500/40">
+        🎁<span class="hidden sm:inline"> GIFTCODE</span>
+      </button>
       <button id="deviceModeBtn" title="Zmeniť zariadenie (Mobil / iPad / Počítač)" class="text-[10px] pixel-font text-purple-300 hover:text-white bg-purple-950/70 px-2 py-1.5 rounded border border-purple-500/40">
         💻
       </button>
@@ -642,6 +645,33 @@
       <div class="flex justify-end pt-1 border-t border-slate-800">
         <button id="confirmAnimalMarketBtn" class="py-2 px-5 text-[10px] pixel-font border border-slate-600 bg-slate-800 hover:bg-slate-700 text-slate-200 w-full sm:w-auto">ZAVRIEŤ</button>
       </div>
+    </div>
+  </div>
+
+  <!-- Modal: Giftcode -->
+  <div id="giftcodeModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="w-full max-w-sm pixel-box bg-slate-950 p-5 flex flex-col gap-3 text-left border-2 border-pink-400">
+      <div class="flex justify-between items-center border-b border-pink-800/70 pb-2">
+        <span class="pixel-font text-xs text-pink-300">🎁 GIFTCODE</span>
+        <button id="closeGiftcodeBtn" class="text-pink-300 hover:text-white font-bold text-base px-2">✕</button>
+      </div>
+      <p class="text-xs text-slate-300 leading-relaxed">
+        Zadaj tajný giftcode a získaj odmenu v podobe kamienkov 🪙!
+      </p>
+      <form id="giftcodeForm" class="flex flex-col gap-2.5">
+        <input
+          type="text"
+          id="giftcodeInput"
+          placeholder="Zadaj kód..."
+          autocomplete="off"
+          class="w-full bg-slate-900 border-2 border-pink-500/60 px-3 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-pink-400 text-xs font-mono rounded-none"
+        />
+        <div id="giftcodeMsg" class="text-[11px] font-bold hidden"></div>
+        <div class="flex gap-2 pt-1">
+          <button type="submit" class="pixel-btn py-2 text-[10px] flex-1">UPLATNIŤ KÓD</button>
+          <button type="button" id="cancelGiftcodeBtn" class="py-2 px-3 text-[10px] pixel-font border border-slate-600 bg-slate-800 hover:bg-slate-700 text-slate-200">ZAVRIEŤ</button>
+        </div>
+      </form>
     </div>
   </div>
 
@@ -4877,6 +4907,56 @@ Vráť VÝHRADNE JSON pole objektov:
       document.getElementById('closeAnimalMarketBtn').addEventListener('click', closeAnimalMarketModal);
       document.getElementById('confirmAnimalMarketBtn').addEventListener('click', closeAnimalMarketModal);
 
+      // Giftcode modal logic
+      const REDEEMED_GIFTCODES_KEY = 'pointless_redeemed_giftcodes';
+      const giftcodeModal = document.getElementById('giftcodeModal');
+      const giftcodeInput = document.getElementById('giftcodeInput');
+      const giftcodeMsg = document.getElementById('giftcodeMsg');
+      const openGiftcodeModal = () => {
+        if (giftcodeInput) giftcodeInput.value = '';
+        if (giftcodeMsg) {
+          giftcodeMsg.textContent = '';
+          giftcodeMsg.classList.add('hidden');
+        }
+        if (giftcodeModal) giftcodeModal.classList.remove('hidden');
+        if (giftcodeInput) setTimeout(() => giftcodeInput.focus(), 50);
+      };
+      const closeGiftcodeModal = () => {
+        if (giftcodeModal) giftcodeModal.classList.add('hidden');
+      };
+      document.getElementById('giftcodeBtn')?.addEventListener('click', openGiftcodeModal);
+      document.getElementById('closeGiftcodeBtn')?.addEventListener('click', closeGiftcodeModal);
+      document.getElementById('cancelGiftcodeBtn')?.addEventListener('click', closeGiftcodeModal);
+      document.getElementById('giftcodeForm')?.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const code = (giftcodeInput?.value || '').trim();
+        let redeemed = [];
+        try {
+          const parsed = JSON.parse(localStorage.getItem(REDEEMED_GIFTCODES_KEY) || '[]');
+          if (Array.isArray(parsed)) redeemed = parsed;
+        } catch {}
+
+        if (code === '6314') {
+          if (redeemed.includes('6314')) {
+            if (giftcodeMsg) {
+              giftcodeMsg.textContent = '⚠️ Tento giftcode už bol použitý!';
+              giftcodeMsg.className = 'text-[11px] font-bold text-amber-300';
+            }
+            return;
+          }
+          redeemed.push('6314');
+          localStorage.setItem(REDEEMED_GIFTCODES_KEY, JSON.stringify(redeemed));
+          addCoins(1000);
+          closeGiftcodeModal();
+          showToast('🎁 Giftcode uplatnený! +1 000 kamienkov 🪙');
+        } else {
+          if (giftcodeMsg) {
+            giftcodeMsg.textContent = '❌ Neplatný giftcode!';
+            giftcodeMsg.className = 'text-[11px] font-bold text-red-400';
+          }
+        }
+      });
+
       const farmCanvas = document.getElementById('farmInteriorCanvas');
       if (farmCanvas) {
         const getFarmCanvasCoords = (clientX, clientY) => {
@@ -4936,6 +5016,7 @@ Vráť VÝHRADNE JSON pole objektov:
         if (!document.getElementById('shopModal').classList.contains('hidden')) return;
         if (!document.getElementById('astronautModal').classList.contains('hidden')) return;
         if (!document.getElementById('farmModal').classList.contains('hidden')) return;
+        if (!document.getElementById('giftcodeModal').classList.contains('hidden')) return;
         if (!document.getElementById('coinsOfferModal').classList.contains('hidden')) return;
         if (!document.getElementById('deviceSelectModal').classList.contains('hidden')) return;
         if (isPointInBox(shopHitbox, e.clientX, e.clientY)) {
