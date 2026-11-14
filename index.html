@@ -1,12 +1,16 @@
 <!DOCTYPE html>
 <html lang="sk">
+
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
   <title>POINTLESS: Cesta do vesmíru (Solo & Multiplayer)</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600;700;800;900&display=swap"
+    rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
   <style>
@@ -15,10 +19,14 @@
       -webkit-tap-highlight-color: transparent;
       user-select: none;
     }
-    input, select {
+
+    input,
+    select {
       user-select: text !important;
     }
-    html, body {
+
+    html,
+    body {
       margin: 0;
       padding: 0;
       width: 100%;
@@ -31,65 +39,88 @@
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       touch-action: manipulation;
     }
+
     .pixel-font {
       font-family: 'Press Start 2P', monospace;
     }
+
     .pixel-box {
       border: 4px solid #38bdf8;
-      box-shadow: 
-        inset -4px -4px 0px 0px #0284c7, 
-        inset 4px 4px 0px 0px #bae6fd, 
+      box-shadow:
+        inset -4px -4px 0px 0px #0284c7,
+        inset 4px 4px 0px 0px #bae6fd,
         0px 0px 0px 4px #0c4a6e,
         0 10px 25px -5px rgba(0, 0, 0, 0.75);
     }
+
     .pixel-btn {
       font-family: 'Press Start 2P', monospace;
       position: relative;
       background-color: #0284c7;
       color: #ffffff;
       border: 4px solid #38bdf8;
-      box-shadow: 
-        inset -3px -3px 0px 0px #0369a1, 
-        inset 3px 3px 0px 0px #7dd3fc, 
+      box-shadow:
+        inset -3px -3px 0px 0px #0369a1,
+        inset 3px 3px 0px 0px #7dd3fc,
         0px 4px 0px 0px #082f49;
       transition: all 0.08s ease;
       cursor: pointer;
     }
+
     .pixel-btn:hover:not(:disabled) {
       background-color: #0369a1;
       transform: translateY(-1px);
-      box-shadow: 
-        inset -3px -3px 0px 0px #075985, 
-        inset 3px 3px 0px 0px #bae6fd, 
+      box-shadow:
+        inset -3px -3px 0px 0px #075985,
+        inset 3px 3px 0px 0px #bae6fd,
         0px 5px 0px 0px #082f49;
     }
+
     .pixel-btn:active:not(:disabled) {
       transform: translateY(3px);
-      box-shadow: 
-        inset -2px -2px 0px 0px #075985, 
-        inset 2px 2px 0px 0px #bae6fd, 
+      box-shadow:
+        inset -2px -2px 0px 0px #075985,
+        inset 2px 2px 0px 0px #bae6fd,
         0px 1px 0px 0px #082f49;
     }
+
     .pixel-btn:disabled {
       opacity: 0.5;
       cursor: not-allowed;
     }
+
     .timer-alert {
       color: #ef4444 !important;
       text-shadow: 0 0 10px rgba(239, 68, 68, 0.8);
       animation: pulseAlert 0.4s infinite alternate;
     }
+
     @keyframes pulseAlert {
-      from { transform: scale(1); }
-      to { transform: scale(1.08); }
+      from {
+        transform: scale(1);
+      }
+
+      to {
+        transform: scale(1.08);
+      }
     }
+
     @keyframes popIn {
-      0% { transform: scale(0.95); opacity: 0; }
-      100% { transform: scale(1); opacity: 1; }
+      0% {
+        transform: scale(0.95);
+        opacity: 0;
+      }
+
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
     }
+
     .panel-pop {
       animation: popIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     }
+
     #skyCanvas {
       position: absolute;
       top: 0;
@@ -99,131 +130,162 @@
       z-index: 0;
       image-rendering: pixelated;
     }
+
     .scanlines {
-      background: linear-gradient(
-        rgba(18, 16, 16, 0) 50%, 
-        rgba(0, 0, 0, 0.15) 50%
-      );
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%,
+          rgba(0, 0, 0, 0.15) 50%);
       background-size: 100% 4px;
       pointer-events: none;
     }
+
     #shopItemsGrid {
       scrollbar-width: thin;
       scrollbar-color: #eab308 #0f172a;
       -webkit-overflow-scrolling: touch;
     }
+
     #shopItemsGrid::-webkit-scrollbar {
       width: 8px;
     }
+
     #shopItemsGrid::-webkit-scrollbar-track {
       background: #0f172a;
       border-radius: 4px;
     }
+
     #shopItemsGrid::-webkit-scrollbar-thumb {
       background: #eab308;
       border-radius: 4px;
       border: 1px solid #020617;
     }
+
     /* Device-specific layout modes */
     body[data-device="mobile"] main {
       padding: 0.5rem;
       justify-content: flex-start;
     }
-    body[data-device="mobile"] main > div {
+
+    body[data-device="mobile"] main>div {
       margin-top: 0.35rem;
       margin-bottom: auto;
     }
+
     body[data-device="mobile"] #houseHeaderBtn {
       display: inline-flex;
     }
+
     body[data-device="mobile"] #astronautPreviewCanvas {
       width: 190px;
       height: 208px;
     }
+
     body[data-device="mobile"] #shopItemsGrid {
       grid-template-columns: 1fr;
     }
+
     body[data-device="ipad"] #houseHeaderBtn {
       display: inline-flex;
     }
+
     body[data-device="ipad"] #astronautPreviewCanvas {
       width: 260px;
       height: 284px;
     }
+
     body[data-device="desktop"] #houseHeaderBtn {
       display: none;
     }
   </style>
 </head>
+
 <body class="flex flex-col text-slate-100">
   <canvas id="skyCanvas"></canvas>
   <div class="scanlines absolute inset-0 z-10 pointer-events-none"></div>
 
   <!-- Subtle altitude indicator & Weather badge -->
   <div class="fixed top-14 right-4 z-30 flex flex-col items-end gap-1 pointer-events-none select-none">
-    <div id="altitudeText" class="text-[11px] font-mono font-bold tracking-widest text-white/85 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
+    <div id="altitudeText"
+      class="text-[11px] font-mono font-bold tracking-widest text-white/85 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
       0 m
     </div>
-    <div id="weatherBadge" class="text-[9px] font-mono tracking-wide text-sky-300/85 uppercase drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
+    <div id="weatherBadge"
+      class="text-[9px] font-mono tracking-wide text-sky-300/85 uppercase drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
       ☀️ SLNEČNO
     </div>
   </div>
 
   <!-- Vertical Pixel Altimeter Scale (Left Side on Desktop / Subtle Strip) -->
-  <div id="altimeterScale" class="fixed left-2 sm:left-3 top-20 bottom-6 w-7 z-20 pointer-events-none hidden sm:flex flex-col justify-between items-center bg-slate-950/55 border border-sky-500/30 py-2 backdrop-blur-xs">
+  <div id="altimeterScale"
+    class="fixed left-2 sm:left-3 top-20 bottom-6 w-7 z-20 pointer-events-none hidden sm:flex flex-col justify-between items-center bg-slate-950/55 border border-sky-500/30 py-2 backdrop-blur-xs">
     <div class="text-[7px] font-mono text-purple-300 font-bold">7k</div>
     <div class="relative flex-1 w-1 bg-slate-800 my-1">
       <!-- Space line at 1000m (1/7 from bottom = ~14.3%) -->
-      <div class="absolute left-[-4px] right-[-4px] h-[2px] bg-indigo-400" style="bottom: 14.3%;" title="Hranica vesmíru 1000m"></div>
+      <div class="absolute left-[-4px] right-[-4px] h-[2px] bg-indigo-400" style="bottom: 14.3%;"
+        title="Hranica vesmíru 1000m"></div>
       <div id="altimeterMarkers" class="absolute inset-0"></div>
     </div>
     <div class="text-[7px] font-mono text-emerald-300 font-bold">0m</div>
   </div>
 
   <!-- Header -->
-  <header class="relative z-20 flex justify-between items-center px-2 sm:px-4 py-2 sm:py-3 bg-slate-950/75 backdrop-blur-md border-b-2 border-sky-900/60 shadow-lg shrink-0 gap-1">
+  <header
+    class="relative z-20 flex justify-between items-center px-2 sm:px-4 py-2 sm:py-3 bg-slate-950/75 backdrop-blur-md border-b-2 border-sky-900/60 shadow-lg shrink-0 gap-1">
     <div class="flex items-center gap-1.5 sm:gap-3 min-w-0">
-      <div class="w-6 h-6 sm:w-7 sm:h-7 bg-sky-500 pixel-box flex items-center justify-center text-slate-950 font-black text-[10px] sm:text-xs shrink-0">P</div>
-      <span class="pixel-font text-[10px] sm:text-sm text-sky-400 tracking-wider drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] truncate">POINTLESS</span>
-      <span id="lobbyBadge" class="hidden text-[8px] sm:text-[9px] pixel-font bg-purple-950/90 text-purple-300 border border-purple-500/50 px-1.5 sm:px-2 py-1 shrink-0">
+      <div
+        class="w-6 h-6 sm:w-7 sm:h-7 bg-sky-500 pixel-box flex items-center justify-center text-slate-950 font-black text-[10px] sm:text-xs shrink-0">
+        P</div>
+      <span
+        class="pixel-font text-[10px] sm:text-sm text-sky-400 tracking-wider drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] truncate">POINTLESS</span>
+      <span id="lobbyBadge"
+        class="hidden text-[8px] sm:text-[9px] pixel-font bg-purple-950/90 text-purple-300 border border-purple-500/50 px-1.5 sm:px-2 py-1 shrink-0">
         <span class="hidden sm:inline">KÓD: </span><span id="headerRoomCode">----</span>
       </span>
     </div>
     <div class="flex items-center gap-1 sm:gap-2 shrink-0">
-      <div id="headerScore" class="hidden text-[9px] sm:text-xs pixel-font text-emerald-400 bg-slate-900/90 px-2 sm:px-2.5 py-1.5 rounded border border-emerald-500/40">
+      <div id="headerScore"
+        class="hidden text-[9px] sm:text-xs pixel-font text-emerald-400 bg-slate-900/90 px-2 sm:px-2.5 py-1.5 rounded border border-emerald-500/40">
         <span id="scoreVal">0</span> b
       </div>
-      <button id="houseHeaderBtn" title="Domček kozmonauta" class="sm:hidden text-[10px] pixel-font text-emerald-300 hover:text-white bg-emerald-950/70 px-2 py-1.5 rounded border border-emerald-500/40">
+      <button id="houseHeaderBtn" title="Domček kozmonauta"
+        class="sm:hidden text-[10px] pixel-font text-emerald-300 hover:text-white bg-emerald-950/70 px-2 py-1.5 rounded border border-emerald-500/40">
         🏠
       </button>
       <div class="flex items-center">
-        <button id="shopBtn" title="Kozmický obchod" class="text-[10px] pixel-font text-yellow-300 hover:text-white bg-yellow-950/70 px-1.5 sm:px-2 py-1.5 rounded-l border border-yellow-500/40 flex items-center">
+        <button id="shopBtn" title="Kozmický obchod"
+          class="text-[10px] pixel-font text-yellow-300 hover:text-white bg-yellow-950/70 px-1.5 sm:px-2 py-1.5 rounded-l border border-yellow-500/40 flex items-center">
           🛒
         </button>
-        <button id="coinsOfferBtn" title="Špeciálna ponuka: 10 000 kamienkov" class="text-[9px] sm:text-[10px] pixel-font text-yellow-300 hover:text-white bg-yellow-950/90 hover:bg-yellow-900/80 px-1.5 sm:px-2 py-1.5 rounded-r border border-l-0 border-yellow-500/40 flex items-center gap-1">
+        <button id="coinsOfferBtn" title="Špeciálna ponuka: 10 000 kamienkov"
+          class="text-[9px] sm:text-[10px] pixel-font text-yellow-300 hover:text-white bg-yellow-950/90 hover:bg-yellow-900/80 px-1.5 sm:px-2 py-1.5 rounded-r border border-l-0 border-yellow-500/40 flex items-center gap-1">
           <span id="headerCoinsVal">100</span> 🪙
         </button>
       </div>
-      <button id="apiKeyBtn" title="Nastaviť API kľúč" class="text-[10px] pixel-font text-amber-300 hover:text-white bg-amber-950/70 px-2 py-1.5 rounded border border-amber-500/40">
+      <button id="apiKeyBtn" title="Nastaviť API kľúč"
+        class="text-[10px] pixel-font text-amber-300 hover:text-white bg-amber-950/70 px-2 py-1.5 rounded border border-amber-500/40">
         🔑<span class="hidden sm:inline"> KĽÚČ</span>
       </button>
-      <button id="giftcodeBtn" title="Zadať Giftcode" class="text-[10px] pixel-font text-pink-300 hover:text-white bg-pink-950/70 hover:bg-pink-900/70 px-1.5 sm:px-2 py-1.5 rounded border border-pink-500/40">
+      <button id="giftcodeBtn" title="Zadať Giftcode"
+        class="text-[10px] pixel-font text-pink-300 hover:text-white bg-pink-950/70 hover:bg-pink-900/70 px-1.5 sm:px-2 py-1.5 rounded border border-pink-500/40">
         🎁<span class="hidden sm:inline"> GIFTCODE</span>
       </button>
-      <button id="deviceModeBtn" title="Zmeniť zariadenie (Mobil / iPad / Počítač)" class="text-[10px] pixel-font text-purple-300 hover:text-white bg-purple-950/70 px-2 py-1.5 rounded border border-purple-500/40">
+      <button id="deviceModeBtn" title="Zmeniť zariadenie (Mobil / iPad / Počítač)"
+        class="text-[10px] pixel-font text-purple-300 hover:text-white bg-purple-950/70 px-2 py-1.5 rounded border border-purple-500/40">
         💻
       </button>
-      <button id="rulesBtn" class="text-[10px] pixel-font text-sky-300 hover:text-white bg-sky-950/80 px-2 sm:px-2.5 py-1.5 rounded border border-sky-500/40">
+      <button id="rulesBtn"
+        class="text-[10px] pixel-font text-sky-300 hover:text-white bg-sky-950/80 px-2 sm:px-2.5 py-1.5 rounded border border-sky-500/40">
         ?
       </button>
     </div>
   </header>
 
   <!-- Main Viewport -->
-  <main class="relative z-20 flex-1 flex flex-col items-center justify-center p-2 sm:p-4 overflow-y-auto overscroll-contain">
-    
+  <main
+    class="relative z-20 flex-1 flex flex-col items-center justify-center p-2 sm:p-4 overflow-y-auto overscroll-contain">
+
     <!-- Screen 0: API Key Setup -->
-    <div id="apiKeyScreen" class="w-full max-w-md pixel-box bg-slate-950/90 backdrop-blur-md p-6 text-center flex flex-col items-center gap-4 rounded-none hidden">
+    <div id="apiKeyScreen"
+      class="w-full max-w-md pixel-box bg-slate-950/90 backdrop-blur-md p-6 text-center flex flex-col items-center gap-4 rounded-none hidden">
       <div class="space-y-1.5">
         <div class="text-2xl">🔑</div>
         <h2 class="pixel-font text-sm text-sky-400 leading-snug">
@@ -235,13 +297,8 @@
       </div>
 
       <form id="apiKeyForm" class="w-full flex flex-col gap-3">
-        <input 
-          type="password" 
-          id="apiKeyInput" 
-          placeholder="AIzaSy..." 
-          autocomplete="off"
-          class="w-full bg-slate-900 border-2 border-sky-500/60 px-3 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-sky-400 text-xs font-mono rounded-none"
-        >
+        <input type="password" id="apiKeyInput" placeholder="AIzaSy..." autocomplete="off"
+          class="w-full bg-slate-900 border-2 border-sky-500/60 px-3 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-sky-400 text-xs font-mono rounded-none">
         <div id="apiKeyError" class="text-[11px] text-red-400 font-semibold hidden"></div>
         <button type="submit" class="pixel-btn w-full py-3 text-xs tracking-wider">
           ULOŽIŤ KĽÚČ ▶
@@ -249,7 +306,8 @@
       </form>
 
       <div class="w-full flex justify-between items-center pt-2 border-t border-sky-900/60 text-[11px]">
-        <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer" class="text-sky-400 hover:text-sky-300 underline">
+        <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer"
+          class="text-sky-400 hover:text-sky-300 underline">
           Získať kľúč zadarmo ↗
         </a>
         <button id="skipKeyBtn" type="button" class="text-slate-300 hover:text-white underline">
@@ -259,7 +317,8 @@
     </div>
 
     <!-- Screen 1: Mode Selection (Solo / Create Lobby / Join Lobby) -->
-    <div id="modeScreen" class="w-full max-w-md pixel-box bg-slate-950/85 backdrop-blur-md p-5 sm:p-6 text-center flex flex-col items-center gap-4 rounded-none hidden">
+    <div id="modeScreen"
+      class="w-full max-w-md pixel-box bg-slate-950/85 backdrop-blur-md p-5 sm:p-6 text-center flex flex-col items-center gap-4 rounded-none hidden">
       <div class="space-y-1">
         <h1 class="pixel-font text-xl sm:text-2xl text-sky-400 drop-shadow-[0_3px_0_#0369a1]">
           POINTLESS
@@ -272,13 +331,8 @@
       <!-- Player Nickname -->
       <div class="w-full text-left">
         <label class="text-[10px] pixel-font text-sky-300 block mb-1">TVOJA PREZÝVKA:</label>
-        <input 
-          type="text" 
-          id="nicknameInput" 
-          maxlength="12"
-          placeholder="Napr. Kozmonaut" 
-          class="w-full bg-slate-900 border-2 border-sky-500/60 px-3 py-2 text-white text-xs font-bold focus:outline-none focus:border-sky-400 rounded-none"
-        >
+        <input type="text" id="nicknameInput" maxlength="12" placeholder="Napr. Kozmonaut"
+          class="w-full bg-slate-900 border-2 border-sky-500/60 px-3 py-2 text-white text-xs font-bold focus:outline-none focus:border-sky-400 rounded-none">
       </div>
 
       <!-- SOLO BUTTON -->
@@ -288,32 +342,29 @@
 
       <div class="w-full border-t border-sky-800/70 pt-3 flex flex-col gap-2.5">
         <div class="text-[10px] pixel-font text-purple-300">MULTIPLAYER (2 – 6 HRÁČOV)</div>
-        
+
         <!-- Create Lobby row -->
         <div class="flex gap-2">
-          <select id="maxPlayersSelect" class="bg-slate-900 border-2 border-purple-500/60 text-white text-xs font-bold px-2.5 py-2.5 focus:outline-none">
+          <select id="maxPlayersSelect"
+            class="bg-slate-900 border-2 border-purple-500/60 text-white text-xs font-bold px-2.5 py-2.5 focus:outline-none">
             <option value="2">2 hráči</option>
             <option value="3">3 hráči</option>
             <option value="4">4 hráči</option>
             <option value="5" selected>5 hráčov</option>
             <option value="6">6 hráčov</option>
           </select>
-          <button id="createLobbyBtn" class="pixel-btn flex-1 py-2.5 text-[10px] sm:text-xs bg-purple-700 border-purple-400">
+          <button id="createLobbyBtn"
+            class="pixel-btn flex-1 py-2.5 text-[10px] sm:text-xs bg-purple-700 border-purple-400">
             VYTVORIŤ LOBBY
           </button>
         </div>
 
         <!-- Join Lobby row -->
         <div class="flex gap-2">
-          <input 
-            type="text" 
-            id="joinCodeInput" 
-            maxlength="4" 
-            inputmode="numeric"
-            placeholder="KÓD (4 čísla)" 
-            class="w-32 bg-slate-900 border-2 border-emerald-500/60 px-2.5 py-2 text-center text-white font-mono text-xs uppercase tracking-widest focus:outline-none"
-          >
-          <button id="joinLobbyBtn" class="pixel-btn flex-1 py-2.5 text-[10px] sm:text-xs bg-emerald-700 border-emerald-400">
+          <input type="text" id="joinCodeInput" maxlength="4" inputmode="numeric" placeholder="KÓD (4 čísla)"
+            class="w-32 bg-slate-900 border-2 border-emerald-500/60 px-2.5 py-2 text-center text-white font-mono text-xs uppercase tracking-widest focus:outline-none">
+          <button id="joinLobbyBtn"
+            class="pixel-btn flex-1 py-2.5 text-[10px] sm:text-xs bg-emerald-700 border-emerald-400">
             PRIPOJIŤ SA
           </button>
         </div>
@@ -322,16 +373,19 @@
     </div>
 
     <!-- Screen 1.5: Multiplayer Waiting Room (Lobby) -->
-    <div id="lobbyScreen" class="w-full max-w-md pixel-box bg-slate-950/90 backdrop-blur-md p-5 sm:p-6 text-center flex flex-col items-center gap-4 rounded-none hidden">
+    <div id="lobbyScreen"
+      class="w-full max-w-md pixel-box bg-slate-950/90 backdrop-blur-md p-5 sm:p-6 text-center flex flex-col items-center gap-4 rounded-none hidden">
       <div class="space-y-1">
         <div class="text-[10px] pixel-font text-purple-300">KÓD MIESTNOSTI PRE KAMARÁTOV:</div>
-        <div id="displayRoomCode" class="pixel-font text-3xl text-amber-400 tracking-widest bg-slate-900 border-2 border-amber-500/50 py-2 px-5 inline-block select-all">
+        <div id="displayRoomCode"
+          class="pixel-font text-3xl text-amber-400 tracking-widest bg-slate-900 border-2 border-amber-500/50 py-2 px-5 inline-block select-all">
           ----
         </div>
       </div>
 
       <div class="w-full bg-slate-900/80 border border-sky-800/60 p-3 text-left">
-        <div class="flex justify-between items-center text-[10px] pixel-font text-sky-300 mb-2 border-b border-sky-800/50 pb-1.5">
+        <div
+          class="flex justify-between items-center text-[10px] pixel-font text-sky-300 mb-2 border-b border-sky-800/50 pb-1.5">
           <span>HRÁČI V LOBBY</span>
           <span id="lobbyCountText">1/5</span>
         </div>
@@ -355,8 +409,9 @@
     </div>
 
     <!-- Screen 2: Question & Gameplay -->
-    <div id="gameScreen" class="w-full max-w-lg pixel-box bg-slate-950/90 backdrop-blur-md p-4 sm:p-5 flex flex-col gap-3 rounded-none hidden">
-      
+    <div id="gameScreen"
+      class="w-full max-w-lg pixel-box bg-slate-950/90 backdrop-blur-md p-4 sm:p-5 flex flex-col gap-3 rounded-none hidden">
+
       <!-- Top info bar -->
       <div class="flex justify-between items-center text-xs border-b border-sky-800/60 pb-2">
         <div class="text-sky-300 font-semibold tracking-wide flex items-center gap-1.5">
@@ -386,7 +441,8 @@
       </div>
 
       <!-- Solo Result Area -->
-      <div id="scoreArea" class="hidden flex-col items-center justify-center py-2 gap-1.5 bg-slate-900/70 border border-sky-800/40 p-3">
+      <div id="scoreArea"
+        class="hidden flex-col items-center justify-center py-2 gap-1.5 bg-slate-900/70 border border-sky-800/40 p-3">
         <div class="flex items-center gap-4">
           <div class="text-center">
             <div class="text-[9px] text-slate-400">HLASOV</div>
@@ -417,22 +473,17 @@
 
       <!-- Status Indicator -->
       <div id="aiLoadingIndicator" class="hidden text-center py-2">
-        <div class="inline-flex items-center gap-2 text-[10px] sm:text-xs pixel-font text-sky-300 bg-sky-950/80 px-3 py-1.5 border border-sky-500/40 animate-pulse">
+        <div
+          class="inline-flex items-center gap-2 text-[10px] sm:text-xs pixel-font text-sky-300 bg-sky-950/80 px-3 py-1.5 border border-sky-500/40 animate-pulse">
           <span>⏳ POČÍTAM HLASY V PRIESKUME...</span>
         </div>
       </div>
 
       <!-- Input Form -->
       <form id="answerForm" class="flex flex-col gap-2.5">
-        <input 
-          type="text" 
-          id="answerInput" 
-          placeholder="Zadaj svoju odpoveď..." 
-          autocomplete="off" 
-          autocorrect="off" 
+        <input type="text" id="answerInput" placeholder="Zadaj svoju odpoveď..." autocomplete="off" autocorrect="off"
           spellcheck="false"
-          class="w-full bg-slate-900 border-2 border-sky-500/60 px-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-sky-400 text-sm font-semibold rounded-none"
-        >
+          class="w-full bg-slate-900 border-2 border-sky-500/60 px-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-sky-400 text-sm font-semibold rounded-none">
         <button type="submit" id="submitBtn" class="pixel-btn py-2.5 text-xs tracking-wider">
           ODOSLAŤ ODPOVEĎ ↵
         </button>
@@ -448,7 +499,8 @@
     </div>
 
     <!-- Screen 3: End Results (Solo & Multiplayer Podium) -->
-    <div id="endScreen" class="w-full max-w-md pixel-box bg-slate-950/85 backdrop-blur-md p-5 text-center flex flex-col items-center gap-3.5 rounded-none hidden panel-pop">
+    <div id="endScreen"
+      class="w-full max-w-md pixel-box bg-slate-950/85 backdrop-blur-md p-5 text-center flex flex-col items-center gap-3.5 rounded-none hidden panel-pop">
       <div class="space-y-1">
         <h2 class="pixel-font text-base sm:text-lg text-sky-400 drop-shadow-[0_2px_0_#0369a1]">
           MISIA UKONČENÁ!
@@ -457,18 +509,20 @@
           🚀 ZÁCHRANNÁ RAKETA VYŠTARTUJE...
         </div>
       </div>
-      
+
       <!-- Solo Summary -->
       <div id="soloEndSummary" class="w-full bg-sky-950/60 border border-sky-500/30 p-3.5 space-y-1.5 hidden">
         <div class="text-[10px] text-sky-200 font-mono">MAXIMÁLNA DOSIAHNUTÁ VÝŠKA:</div>
         <div id="finalAltitude" class="pixel-font text-2xl text-emerald-400 font-bold">0 m</div>
-        <div class="text-xs text-slate-300 font-medium">Celkové skóre: <span id="finalScore" class="font-bold text-white">0</span> / 700 bodov</div>
+        <div class="text-xs text-slate-300 font-medium">Celkové skóre: <span id="finalScore"
+            class="font-bold text-white">0</span> / 700 bodov</div>
         <div id="finalTitle" class="text-xs pixel-font text-amber-300 pt-2 border-t border-sky-800/40">POZEMŠŤAN</div>
       </div>
 
       <!-- Multiplayer Podium -->
       <div id="multiEndSummary" class="w-full bg-sky-950/60 border border-sky-500/30 p-3 space-y-2 text-left hidden">
-        <div class="text-[10px] pixel-font text-amber-300 text-center pb-1 border-b border-sky-800/50">KONEČNÉ PORADIE VESMÍRU</div>
+        <div class="text-[10px] pixel-font text-amber-300 text-center pb-1 border-b border-sky-800/50">KONEČNÉ PORADIE
+          VESMÍRU</div>
         <div id="podiumList" class="space-y-1.5 text-xs">
           <!-- Populated dynamically -->
         </div>
@@ -481,8 +535,10 @@
   </main>
 
   <!-- Modal: Shop -->
-  <div id="shopModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 hidden">
-    <div class="w-full max-w-lg pixel-box bg-slate-950 p-3.5 sm:p-5 flex flex-col gap-2.5 sm:gap-3 text-left border-2 border-yellow-400 max-h-[88dvh] sm:max-h-[85dvh] min-h-0">
+  <div id="shopModal"
+    class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 hidden">
+    <div
+      class="w-full max-w-lg pixel-box bg-slate-950 p-3.5 sm:p-5 flex flex-col gap-2.5 sm:gap-3 text-left border-2 border-yellow-400 max-h-[88dvh] sm:max-h-[85dvh] min-h-0">
       <div class="flex justify-between items-center border-b border-yellow-700/60 pb-2 shrink-0">
         <div class="flex items-center gap-2">
           <span class="pixel-font text-xs text-yellow-300">🛒 KOZMICKÝ SHOP</span>
@@ -493,11 +549,19 @@
         <button id="closeShopBtn" class="text-yellow-300 hover:text-white font-bold text-base px-2">✕</button>
       </div>
       <div id="shopPageTabs" class="grid grid-cols-3 gap-1.5 shrink-0">
-        <button type="button" data-shop-page="suit" class="shop-tab-btn py-1.5 px-1 text-[9px] pixel-font border-2 border-yellow-400 bg-yellow-500/20 text-yellow-200">1. SKINY</button>
-        <button type="button" data-shop-page="hat" class="shop-tab-btn py-1.5 px-1 text-[9px] pixel-font border-2 border-slate-700 bg-slate-900 text-slate-400 hover:text-white">2. NA HLAVU</button>
-        <button type="button" data-shop-page="trail" class="shop-tab-btn py-1.5 px-1 text-[9px] pixel-font border-2 border-slate-700 bg-slate-900 text-slate-400 hover:text-white">3. JETPACK</button>
+        <button type="button" data-shop-page="suit"
+          class="shop-tab-btn py-1.5 px-1 text-[9px] pixel-font border-2 border-yellow-400 bg-yellow-500/20 text-yellow-200">1.
+          SKINY</button>
+        <button type="button" data-shop-page="hat"
+          class="shop-tab-btn py-1.5 px-1 text-[9px] pixel-font border-2 border-slate-700 bg-slate-900 text-slate-400 hover:text-white">2.
+          NA HLAVU</button>
+        <button type="button" data-shop-page="trail"
+          class="shop-tab-btn py-1.5 px-1 text-[9px] pixel-font border-2 border-slate-700 bg-slate-900 text-slate-400 hover:text-white">3.
+          JETPACK</button>
       </div>
-      <div id="shopItemsGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y pr-1.5 py-1"></div>
+      <div id="shopItemsGrid"
+        class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y pr-1.5 py-1">
+      </div>
       <p class="text-[10px] text-slate-400 leading-snug border-t border-slate-800 pt-2 shrink-0">
         Tip: Kredity získavaš za správne odpovede (+10 🪙), Pointless (+40 🪙) a dokončenie hry (+25 🪙).
       </p>
@@ -506,13 +570,16 @@
   </div>
 
   <!-- Modal: Ponuka kamienkov -->
-  <div id="coinsOfferModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
-    <div class="w-full max-w-sm pixel-box bg-slate-950 p-5 flex flex-col gap-3 text-center border-2 border-amber-400 panel-pop">
+  <div id="coinsOfferModal"
+    class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div
+      class="w-full max-w-sm pixel-box bg-slate-950 p-5 flex flex-col gap-3 text-center border-2 border-amber-400 panel-pop">
       <div class="flex justify-between items-center border-b border-amber-700/60 pb-2">
         <span class="pixel-font text-xs text-amber-300">💎 ŠPECIÁLNA PONUKA</span>
         <button id="closeOfferBtn" class="text-amber-300 hover:text-white font-bold text-base px-2">✕</button>
       </div>
-      <div class="p-4 border-2 border-amber-400/70 bg-gradient-to-b from-amber-950/50 to-slate-900 flex flex-col items-center gap-2">
+      <div
+        class="p-4 border-2 border-amber-400/70 bg-gradient-to-b from-amber-950/50 to-slate-900 flex flex-col items-center gap-2">
         <span class="text-[9px] pixel-font bg-red-600 text-white px-2 py-0.5 border border-red-300">🔥 MEGA BALÍK</span>
         <div class="text-3xl mt-1">🪙💎🪙</div>
         <div class="pixel-font text-base text-yellow-300">10 000 KAMIENKOV</div>
@@ -521,33 +588,40 @@
           5,99 €
         </div>
       </div>
-      <button id="buyOfferBtn" class="pixel-btn py-2.5 text-xs w-full !bg-emerald-600 !border-emerald-300 hover:!bg-emerald-500">
+      <button id="buyOfferBtn"
+        class="pixel-btn py-2.5 text-xs w-full !bg-emerald-600 !border-emerald-300 hover:!bg-emerald-500">
         KÚPIŤ ZA 5,99 €
       </button>
-      <button id="cancelOfferBtn" class="py-2 text-[10px] pixel-font border border-slate-700 bg-slate-900 hover:bg-slate-800 text-slate-300 w-full">
+      <button id="cancelOfferBtn"
+        class="py-2 text-[10px] pixel-font border border-slate-700 bg-slate-900 hover:bg-slate-800 text-slate-300 w-full">
         MOŽNO NESKÔR
       </button>
     </div>
   </div>
 
   <!-- Modal: Výber zariadenia na začiatku -->
-  <div id="deviceSelectModal" class="fixed inset-0 z-[60] bg-black/85 backdrop-blur-sm flex items-center justify-center p-4 hidden">
-    <div class="w-full max-w-md pixel-box bg-slate-950 p-5 flex flex-col gap-3.5 text-center border-2 border-sky-400 panel-pop">
+  <div id="deviceSelectModal"
+    class="fixed inset-0 z-[60] bg-black/85 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div
+      class="w-full max-w-md pixel-box bg-slate-950 p-5 flex flex-col gap-3.5 text-center border-2 border-sky-400 panel-pop">
       <div class="space-y-1 border-b border-sky-800/70 pb-2.5">
         <div class="text-2xl">🚀</div>
         <h2 class="pixel-font text-xs sm:text-sm text-sky-300">NA AKOM ZARIADENÍ HRÁŠ?</h2>
         <p class="text-xs text-slate-300">Prispôsobím vzhľad hry presne pre tvoju obrazovku.</p>
       </div>
       <div class="grid grid-cols-1 gap-2.5">
-        <button type="button" data-device-choice="mobile" class="device-choice-btn pixel-btn py-3 px-4 text-xs flex items-center justify-between !bg-emerald-700 !border-emerald-400 hover:!bg-emerald-600">
+        <button type="button" data-device-choice="mobile"
+          class="device-choice-btn pixel-btn py-3 px-4 text-xs flex items-center justify-between !bg-emerald-700 !border-emerald-400 hover:!bg-emerald-600">
           <span>📱 MOBIL</span>
           <span class="text-[9px] text-emerald-100 font-sans font-normal">Kompaktný dotyk</span>
         </button>
-        <button type="button" data-device-choice="ipad" class="device-choice-btn pixel-btn py-3 px-4 text-xs flex items-center justify-between !bg-purple-700 !border-purple-400 hover:!bg-purple-600">
+        <button type="button" data-device-choice="ipad"
+          class="device-choice-btn pixel-btn py-3 px-4 text-xs flex items-center justify-between !bg-purple-700 !border-purple-400 hover:!bg-purple-600">
           <span>📲 iPAD / TABLET</span>
           <span class="text-[9px] text-purple-100 font-sans font-normal">Stredný rozmer</span>
         </button>
-        <button type="button" data-device-choice="desktop" class="device-choice-btn pixel-btn py-3 px-4 text-xs flex items-center justify-between !bg-sky-700 !border-sky-400 hover:!bg-sky-600">
+        <button type="button" data-device-choice="desktop"
+          class="device-choice-btn pixel-btn py-3 px-4 text-xs flex items-center justify-between !bg-sky-700 !border-sky-400 hover:!bg-sky-600">
           <span>💻 POČÍTAČ</span>
           <span class="text-[9px] text-sky-100 font-sans font-normal">Klasický PC režim</span>
         </button>
@@ -557,19 +631,23 @@
   </div>
 
   <!-- Modal: Domček kozmonauta (Detailný náhľad) -->
-  <div id="astronautModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 hidden">
-    <div class="w-full max-w-2xl pixel-box bg-slate-950 p-3.5 sm:p-5 flex flex-col gap-2.5 sm:gap-3 text-left border-2 border-emerald-400 max-h-[90dvh] overflow-y-auto">
+  <div id="astronautModal"
+    class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 hidden">
+    <div
+      class="w-full max-w-2xl pixel-box bg-slate-950 p-3.5 sm:p-5 flex flex-col gap-2.5 sm:gap-3 text-left border-2 border-emerald-400 max-h-[90dvh] overflow-y-auto">
       <div class="flex justify-between items-center border-b border-emerald-800/70 pb-2">
         <div class="flex items-center gap-2">
           <span class="pixel-font text-[10px] sm:text-xs text-emerald-300">🏠 DOMČEK KOZMONAUTA</span>
-          <span id="astronautModalNick" class="text-[9px] sm:text-[10px] pixel-font bg-emerald-950/80 text-emerald-200 border border-emerald-500/50 px-2 py-0.5">Kozmonaut</span>
+          <span id="astronautModalNick"
+            class="text-[9px] sm:text-[10px] pixel-font bg-emerald-950/80 text-emerald-200 border border-emerald-500/50 px-2 py-0.5">Kozmonaut</span>
         </div>
         <button id="closeAstronautBtn" class="text-emerald-300 hover:text-white font-bold text-base px-2">✕</button>
       </div>
 
       <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 items-center sm:items-stretch">
         <div class="relative rounded border-2 border-slate-700 bg-slate-900 overflow-hidden shrink-0 shadow-inner">
-          <canvas id="astronautPreviewCanvas" width="320" height="350" class="block w-[200px] h-[218px] sm:w-[320px] sm:h-[350px]"></canvas>
+          <canvas id="astronautPreviewCanvas" width="320" height="350"
+            class="block w-[200px] h-[218px] sm:w-[320px] sm:h-[350px]"></canvas>
         </div>
 
         <div class="flex-1 w-full flex flex-col justify-between gap-3">
@@ -600,7 +678,8 @@
 
           <div class="flex flex-col gap-2 pt-1">
             <button id="openShopFromHouseBtn" class="pixel-btn py-2 text-[10px] w-full">🛒 UPRAVIŤ V OBCHODE</button>
-            <button id="confirmAstronautBtn" class="py-2 text-[10px] pixel-font border border-slate-600 bg-slate-800 hover:bg-slate-700 text-slate-200 w-full">ZAVRIEŤ</button>
+            <button id="confirmAstronautBtn"
+              class="py-2 text-[10px] pixel-font border border-slate-600 bg-slate-800 hover:bg-slate-700 text-slate-200 w-full">ZAVRIEŤ</button>
           </div>
         </div>
       </div>
@@ -608,12 +687,15 @@
   </div>
 
   <!-- Modal: Interiér farmy -->
-  <div id="farmModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 hidden">
-    <div class="w-full max-w-2xl pixel-box bg-slate-950 p-3.5 sm:p-5 flex flex-col gap-2.5 sm:gap-3 text-left border-2 border-red-400 max-h-[90dvh] overflow-y-auto">
+  <div id="farmModal"
+    class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 hidden">
+    <div
+      class="w-full max-w-2xl pixel-box bg-slate-950 p-3.5 sm:p-5 flex flex-col gap-2.5 sm:gap-3 text-left border-2 border-red-400 max-h-[90dvh] overflow-y-auto">
       <div class="flex justify-between items-center border-b border-red-900/70 pb-2">
         <div class="flex items-center gap-2">
           <span class="pixel-font text-[10px] sm:text-xs text-red-300">🏡 INTERIÉR FARMY</span>
-          <span class="text-[9px] sm:text-[10px] pixel-font bg-red-950/80 text-red-200 border border-red-500/50 px-2 py-0.5">Stodola</span>
+          <span
+            class="text-[9px] sm:text-[10px] pixel-font bg-red-950/80 text-red-200 border border-red-500/50 px-2 py-0.5">Stodola</span>
         </div>
         <button id="closeFarmBtn" class="text-red-300 hover:text-white font-bold text-base px-2">✕</button>
       </div>
@@ -623,19 +705,24 @@
       </div>
 
       <div class="flex flex-col sm:flex-row items-center justify-between gap-2 pt-1">
-        <span class="text-xs text-slate-300">Klikni na krabicu <strong class="text-amber-300">NA PREDAJ</strong> na ľavej poličke a pozri si zvieratá.</span>
-        <button id="confirmFarmBtn" class="py-2 px-5 text-[10px] pixel-font border border-slate-600 bg-slate-800 hover:bg-slate-700 text-slate-200 w-full sm:w-auto shrink-0">ZAVRIEŤ</button>
+        <span class="text-xs text-slate-300">Klikni na krabicu <strong class="text-amber-300">NA PREDAJ</strong> na
+          ľavej poličke a pozri si zvieratá.</span>
+        <button id="confirmFarmBtn"
+          class="py-2 px-5 text-[10px] pixel-font border border-slate-600 bg-slate-800 hover:bg-slate-700 text-slate-200 w-full sm:w-auto shrink-0">ZAVRIEŤ</button>
       </div>
     </div>
   </div>
 
   <!-- Modal: Krabica NA PREDAJ (Zoznam zvierat) -->
-  <div id="animalMarketModal" class="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 hidden">
-    <div class="w-full max-w-2xl pixel-box bg-slate-950 p-3.5 sm:p-5 flex flex-col gap-3 text-left border-2 border-amber-400 max-h-[88dvh]">
+  <div id="animalMarketModal"
+    class="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 hidden">
+    <div
+      class="w-full max-w-2xl pixel-box bg-slate-950 p-3.5 sm:p-5 flex flex-col gap-3 text-left border-2 border-amber-400 max-h-[88dvh]">
       <div class="flex justify-between items-center border-b border-amber-800/70 pb-2 gap-2">
         <div class="flex items-center gap-2 flex-wrap">
           <span class="pixel-font text-[10px] sm:text-xs text-amber-300">📦 NA PREDAJ — ZVIERATÁ</span>
-          <span class="text-[10px] pixel-font bg-amber-950/80 text-amber-200 border border-amber-500/50 px-2 py-0.5">🪙 <span id="animalMarketCoinsVal">0</span></span>
+          <span class="text-[10px] pixel-font bg-amber-950/80 text-amber-200 border border-amber-500/50 px-2 py-0.5">🪙
+            <span id="animalMarketCoinsVal">0</span></span>
         </div>
         <button id="closeAnimalMarketBtn" class="text-amber-300 hover:text-white font-bold text-base px-2">✕</button>
       </div>
@@ -643,13 +730,15 @@
       <div id="animalMarketList" class="grid grid-cols-1 sm:grid-cols-2 gap-2 overflow-y-auto pr-1 flex-1"></div>
 
       <div class="flex justify-end pt-1 border-t border-slate-800">
-        <button id="confirmAnimalMarketBtn" class="py-2 px-5 text-[10px] pixel-font border border-slate-600 bg-slate-800 hover:bg-slate-700 text-slate-200 w-full sm:w-auto">ZAVRIEŤ</button>
+        <button id="confirmAnimalMarketBtn"
+          class="py-2 px-5 text-[10px] pixel-font border border-slate-600 bg-slate-800 hover:bg-slate-700 text-slate-200 w-full sm:w-auto">ZAVRIEŤ</button>
       </div>
     </div>
   </div>
 
   <!-- Modal: Giftcode -->
-  <div id="giftcodeModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+  <div id="giftcodeModal"
+    class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
     <div class="w-full max-w-sm pixel-box bg-slate-950 p-5 flex flex-col gap-3 text-left border-2 border-pink-400">
       <div class="flex justify-between items-center border-b border-pink-800/70 pb-2">
         <span class="pixel-font text-xs text-pink-300">🎁 GIFTCODE</span>
@@ -659,33 +748,33 @@
         Zadaj tajný giftcode a získaj odmenu v podobe kamienkov 🪙!
       </p>
       <form id="giftcodeForm" class="flex flex-col gap-2.5">
-        <input
-          type="text"
-          id="giftcodeInput"
-          placeholder="Zadaj kód..."
-          autocomplete="off"
-          class="w-full bg-slate-900 border-2 border-pink-500/60 px-3 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-pink-400 text-xs font-mono rounded-none"
-        />
+        <input type="text" id="giftcodeInput" placeholder="Zadaj kód..." autocomplete="off"
+          class="w-full bg-slate-900 border-2 border-pink-500/60 px-3 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-pink-400 text-xs font-mono rounded-none" />
         <div id="giftcodeMsg" class="text-[11px] font-bold hidden"></div>
         <div class="flex gap-2 pt-1">
           <button type="submit" class="pixel-btn py-2 text-[10px] flex-1">UPLATNIŤ KÓD</button>
-          <button type="button" id="cancelGiftcodeBtn" class="py-2 px-3 text-[10px] pixel-font border border-slate-600 bg-slate-800 hover:bg-slate-700 text-slate-200">ZAVRIEŤ</button>
+          <button type="button" id="cancelGiftcodeBtn"
+            class="py-2 px-3 text-[10px] pixel-font border border-slate-600 bg-slate-800 hover:bg-slate-700 text-slate-200">ZAVRIEŤ</button>
         </div>
       </form>
     </div>
   </div>
 
   <!-- Modal: Pravidlá -->
-  <div id="rulesModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+  <div id="rulesModal"
+    class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
     <div class="w-full max-w-md pixel-box bg-slate-950 p-5 flex flex-col gap-3 text-left border-2 border-sky-400">
       <div class="flex justify-between items-center border-b border-sky-800 pb-2">
         <span class="pixel-font text-xs text-sky-400">PRAVIDLÁ HRY</span>
         <button id="closeRulesBtn" class="text-sky-400 hover:text-white font-bold text-base px-2">✕</button>
       </div>
       <div class="text-xs text-slate-300 space-y-2 leading-relaxed">
-        <p>🎯 <b>Princíp Pointless:</b> Povedz platnú odpoveď na otázku, ktorú v prieskume 100 ľudí povedalo <b>čo najmenej ľudí</b> (0 ľudí = 100 bodov).</p>
-        <p>👨‍🚀 <b>Vzlet (7 kôl):</b> Každý bod = <b>10 metrov</b>. Po 1 000 m vstupuješ do vesmíru. V multiplayeri vidíš na plátne všetkých kozmonautov vedľa seba!</p>
-        <p>👥 <b>Multiplayer (2 – 6 hráčov):</b> Hostiteľ vytvorí lobby a zdieľa 4-miestny kód. API kľúč zadáva iba hostiteľ.</p>
+        <p>🎯 <b>Princíp Pointless:</b> Povedz platnú odpoveď na otázku, ktorú v prieskume 100 ľudí povedalo <b>čo
+            najmenej ľudí</b> (0 ľudí = 100 bodov).</p>
+        <p>👨‍🚀 <b>Vzlet (7 kôl):</b> Každý bod = <b>10 metrov</b>. Po 1 000 m vstupuješ do vesmíru. V multiplayeri
+          vidíš na plátne všetkých kozmonautov vedľa seba!</p>
+        <p>👥 <b>Multiplayer (2 – 6 hráčov):</b> Hostiteľ vytvorí lobby a zdieľa 4-miestny kód. API kľúč zadáva iba
+          hostiteľ.</p>
         <p>⏱️ <b>Limit 30 sekúnd:</b> Ak nestihneš odpovedať včas, dostávaš 0 bodov („Hlupák 0 bodov“).</p>
       </div>
       <button id="confirmRulesBtn" class="pixel-btn py-2 text-xs w-full mt-1">ROZUMIEM</button>
@@ -693,7 +782,9 @@
   </div>
 
   <!-- Custom In-App Alert Banner (replaces alert()) -->
-  <div id="toastMsg" class="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 bg-red-950/95 border-2 border-red-500 text-red-200 px-4 py-2 text-xs font-bold shadow-xl hidden"></div>
+  <div id="toastMsg"
+    class="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 bg-red-950/95 border-2 border-red-500 text-red-200 px-4 py-2 text-xs font-bold shadow-xl hidden">
+  </div>
 
   <script src="questions.js"></script>
   <script src="shop.js"></script>
@@ -790,11 +881,10 @@
     function updateShopPageTabs() {
       document.querySelectorAll('.shop-tab-btn').forEach(btn => {
         const isActive = btn.dataset.shopPage === currentShopPage;
-        btn.className = `shop-tab-btn py-1.5 px-1 text-[9px] pixel-font border-2 transition-colors ${
-          isActive
+        btn.className = `shop-tab-btn py-1.5 px-1 text-[9px] pixel-font border-2 transition-colors ${isActive
             ? 'border-yellow-400 bg-yellow-500/20 text-yellow-200'
             : 'border-slate-700 bg-slate-900 text-slate-400 hover:text-white hover:border-slate-500'
-        }`;
+          }`;
       });
     }
 
@@ -828,13 +918,12 @@
         const canAfford = playerCoins >= item.price;
 
         const card = document.createElement('div');
-        card.className = `p-3 border-2 flex flex-col justify-between gap-2 ${
-          isEquipped
+        card.className = `p-3 border-2 flex flex-col justify-between gap-2 ${isEquipped
             ? 'border-emerald-400 bg-emerald-950/30'
             : isOwned
               ? 'border-sky-500/60 bg-slate-900/90'
               : 'border-slate-700 bg-slate-900/70'
-        }`;
+          }`;
 
         card.innerHTML = `
           <div class="flex items-start justify-between gap-2">
@@ -850,15 +939,14 @@
             <span class="text-[10px] pixel-font ${isOwned ? 'text-emerald-400' : 'text-yellow-300'}">
               ${isOwned ? (isEquipped ? 'NASADENÉ' : 'VLASTNENÉ') : `${item.price} 🪙`}
             </span>
-            <button type="button" class="shop-action-btn px-2.5 py-1 text-[9px] pixel-font border ${
-              isOwned
-                ? (isEquipped
-                    ? 'bg-slate-800 border-slate-500 text-slate-200 hover:bg-slate-700'
-                    : 'bg-emerald-700 border-emerald-400 text-white hover:bg-emerald-600')
-                : (canAfford
-                    ? 'bg-yellow-600 border-yellow-300 text-slate-950 hover:bg-yellow-500'
-                    : 'bg-slate-800 border-slate-700 text-slate-500 cursor-not-allowed')
-            }">
+            <button type="button" class="shop-action-btn px-2.5 py-1 text-[9px] pixel-font border ${isOwned
+            ? (isEquipped
+              ? 'bg-slate-800 border-slate-500 text-slate-200 hover:bg-slate-700'
+              : 'bg-emerald-700 border-emerald-400 text-white hover:bg-emerald-600')
+            : (canAfford
+              ? 'bg-yellow-600 border-yellow-300 text-slate-950 hover:bg-yellow-500'
+              : 'bg-slate-800 border-slate-700 text-slate-500 cursor-not-allowed')
+          }">
               ${isOwned ? (isEquipped ? 'ZLOŽIŤ' : 'NASADIŤ') : 'KÚPIŤ'}
             </button>
           </div>
@@ -943,11 +1031,10 @@
         const createSuitBtn = (suitId, icon, label, isActive) => {
           const btn = document.createElement('button');
           btn.type = 'button';
-          btn.className = `w-full px-2.5 py-1.5 border text-left text-xs flex items-center justify-between gap-2 transition-colors ${
-            isActive
+          btn.className = `w-full px-2.5 py-1.5 border text-left text-xs flex items-center justify-between gap-2 transition-colors ${isActive
               ? 'border-emerald-400 bg-emerald-950/60 text-emerald-200'
               : 'border-slate-700 bg-slate-950/70 hover:border-sky-400 text-slate-200'
-          }`;
+            }`;
           btn.innerHTML = `
             <span class="flex items-center gap-2 truncate">
               <span>${icon}</span>
@@ -1656,11 +1743,11 @@
       fctx.strokeStyle = '#78350f';
       fctx.lineWidth = 1;
       fctx.strokeRect(boxX + 5, boxY + 10, boxW - 10, 18);
-      fctx.font = 'bold 9px "Press Start 2P", monospace';
+      fctx.font = 'bold 6.5px "Press Start 2P", monospace';
       fctx.textAlign = 'center';
       fctx.textBaseline = 'middle';
       fctx.fillStyle = '#991b1b';
-      fctx.fillText('NA PREDAJ', boxX + boxW / 2, boxY + 20);
+      fctx.fillText('NA PREDAJ', boxX + boxW / 2, boxY + 19, boxW - 14);
       fctx.textBaseline = 'alphabetic';
 
       // Heavy vertical wooden support posts
@@ -1833,11 +1920,10 @@
             : 'text-amber-300 bg-amber-950/80 border-amber-700/60';
 
         const card = document.createElement('div');
-        card.className = `p-2.5 border-2 flex items-center justify-between gap-2.5 ${
-          isOwned
+        card.className = `p-2.5 border-2 flex items-center justify-between gap-2.5 ${isOwned
             ? 'border-emerald-500/70 bg-emerald-950/30'
             : 'border-slate-700 bg-slate-900/90'
-        }`;
+          }`;
         card.innerHTML = `
           <div class="flex items-center gap-2.5 min-w-0">
             <div class="text-2xl leading-none shrink-0">${animal.icon}</div>
@@ -1849,12 +1935,11 @@
               </div>
             </div>
           </div>
-          <button class="animal-buy-btn py-1.5 px-2.5 text-[9px] pixel-font border shrink-0 transition-colors ${
-            isOwned
-              ? 'border-emerald-500/60 bg-emerald-900/60 text-emerald-200 cursor-default'
-              : canAfford
-                ? 'border-amber-400 bg-amber-600 hover:bg-amber-500 text-slate-950 font-bold'
-                : 'border-slate-700 bg-slate-800 text-slate-500 cursor-not-allowed'
+          <button class="animal-buy-btn py-1.5 px-2.5 text-[9px] pixel-font border shrink-0 transition-colors ${isOwned
+            ? 'border-emerald-500/60 bg-emerald-900/60 text-emerald-200 cursor-default'
+            : canAfford
+              ? 'border-amber-400 bg-amber-600 hover:bg-amber-500 text-slate-950 font-bold'
+              : 'border-slate-700 bg-slate-800 text-slate-500 cursor-not-allowed'
           }" ${isOwned ? 'disabled' : ''}>
             ${isOwned ? 'KÚPENÉ ✓' : 'KÚPIŤ'}
           </button>
@@ -3775,7 +3860,7 @@
 
       bobbingPhase += 0.04;
       const list = playerArr.length > 0 ? playerArr : [{ id: myPeerId, name: myNickname, colorIdx: 0, altitude: 0, visualAltitude: 0 }];
-      
+
       list.forEach((p, idx) => {
         if (typeof p.visualAltitude !== 'number') p.visualAltitude = p.altitude || 0;
         p.visualAltitude += ((p.altitude || 0) - p.visualAltitude) * 0.05;
@@ -3868,11 +3953,11 @@
     // --- MULTIPLAYER PEERJS NETWORKING WITH CANVAS FALLBACK ---
     function cleanupPeer() {
       if (peer) {
-        try { peer.destroy(); } catch (e) {}
+        try { peer.destroy(); } catch (e) { }
         peer = null;
       }
       if (bcChannel) {
-        try { bcChannel.close(); } catch (e) {}
+        try { bcChannel.close(); } catch (e) { }
         bcChannel = null;
       }
       hostConn = null;
@@ -3934,7 +4019,7 @@
           const { senderId, payload } = ev.data || {};
           if (senderId === myPeerId) return;
           if (gameMode === 'host') {
-            handleHostMessage({ peer: senderId, open: true, send: (msg) => bcChannel.postMessage({ senderId: myPeerId, targetId: senderId, payload: msg }), close: () => {} }, payload);
+            handleHostMessage({ peer: senderId, open: true, send: (msg) => bcChannel.postMessage({ senderId: myPeerId, targetId: senderId, payload: msg }), close: () => { } }, payload);
           } else if (gameMode === 'guest') {
             if (!ev.data.targetId || ev.data.targetId === myPeerId) {
               handleGuestMessage(payload);
@@ -4040,7 +4125,7 @@
 
       peer.on('error', () => {
         if (peer) {
-          try { peer.destroy(); } catch (e) {}
+          try { peer.destroy(); } catch (e) { }
           peer = null;
         }
         initCanvasLocalLobby(true, roomCode);
@@ -4097,7 +4182,7 @@
 
       peer.on('error', () => {
         if (peer) {
-          try { peer.destroy(); } catch (e) {}
+          try { peer.destroy(); } catch (e) { }
           peer = null;
         }
         initCanvasLocalLobby(false, roomCode);
@@ -4934,7 +5019,7 @@ Vráť VÝHRADNE JSON pole objektov:
         try {
           const parsed = JSON.parse(localStorage.getItem(REDEEMED_GIFTCODES_KEY) || '[]');
           if (Array.isArray(parsed)) redeemed = parsed;
-        } catch {}
+        } catch { }
 
         if (code === '6314') {
           if (redeemed.includes('6314')) {
@@ -4969,7 +5054,7 @@ Vráť VÝHRADNE JSON pole objektov:
         const isInSaleBox = (pt) => {
           if (!farmSaleBoxHitbox) return false;
           return pt.x >= farmSaleBoxHitbox.x && pt.x <= farmSaleBoxHitbox.x + farmSaleBoxHitbox.w &&
-                 pt.y >= farmSaleBoxHitbox.y && pt.y <= farmSaleBoxHitbox.y + farmSaleBoxHitbox.h;
+            pt.y >= farmSaleBoxHitbox.y && pt.y <= farmSaleBoxHitbox.y + farmSaleBoxHitbox.h;
         };
         farmCanvas.addEventListener('mousemove', (e) => {
           const pt = getFarmCanvasCoords(e.clientX, e.clientY);
@@ -4993,7 +5078,7 @@ Vráť VÝHRADNE JSON pole objektov:
         const onYard = activeScreen === 'apiKeyScreen' || activeScreen === 'modeScreen' || activeScreen === 'lobbyScreen';
         if (!onYard) return false;
         return cx >= box.x && cx <= box.x + box.w &&
-               cy >= box.y && cy <= box.y + box.h;
+          cy >= box.y && cy <= box.y + box.h;
       };
 
       document.addEventListener('mousemove', (e) => {
@@ -5030,4 +5115,5 @@ Vráť VÝHRADNE JSON pole objektov:
     });
   </script>
 </body>
+
 </html>
