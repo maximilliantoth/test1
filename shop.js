@@ -23,6 +23,18 @@ cool_shades | hat | 🕶️ | Pixelové okuliare | Štýlové čierne pixelové 
 gold_suit | suit | ✨ | Zlatý skafander | Prémiový zlatý oblek | 3000
 neon_suit | suit | 💠 | Neónový oblek | Žiarivý tyrkysový oblek | 1500
 r9_suit | suit | ⚽ | R9 | Legendárny brazílsky futbalový skin | 2000
+ninja_suit | suit | 🥷 | Ninja oblek | Čierny oblek s červenou šatkou a opaskom | 1100
+dino_suit | suit | 🐊 | Dino skafander | Zelený oblek s dračími ostňami na chrbte | 1250
+pirate_suit | suit | 🏴‍☠️ | Vesmírny pirát | Tmavý kabát so zlatými gombíkmi a páskou cez oko | 1400
+ice_suit | suit | ❄️ | Ľadový krištáľ | Mrazivý modrobiely oblek s ľadovým leskom | 1600
+cyber_suit | suit | 🤖 | Kyborg oblek | Strieborný kovový oblek s červeným skenerom | 1750
+alien_suit | suit | 👽 | Mimozemšťan | Neónovo zelený oblek s tykadlami | 1900
+lava_suit | suit | 🔥 | Lávový oblek | Sopečný oblek so žeravými magma prasklinami | 2100
+hero_suit | suit | 🦸 | Superhrdina | Modro-červený oblek s vlajúcim plášťom | 2300
+knight_suit | suit | 👑 | Kráľovský rytier | Oceľové brnenie so zlatým erbom na hrudi | 2500
+messi_suit | suit | ⚽ | Messi 10 | Bielo-belasý pruhovaný majstrovský dres č. 10 | 2650
+rainbow_suit | suit | 🌈 | Dúhový skafander | Animovaný oblek meniaci všetky farby dúhy | 2850
+diamond_suit | suit | 💎 | Diamantový oblek | Trblietavý tyrkysový prémiový skafander | 3000
 
 # STOPY JETPACKU A DOPRAVA (trail)
 rainbow_trail | trail | 🌈 | Dúhová stopa | Farebné častice z jetpacku | 1000

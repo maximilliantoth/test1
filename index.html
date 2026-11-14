@@ -899,6 +899,42 @@
     let astronautPreviewRaf = null;
     const astroPreviewParticles = [];
 
+    function getSuitPalette(suitId, basePalette) {
+      if (suitId === 'rainbow_suit') {
+        const hue = Math.floor((Date.now() * 0.08) % 360);
+        return {
+          suit: `hsl(${hue}, 85%, 56%)`,
+          shade: `hsl(${(hue + 25) % 360}, 80%, 38%)`,
+          highlight: `hsl(${(hue + 340) % 360}, 95%, 78%)`,
+          visor: `hsl(${(hue + 180) % 360}, 90%, 60%)`,
+          trim: '#ffffff'
+        };
+      }
+      const SUIT_PALETTES = {
+        gold_suit:    { suit: '#facc15', shade: '#ca8a04', highlight: '#fef08a', visor: '#0ea5e9', trim: '#fde047' },
+        neon_suit:    { suit: '#22d3ee', shade: '#0891b2', highlight: '#a5f3fc', visor: '#f43f5e', trim: '#67e8f9' },
+        r9_suit:      { suit: '#facc15', shade: '#ca8a04', highlight: '#fef08a', visor: '#1d4ed8', trim: '#16a34a' },
+        ninja_suit:   { suit: '#1e293b', shade: '#0f172a', highlight: '#475569', visor: '#ef4444', trim: '#dc2626' },
+        dino_suit:    { suit: '#16a34a', shade: '#14532d', highlight: '#4ade80', visor: '#facc15', trim: '#f97316' },
+        pirate_suit:  { suit: '#292524', shade: '#1c1917', highlight: '#57534e', visor: '#f59e0b', trim: '#ef4444' },
+        ice_suit:     { suit: '#bae6fd', shade: '#38bdf8', highlight: '#f0f9ff', visor: '#0284c7', trim: '#e0f2fe' },
+        cyber_suit:   { suit: '#94a3b8', shade: '#475569', highlight: '#e2e8f0', visor: '#ef4444', trim: '#38bdf8' },
+        alien_suit:   { suit: '#4ade80', shade: '#15803d', highlight: '#bbf7d0', visor: '#a855f7', trim: '#c084fc' },
+        lava_suit:    { suit: '#27272a', shade: '#18181b', highlight: '#f97316', visor: '#fb923c', trim: '#ef4444' },
+        hero_suit:    { suit: '#2563eb', shade: '#1e40af', highlight: '#60a5fa', visor: '#fde047', trim: '#ef4444' },
+        knight_suit:  { suit: '#cbd5e1', shade: '#64748b', highlight: '#f8fafc', visor: '#334155', trim: '#facc15' },
+        messi_suit:   { suit: '#f8fafc', shade: '#38bdf8', highlight: '#ffffff', visor: '#0284c7', trim: '#38bdf8' },
+        diamond_suit: { suit: '#2dd4bf', shade: '#0d9488', highlight: '#ccfbf1', visor: '#f0f9ff', trim: '#a5f3fc' }
+      };
+      return SUIT_PALETTES[suitId] || {
+        suit: basePalette.suit,
+        shade: '#94a3b8',
+        highlight: '#ffffff',
+        visor: basePalette.visor,
+        trim: '#38bdf8'
+      };
+    }
+
     function getMyAstronautAppearance() {
       const me = players[myPeerId];
       const nickInput = document.getElementById('nicknameInput')?.value?.trim();
@@ -906,13 +942,7 @@
       const colorIdx = typeof me?.colorIdx === 'number' ? me.colorIdx : 0;
       const basePalette = SUIT_COLORS[colorIdx % SUIT_COLORS.length];
       const cosmetics = me?.cosmetics || equippedCosmetics;
-      const palette = cosmetics.suit === 'gold_suit'
-        ? { suit: '#facc15', shade: '#ca8a04', highlight: '#fef08a', visor: '#0ea5e9', trim: '#fde047' }
-        : cosmetics.suit === 'neon_suit'
-          ? { suit: '#22d3ee', shade: '#0891b2', highlight: '#a5f3fc', visor: '#f43f5e', trim: '#67e8f9' }
-          : cosmetics.suit === 'r9_suit'
-            ? { suit: '#facc15', shade: '#ca8a04', highlight: '#fef08a', visor: '#1d4ed8', trim: '#16a34a' }
-            : { suit: basePalette.suit, shade: '#94a3b8', highlight: '#ffffff', visor: basePalette.visor, trim: '#38bdf8' };
+      const palette = getSuitPalette(cosmetics.suit, basePalette);
       return { name, palette, cosmetics };
     }
 
@@ -1231,6 +1261,64 @@
         pctx.fillRect(-14, 7, 28, 5);
         pctx.fillStyle = '#34d399';
         pctx.fillRect(-13, 8, 12 + Math.sin(t * 2.5) * 10, 3);
+      }
+
+      // Custom details for special suits in preview
+      if (cosmetics.suit === 'hero_suit') {
+        pctx.fillStyle = '#ef4444';
+        pctx.fillRect(-46, -20, 10, 74); // red cape side
+        pctx.fillStyle = '#fde047';
+        pctx.fillRect(-12, -8, 24, 14);
+        pctx.fillStyle = '#ef4444';
+        pctx.fillRect(-8, -5, 16, 8);
+      } else if (cosmetics.suit === 'ninja_suit') {
+        pctx.fillStyle = '#dc2626';
+        pctx.fillRect(-36, 20, 72, 10); // red sash
+        pctx.fillRect(-32, -84, 64, 8); // headband
+      } else if (cosmetics.suit === 'dino_suit') {
+        pctx.fillStyle = '#f97316';
+        [-18, 0, 18].forEach(sy => pctx.fillRect(-44, sy, 8, 10)); // back spikes
+      } else if (cosmetics.suit === 'lava_suit') {
+        pctx.fillStyle = '#f97316';
+        pctx.fillRect(-24, -14, 6, 24);
+        pctx.fillRect(14, -4, 6, 20);
+        pctx.fillStyle = '#fde047';
+        pctx.fillRect(-22, -8, 2, 14);
+      } else if (cosmetics.suit === 'messi_suit') {
+        pctx.fillStyle = '#38bdf8';
+        pctx.fillRect(-24, -24, 10, 74);
+        pctx.fillRect(14, -24, 10, 74);
+        pctx.fillStyle = '#0f172a';
+        pctx.font = 'bold 14px "Press Start 2P", monospace';
+        pctx.textAlign = 'center';
+        pctx.fillText('10', 0, 16);
+      } else if (cosmetics.suit === 'knight_suit') {
+        pctx.fillStyle = '#facc15';
+        pctx.fillRect(-10, -8, 20, 22);
+        pctx.fillStyle = '#ef4444';
+        pctx.fillRect(-6, -4, 12, 14);
+      } else if (cosmetics.suit === 'pirate_suit') {
+        pctx.fillStyle = '#facc15';
+        [-10, 4, 18].forEach(by => {
+          pctx.fillRect(-18, by, 5, 5);
+          pctx.fillRect(13, by, 5, 5);
+        });
+        pctx.fillStyle = '#dc2626';
+        pctx.fillRect(-36, 22, 72, 10);
+      } else if (cosmetics.suit === 'alien_suit') {
+        pctx.fillStyle = '#4ade80';
+        pctx.fillRect(-16, -112, 4, 18);
+        pctx.fillRect(12, -112, 4, 18);
+        pctx.fillStyle = '#c084fc';
+        pctx.fillRect(-18, -116, 8, 6);
+        pctx.fillRect(10, -116, 8, 6);
+      } else if (cosmetics.suit === 'cyber_suit') {
+        pctx.fillStyle = '#ef4444';
+        pctx.fillRect(-12, -74, 24, 6);
+      } else if (cosmetics.suit === 'ice_suit' || cosmetics.suit === 'diamond_suit') {
+        pctx.fillStyle = '#ffffff';
+        pctx.fillRect(-26, -12, 6, 6);
+        pctx.fillRect(20, 6, 6, 6);
       }
 
       // --- ARMS & GLOVES ---
@@ -3219,13 +3307,7 @@
 
       const basePalette = SUIT_COLORS[p.colorIdx % SUIT_COLORS.length];
       const cosmetics = p.cosmetics || (p.id === myPeerId ? equippedCosmetics : {});
-      const palette = cosmetics.suit === 'gold_suit'
-        ? { suit: '#facc15', visor: '#0ea5e9' }
-        : cosmetics.suit === 'neon_suit'
-          ? { suit: '#22d3ee', visor: '#f43f5e' }
-          : cosmetics.suit === 'r9_suit'
-            ? { suit: '#facc15', visor: '#1d4ed8' }
-            : basePalette;
+      const palette = getSuitPalette(cosmetics.suit, basePalette);
       const isR9 = cosmetics.suit === 'r9_suit';
       const isClimbing = (p.altitude - p.visualAltitude) > 2;
       const isCelebrating = (p.celebrateTimer || 0) > 0;
@@ -3321,6 +3403,46 @@
         ctx.fillRect(-4, -1, 3, 3);
         ctx.fillStyle = '#38bdf8';
         ctx.fillRect(1, -1, 3, 3);
+      }
+
+      if (cosmetics.suit === 'hero_suit') {
+        ctx.fillStyle = '#ef4444';
+        ctx.fillRect(-12, -2, 4, 15);
+      } else if (cosmetics.suit === 'ninja_suit') {
+        ctx.fillStyle = '#dc2626';
+        ctx.fillRect(-8, 5, 16, 3);
+        ctx.fillRect(-9, -18, 18, 2);
+      } else if (cosmetics.suit === 'dino_suit') {
+        ctx.fillStyle = '#f97316';
+        [-2, 3, 8].forEach(sy => ctx.fillRect(-11, sy, 3, 3));
+      } else if (cosmetics.suit === 'lava_suit') {
+        ctx.fillStyle = '#f97316';
+        ctx.fillRect(-5, -2, 2, 7);
+        ctx.fillRect(3, 1, 2, 6);
+      } else if (cosmetics.suit === 'messi_suit') {
+        ctx.fillStyle = '#38bdf8';
+        ctx.fillRect(-5, -4, 3, 16);
+        ctx.fillRect(2, -4, 3, 16);
+      } else if (cosmetics.suit === 'knight_suit') {
+        ctx.fillStyle = '#facc15';
+        ctx.fillRect(-3, -2, 6, 7);
+      } else if (cosmetics.suit === 'pirate_suit') {
+        ctx.fillStyle = '#dc2626';
+        ctx.fillRect(-8, 5, 16, 3);
+        ctx.fillStyle = '#facc15';
+        ctx.fillRect(-4, -1, 2, 2);
+        ctx.fillRect(2, -1, 2, 2);
+      } else if (cosmetics.suit === 'alien_suit') {
+        ctx.fillStyle = '#4ade80';
+        ctx.fillRect(-5, -26, 2, 5);
+        ctx.fillRect(3, -26, 2, 5);
+        ctx.fillStyle = '#c084fc';
+        ctx.fillRect(-6, -27, 4, 2);
+        ctx.fillRect(2, -27, 4, 2);
+      } else if (cosmetics.suit === 'ice_suit' || cosmetics.suit === 'diamond_suit') {
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(-6, -2, 2, 2);
+        ctx.fillRect(4, 2, 2, 2);
       }
 
       // Helmet (or R9 Head)
