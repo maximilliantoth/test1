@@ -130,7 +130,7 @@
       justify-content: flex-start;
     }
     body[data-device="mobile"] main > div {
-      margin-top: auto;
+      margin-top: 0.35rem;
       margin-bottom: auto;
     }
     body[data-device="mobile"] #houseHeaderBtn {
@@ -1656,11 +1656,25 @@
     let isHouseHovered = false;
 
     function drawSimpleHouse(groundY) {
-      const hx = Math.max(76, Math.min(width * 0.18, 220));
+      const isMobileMode = document.body.dataset.device === 'mobile';
+      const scale = isMobileMode ? 0.72 : 1;
+      const hx = isMobileMode
+        ? Math.max(52, Math.min(width * 0.16, 150))
+        : Math.max(76, Math.min(width * 0.18, 220));
       const houseW = 84;
       const houseH = 54;
       const wallTop = groundY - houseH;
-      houseHitbox = { x: hx - houseW / 2 - 10, y: wallTop - 38, w: houseW + 20, h: houseH + 40 };
+      houseHitbox = {
+        x: hx - (houseW / 2 + 10) * scale,
+        y: groundY - (houseH + 38) * scale,
+        w: (houseW + 20) * scale,
+        h: (houseH + 40) * scale
+      };
+
+      ctx.save();
+      ctx.translate(hx, groundY);
+      ctx.scale(scale, scale);
+      ctx.translate(-hx, -groundY);
 
       // Chimney & gentle smoke puffs
       ctx.fillStyle = '#991b1b';
@@ -1729,17 +1743,34 @@
         ctx.fillText('👨‍🚀 MÔJ KOZMONAUT', hx, badgeY + badgeH / 2 + 0.5);
         ctx.textBaseline = 'alphabetic';
       }
+      ctx.restore();
     }
 
     let shopHitbox = null;
 
     function drawSimpleShop(groundY) {
-      const hx = Math.max(76, Math.min(width * 0.18, 220));
-      const sx = Math.min(width - 58, hx + 166);
+      const isMobileMode = document.body.dataset.device === 'mobile';
+      const scale = isMobileMode ? 0.72 : 1;
+      const hx = isMobileMode
+        ? Math.max(52, Math.min(width * 0.16, 150))
+        : Math.max(76, Math.min(width * 0.18, 220));
+      const sx = isMobileMode
+        ? Math.min(width - 44, hx + 126)
+        : Math.min(width - 58, hx + 166);
       const shopW = 92;
       const shopH = 56;
       const wallTop = groundY - shopH;
-      shopHitbox = { x: sx - shopW / 2 - 6, y: wallTop - 28, w: shopW + 12, h: shopH + 30 };
+      shopHitbox = {
+        x: sx - (shopW / 2 + 6) * scale,
+        y: groundY - (shopH + 28) * scale,
+        w: (shopW + 12) * scale,
+        h: (shopH + 30) * scale
+      };
+
+      ctx.save();
+      ctx.translate(sx, groundY);
+      ctx.scale(scale, scale);
+      ctx.translate(-sx, -groundY);
 
       // Shop wall
       ctx.fillStyle = '#e2e8f0';
@@ -1789,6 +1820,7 @@
       ctx.fillRect(sx + 17, groundY - 28, 14, 12);
       ctx.fillStyle = '#fbbf24';
       ctx.fillRect(sx + 16, groundY - 14, 3, 3);
+      ctx.restore();
     }
 
     function drawHomeYardLandscape() {
