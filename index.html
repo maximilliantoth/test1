@@ -4056,10 +4056,10 @@
       ctx.fillStyle = p.id === myPeerId ? '#fde047' : '#e2e8f0';
       ctx.fillText(p.name, 0, -31);
 
-      const spin = isCelebrating ? (p.celebrateTimer * 0.14) : 0;
-      const rot = p.isWalking
-        ? 0
-        : spin + Math.sin(bobbingPhase * 0.8 + p.colorIdx) * (inSpace ? 0.14 : 0.05);
+      const spin = isCelebrating ? (p.celebrateTimer * 0.22) : 0;
+      const flyPhase = bobbingPhase * 0.9 + (p.colorIdx || 0) * 1.7;
+      const flyFlip = flyPhase * 0.85 + Math.sin(flyPhase * 1.4) * 0.65;
+      const rot = p.isWalking ? 0 : (spin + flyFlip);
       ctx.rotate(rot);
       if (p.isWalking && p.facing === -1) {
         ctx.scale(-1, 1);
@@ -5091,9 +5091,17 @@
           return;
         }
 
+        const isMobileView = width < 640 || document.body.dataset.device === 'mobile';
         let astroX;
-        if (list.length === 1) {
-          astroX = width * (width < 640 ? 0.84 : 0.14);
+        if (isMobileView) {
+          if (list.length === 1) {
+            astroX = width * 0.5;
+          } else {
+            const spacing = Math.min(62, (width - 64) / Math.max(1, list.length - 1));
+            astroX = width * 0.5 + (idx - (list.length - 1) / 2) * spacing;
+          }
+        } else if (list.length === 1) {
+          astroX = width * 0.14;
         } else {
           const isLeft = idx % 2 === 0;
           const lane = Math.floor(idx / 2);
@@ -5105,15 +5113,24 @@
         }
 
         const altDiff = p.visualAltitude - cameraAltitude;
-        const offsetPx = Math.max(-height * 0.35, Math.min(height * 0.35, -altDiff * 0.25));
-        const astroY = height * 0.52 + offsetPx + Math.sin(bobbingPhase + idx) * 7;
+        const flySwayX = Math.sin(bobbingPhase * 0.85 + idx * 1.5) * (isMobileView ? 18 : 12);
+        const flyBobY = Math.sin(bobbingPhase * 1.3 + idx) * 10 + Math.cos(bobbingPhase * 0.6 + idx) * 5;
+        let astroY;
+        if (isMobileView) {
+          const offsetPx = Math.max(-height * 0.08, Math.min(height * 0.08, -altDiff * 0.12));
+          astroY = height * 0.80 + offsetPx + flyBobY;
+        } else {
+          const offsetPx = Math.max(-height * 0.35, Math.min(height * 0.35, -altDiff * 0.25));
+          astroY = height * 0.52 + offsetPx + flyBobY;
+        }
 
-        drawSingleAstronaut(p, astroX, astroY, inSpace);
+        drawSingleAstronaut(p, astroX + flySwayX, astroY, inSpace);
       });
 
       // Draw Rescue Rocket if active at the end of quiz
       if (rescueRocket.active) {
-        const rx = width * (width < 640 ? 0.84 : 0.14);
+        const isMobileView = width < 640 || document.body.dataset.device === 'mobile';
+        const rx = width * (isMobileView ? 0.5 : 0.14);
         const isFiring = rescueRocket.phase !== 'landed';
         drawRescueRocket(rx, rescueRocket.y, isFiring);
       }
