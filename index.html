@@ -3059,7 +3059,6 @@
     }
 
     function isHornbachUnlocked() {
-      return gamesPlayed >= HORNBACH_REQUIRED_GAMES;
       return gamesPlayed >= HORNBACH_REQUIRED_GAMES || isTempBuildingsActive();
     }
 
@@ -3068,7 +3067,6 @@
     }
 
     function isCasinoUnlocked() {
-      return gamesPlayed >= CASINO_REQUIRED_GAMES;
       return gamesPlayed >= CASINO_REQUIRED_GAMES || isTempBuildingsActive();
     }
 
