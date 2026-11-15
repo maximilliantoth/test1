@@ -241,6 +241,12 @@
         <span class="hidden sm:inline">KÓD: </span><span id="headerRoomCode">----</span>
       </span>
     </div>
+    <div class="flex-1 flex justify-center min-w-0 px-1">
+      <div id="headerGamesPlayed" title="Počet odohraných hier"
+        class="text-[9px] sm:text-[10px] pixel-font text-sky-300 bg-slate-900/90 px-2 sm:px-3 py-1.5 rounded border border-sky-500/40 whitespace-nowrap truncate">
+        🎮 <span class="hidden md:inline">ODOHRANÉ HRY: </span><span id="headerGamesVal">0</span>
+      </div>
+    </div>
     <div class="flex items-center gap-1 sm:gap-2 shrink-0">
       <div id="headerScore"
         class="hidden text-[9px] sm:text-xs pixel-font text-emerald-400 bg-slate-900/90 px-2 sm:px-2.5 py-1.5 rounded border border-emerald-500/40">
@@ -751,7 +757,9 @@
         Zadaj tajný giftcode a získaj odmenu v podobe kamienkov 🪙!
       </p>
       <form id="giftcodeForm" class="flex flex-col gap-2.5">
-        <input type="text" id="giftcodeInput" placeholder="Zadaj kód..." autocomplete="off"
+        <input type="text" id="giftcodeInput" placeholder="Zadaj kód..." autocomplete="off" <input type="text"
+          id="giftcodeInput" placeholder="Zadaj kód..." autocomplete="off" autocapitalize="none" autocorrect="off"
+          spellcheck="false"
           class="w-full bg-slate-900 border-2 border-pink-500/60 px-3 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-pink-400 text-xs font-mono rounded-none" />
         <div id="giftcodeMsg" class="text-[11px] font-bold hidden"></div>
         <div class="flex gap-2 pt-1">
@@ -799,6 +807,7 @@
     const COINS_KEY = 'pointless_coins';
     const OWNED_KEY = 'pointless_owned_items';
     const EQUIPPED_KEY = 'pointless_equipped_items';
+    const GAMES_PLAYED_KEY = 'pointless_games_played';
     const PEER_PREFIX = 'ptls-sk-2026-';
     let userApiKey = localStorage.getItem(STORAGE_KEY) || '';
 
@@ -847,6 +856,15 @@
       const saved = parseInt(localStorage.getItem(COINS_KEY), 10);
       return Number.isFinite(saved) && saved >= 0 ? saved : 100;
     })();
+    let gamesPlayed = (() => {
+      const saved = parseInt(localStorage.getItem(GAMES_PLAYED_KEY), 10);
+      return Number.isFinite(saved) && saved >= 0 ? saved : 0;
+    })();
+    function updateGamesPlayedDisplay() {
+      const el = document.getElementById('headerGamesVal');
+      if (el) el.textContent = gamesPlayed;
+    }
+    updateGamesPlayedDisplay();
     let ownedItems = (() => {
       try {
         const parsed = JSON.parse(localStorage.getItem(OWNED_KEY) || '[]');
@@ -5871,6 +5889,9 @@ Vráť VÝHRADNE JSON pole objektov:
     }
 
     function finishGame() {
+      gamesPlayed += 1;
+      localStorage.setItem(GAMES_PLAYED_KEY, String(gamesPlayed));
+      updateGamesPlayedDisplay();
       addCoins(25);
       showScreen('endScreen');
       const pList = Object.values(players).sort((a, b) => b.altitude - a.altitude);
@@ -6095,6 +6116,7 @@ Vráť VÝHRADNE JSON pole objektov:
       document.getElementById('giftcodeForm')?.addEventListener('submit', (e) => {
         e.preventDefault();
         const code = (giftcodeInput?.value || '').trim();
+        const code = (giftcodeInput?.value || '').trim().toLowerCase();
         let redeemed = [];
         try {
           const parsed = JSON.parse(localStorage.getItem(REDEEMED_GIFTCODES_KEY) || '[]');
