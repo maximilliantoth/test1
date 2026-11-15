@@ -2759,10 +2759,8 @@
     }
 
     function setRandomWeather() {
-      const others = WEATHERS.filter(w => w.id !== currentWeather.id);
       const others = WEATHERS.filter(w => w.id !== targetWeather.id);
       if (others.length > 0) {
-        currentWeather = others[Math.floor(Math.random() * others.length)];
         prevWeather = targetWeather;
         targetWeather = others[Math.floor(Math.random() * others.length)];
         weatherTransitionStart = performance.now();
@@ -2970,9 +2968,6 @@
     }
 
     function lerpColor(c1, c2, t) {
-      const r = Math.round(c1[0] + (c2[0] - c1[0]) * t);
-      const g = Math.round(c1[1] + (c2[1] - c1[1]) * t);
-      const b = Math.round(c1[2] + (c2[2] - c1[2]) * t);
       const [r, g, b] = lerpRgb(c1, c2, t);
       return `rgb(${r},${g},${b})`;
     }
@@ -3604,77 +3599,67 @@
       ctx.restore();
     }
 
-    function drawDetailedMountains(groundY) {
-      const wId = currentWeather.id;
-      const isSnowy = wId === 'snowy';
-      const isSunset = wId === 'sunset';
-      const isRainy = wId === 'rainy';
-      function drawDetailedMountains(groundY, weatherBlend) {
-        const blend = weatherBlend || getWeatherBlend();
-        const snowW = blend.weights.snowy;
-        const sunsetW = blend.weights.sunset;
-        const rainyW = blend.weights.rainy;
+    function drawDetailedMountains(groundY, weatherBlend) {
+      const blend = weatherBlend || getWeatherBlend();
+      const snowW = blend.weights.snowy;
+      const sunsetW = blend.weights.sunset;
+      const rainyW = blend.weights.rainy;
 
-        const palettes = {
-          sunny: {
-            farLit: '#64748b', farShadow: '#475569',
-            midLit: '#3f5169', midShadow: '#1e293b',
-            nearLit: '#334155', nearShadow: '#0f172a',
-            snowLit: '#ffffff', snowShadow: '#bfdbfe',
-            ridgeRock: '#1e293b',
-            mist: 'rgba(186, 230, 253, 0.28)',
-            mistRgb: [186, 230, 253], mistAlpha: 0.28,
-            foothill: '#14532d', foothillShade: '#052e16'
-          },
-          sunset: {
-            farLit: '#8b5a7c', farShadow: '#4c2c52',
-            midLit: '#6b3b5b', midShadow: '#2e1a3b',
-            nearLit: '#4a2545', nearShadow: '#1f122b',
-            snowLit: '#fed7aa', snowShadow: '#c4b5fd',
-            ridgeRock: '#2e1065',
-            mist: 'rgba(251, 146, 60, 0.22)',
-            mistRgb: [251, 146, 60], mistAlpha: 0.22,
-            foothill: '#1e293b', foothillShade: '#0f172a'
-          },
-          rainy: {
-            farLit: '#64748b', farShadow: '#475569',
-            midLit: '#475569', midShadow: '#334155',
-            nearLit: '#334155', nearShadow: '#1e293b',
-            snowLit: '#e2e8f0', snowShadow: '#94a3b8',
-            ridgeRock: '#1e293b',
-            mist: 'rgba(148, 163, 184, 0.34)',
-            mistRgb: [148, 163, 184], mistAlpha: 0.34,
-            foothill: '#1e3a2f', foothillShade: '#0f241c'
-          },
-          snowy: {
-            farLit: '#cbd5e1', farShadow: '#94a3b8',
-            midLit: '#94a3b8', midShadow: '#64748b',
-            nearLit: '#64748b', nearShadow: '#475569',
-            snowLit: '#ffffff', snowShadow: '#cbd5e1',
-            ridgeRock: '#475569',
-            mist: 'rgba(241, 245, 249, 0.42)',
-            mistRgb: [241, 245, 249], mistAlpha: 0.42,
-            foothill: '#cbd5e1', foothillShade: '#94a3b8'
-          }
-        };
-        const pal = palettes[wId] || palettes.sunny;
-        const palA = palettes[blend.from.id] || palettes.sunny;
-        const palB = palettes[blend.to.id] || palettes.sunny;
-        const bt = blend.t;
-        const pal = {
-          farLit: lerpHex(palA.farLit, palB.farLit, bt),
-          farShadow: lerpHex(palA.farShadow, palB.farShadow, bt),
-          midLit: lerpHex(palA.midLit, palB.midLit, bt),
-          midShadow: lerpHex(palA.midShadow, palB.midShadow, bt),
-          nearLit: lerpHex(palA.nearLit, palB.nearLit, bt),
-          nearShadow: lerpHex(palA.nearShadow, palB.nearShadow, bt),
-          snowLit: lerpHex(palA.snowLit, palB.snowLit, bt),
-          snowShadow: lerpHex(palA.snowShadow, palB.snowShadow, bt),
-          ridgeRock: lerpHex(palA.ridgeRock, palB.ridgeRock, bt),
-          mist: lerpRgba(palA.mistRgb, palA.mistAlpha, palB.mistRgb, palB.mistAlpha, bt),
-          foothill: lerpHex(palA.foothill, palB.foothill, bt),
-          foothillShade: lerpHex(palA.foothillShade, palB.foothillShade, bt)
-        };
+      const palettes = {
+        sunny: {
+          farLit: '#64748b', farShadow: '#475569',
+          midLit: '#3f5169', midShadow: '#1e293b',
+          nearLit: '#334155', nearShadow: '#0f172a',
+          snowLit: '#ffffff', snowShadow: '#bfdbfe',
+          ridgeRock: '#1e293b',
+          mistRgb: [186, 230, 253], mistAlpha: 0.28,
+          foothill: '#14532d', foothillShade: '#052e16'
+        },
+        sunset: {
+          farLit: '#8b5a7c', farShadow: '#4c2c52',
+          midLit: '#6b3b5b', midShadow: '#2e1a3b',
+          nearLit: '#4a2545', nearShadow: '#1f122b',
+          snowLit: '#fed7aa', snowShadow: '#c4b5fd',
+          ridgeRock: '#2e1065',
+          mistRgb: [251, 146, 60], mistAlpha: 0.22,
+          foothill: '#1e293b', foothillShade: '#0f172a'
+        },
+        rainy: {
+          farLit: '#64748b', farShadow: '#475569',
+          midLit: '#475569', midShadow: '#334155',
+          nearLit: '#334155', nearShadow: '#1e293b',
+          snowLit: '#e2e8f0', snowShadow: '#94a3b8',
+          ridgeRock: '#1e293b',
+          mistRgb: [148, 163, 184], mistAlpha: 0.34,
+          foothill: '#1e3a2f', foothillShade: '#0f241c'
+        },
+        snowy: {
+          farLit: '#cbd5e1', farShadow: '#94a3b8',
+          midLit: '#94a3b8', midShadow: '#64748b',
+          nearLit: '#64748b', nearShadow: '#475569',
+          snowLit: '#ffffff', snowShadow: '#cbd5e1',
+          ridgeRock: '#475569',
+          mistRgb: [241, 245, 249], mistAlpha: 0.42,
+          foothill: '#cbd5e1', foothillShade: '#94a3b8'
+        }
+      };
+      const palA = palettes[blend.from.id] || palettes.sunny;
+      const palB = palettes[blend.to.id] || palettes.sunny;
+      const bt = blend.t;
+      const pal = {
+        farLit: lerpHex(palA.farLit, palB.farLit, bt),
+        farShadow: lerpHex(palA.farShadow, palB.farShadow, bt),
+        midLit: lerpHex(palA.midLit, palB.midLit, bt),
+        midShadow: lerpHex(palA.midShadow, palB.midShadow, bt),
+        nearLit: lerpHex(palA.nearLit, palB.nearLit, bt),
+        nearShadow: lerpHex(palA.nearShadow, palB.nearShadow, bt),
+        snowLit: lerpHex(palA.snowLit, palB.snowLit, bt),
+        snowShadow: lerpHex(palA.snowShadow, palB.snowShadow, bt),
+        ridgeRock: lerpHex(palA.ridgeRock, palB.ridgeRock, bt),
+        mist: lerpRgba(palA.mistRgb, palA.mistAlpha, palB.mistRgb, palB.mistAlpha, bt),
+        foothill: lerpHex(palA.foothill, palB.foothill, bt),
+        foothillShade: lerpHex(palA.foothillShade, palB.foothillShade, bt)
+      };
 
         // Scale peak heights gracefully for desktop and smaller viewports
         const maxH = Math.min(height * 0.56, 420);
@@ -3778,9 +3763,6 @@
         drawPeak(width * 0.86, width * 0.67, width * 1.08, maxH * 0.72, 14, pal.midLit, pal.midShadow, true, 0.32);
 
         // 3. Closer Rocky Crags (lower, darker, framing the house & shop)
-        drawPeak(width * 0.18, width * 0.02, width * 0.34, maxH * 0.44, 10, pal.nearLit, pal.nearShadow, isSnowy, 0.28);
-        drawPeak(width * 0.48, width * 0.32, width * 0.65, maxH * 0.40, -8, pal.nearLit, pal.nearShadow, isSnowy, 0.25);
-        drawPeak(width * 0.79, width * 0.62, width * 0.96, maxH * 0.46, 11, pal.nearLit, pal.nearShadow, isSnowy, 0.28);
         drawPeak(width * 0.18, width * 0.02, width * 0.34, maxH * 0.44, 10, pal.nearLit, pal.nearShadow, snowW > 0.02, 0.28 * snowW);
         drawPeak(width * 0.48, width * 0.32, width * 0.65, maxH * 0.40, -8, pal.nearLit, pal.nearShadow, snowW > 0.02, 0.25 * snowW);
         drawPeak(width * 0.79, width * 0.62, width * 0.96, maxH * 0.46, 11, pal.nearLit, pal.nearShadow, snowW > 0.02, 0.28 * snowW);
@@ -3816,133 +3798,116 @@
           ctx.fillRect(x - 2, py - 14, 4, 6);
         }
 
-        if (isSunset) {
-          if (sunsetW > 0.01) {
-            // Subtle warm rim glow on the horizon
-            const glow = ctx.createLinearGradient(0, groundY - 40, 0, groundY);
-            glow.addColorStop(0, 'rgba(251, 146, 60, 0)');
-            glow.addColorStop(1, 'rgba(251, 146, 60, 0.16)');
-            glow.addColorStop(1, `rgba(251, 146, 60, ${(0.16 * sunsetW).toFixed(3)})`);
-            ctx.fillStyle = glow;
-            ctx.fillRect(0, groundY - 40, width, 40);
+        if (sunsetW > 0.01) {
+          // Subtle warm rim glow on the horizon
+          const glow = ctx.createLinearGradient(0, groundY - 40, 0, groundY);
+          glow.addColorStop(0, 'rgba(251, 146, 60, 0)');
+          glow.addColorStop(1, `rgba(251, 146, 60, ${(0.16 * sunsetW).toFixed(3)})`);
+          ctx.fillStyle = glow;
+          ctx.fillRect(0, groundY - 40, width, 40);
+        }
+        if (rainyW > 0.01) {
+          // Subtle dark atmospheric veil
+          ctx.fillStyle = `rgba(15, 23, 42, ${(0.14 * rainyW).toFixed(3)})`;
+          ctx.fillRect(0, groundY - maxH, width, maxH);
+        }
+      }
+
+      function drawHomeYardLandscape(weatherBlend) {
+        const groundY = height - 64;
+        const snowW = (weatherBlend || getWeatherBlend()).weights.snowy;
+
+        drawDetailedMountains(groundY, weatherBlend);
+
+        // Lush green grass yard (smoothly turns snowy)
+        ctx.fillStyle = lerpHex('#16a34a', '#e2e8f0', snowW);
+        ctx.fillRect(0, groundY, width, height - groundY + 64);
+        ctx.fillStyle = lerpHex('#22c55e', '#cbd5e1', snowW);
+        ctx.fillRect(0, groundY, width, 6);
+
+        // Little grass tufts & flowers across the yard
+        const tuftColor = lerpHex('#15803d', '#cbd5e1', snowW);
+        for (let gx = 16; gx < width; gx += 34) {
+          ctx.fillStyle = tuftColor;
+          ctx.fillRect(gx, groundY - 4, 3, 4);
+          ctx.fillRect(gx + 5, groundY - 6, 3, 6);
+          if (gx % 102 === 16 && snowW < 0.99) {
+            ctx.save();
+            ctx.globalAlpha = 1 - snowW;
+            ctx.fillStyle = gx % 204 === 16 ? '#fde047' : '#f472b6';
+            ctx.fillRect(gx + 2, groundY - 8, 3, 3);
+            ctx.restore();
           }
-          if (isRainy) {
-            if (rainyW > 0.01) {
-              // Subtle dark atmospheric veil
-              ctx.fillStyle = 'rgba(15, 23, 42, 0.14)';
-              ctx.fillStyle = `rgba(15, 23, 42, ${(0.14 * rainyW).toFixed(3)})`;
-              ctx.fillRect(0, groundY - maxH, width, maxH);
-            }
-          }
+        }
 
-          function drawHomeYardLandscape() {
-            function drawHomeYardLandscape(weatherBlend) {
-              const groundY = height - 64;
-              const snowW = (weatherBlend || getWeatherBlend()).weights.snowy;
+        // Trees in background
+        const treeColor = lerpHex('#14532d', '#cbd5e1', snowW);
+        [0.05, 0.36, 0.72, 0.91].forEach(rx => {
+          const tx = width * rx;
+          ctx.fillStyle = '#451a03';
+          ctx.fillRect(tx - 2, groundY - 10, 4, 10);
+          ctx.fillStyle = treeColor;
+          ctx.fillRect(tx - 11, groundY - 22, 22, 12);
+          ctx.fillRect(tx - 8, groundY - 32, 16, 10);
+          ctx.fillRect(tx - 4, groundY - 40, 8, 8);
+        });
 
-              drawDetailedMountains(groundY);
-              drawDetailedMountains(groundY, weatherBlend);
+        drawSimpleHouse(groundY);
+        drawSimpleShop(groundY);
+        drawSimpleFarm(groundY);
+        drawSimpleCasino(groundY);
+      }
 
-              // Lush green grass yard
-              ctx.fillStyle = currentWeather.id === 'snowy' ? '#e2e8f0' : '#16a34a';
-              // Lush green grass yard (smoothly turns snowy)
-              ctx.fillStyle = lerpHex('#16a34a', '#e2e8f0', snowW);
-              ctx.fillRect(0, groundY, width, height - groundY + 64);
-              ctx.fillStyle = currentWeather.id === 'snowy' ? '#cbd5e1' : '#22c55e';
-              ctx.fillStyle = lerpHex('#22c55e', '#cbd5e1', snowW);
-              ctx.fillRect(0, groundY, width, 6);
+      function drawLaunchpadAndLandscape(alt, weatherBlend) {
+        if (alt >= 260) return;
+        const snowW = (weatherBlend || getWeatherBlend()).weights.snowy;
+        const offset = alt * 1.3;
+        const groundY = height - 48 + offset;
 
-              // Little grass tufts & flowers across the yard
-              const tuftColor = lerpHex('#15803d', '#cbd5e1', snowW);
-              for (let gx = 16; gx < width; gx += 34) {
-                ctx.fillStyle = currentWeather.id === 'snowy' ? '#cbd5e1' : '#15803d';
-                ctx.fillStyle = tuftColor;
-                ctx.fillRect(gx, groundY - 4, 3, 4);
-                ctx.fillRect(gx + 5, groundY - 6, 3, 6);
-                if (gx % 102 === 16 && currentWeather.id !== 'snowy') {
-                  if (gx % 102 === 16 && snowW < 0.99) {
-                    ctx.save();
-                    ctx.globalAlpha = 1 - snowW;
-                    ctx.fillStyle = gx % 204 === 16 ? '#fde047' : '#f472b6';
-                    ctx.fillRect(gx + 2, groundY - 8, 3, 3);
-                    ctx.restore();
-                  }
-                }
+        // Distant parallax mountains
+        ctx.fillStyle = lerpHex('#1e3a5f', '#94a3b8', snowW);
+        const mOffset = alt * 0.55;
+        ctx.beginPath();
+        ctx.moveTo(0, height);
+        ctx.lineTo(0, height - 130 + mOffset);
+        ctx.lineTo(width * 0.22, height - 210 + mOffset);
+        ctx.lineTo(width * 0.45, height - 120 + mOffset);
+        ctx.lineTo(width * 0.72, height - 235 + mOffset);
+        ctx.lineTo(width, height - 140 + mOffset);
+        ctx.lineTo(width, height);
+        ctx.fill();
 
-                // Trees in background
-                const treeColor = lerpHex('#14532d', '#cbd5e1', snowW);
-                [0.05, 0.36, 0.72, 0.91].forEach(rx => {
-                  const tx = width * rx;
-                  ctx.fillStyle = '#451a03';
-                  ctx.fillRect(tx - 2, groundY - 10, 4, 10);
-                  ctx.fillStyle = currentWeather.id === 'snowy' ? '#cbd5e1' : '#14532d';
-                  ctx.fillStyle = treeColor;
-                  ctx.fillRect(tx - 11, groundY - 22, 22, 12);
-                  ctx.fillRect(tx - 8, groundY - 32, 16, 10);
-                  ctx.fillRect(tx - 4, groundY - 40, 8, 8);
-                });
+        // Snow caps on peaks
+        ctx.fillStyle = '#f8fafc';
+        ctx.beginPath();
+        ctx.moveTo(width * 0.22, height - 210 + mOffset);
+        ctx.lineTo(width * 0.17, height - 185 + mOffset);
+        ctx.lineTo(width * 0.27, height - 185 + mOffset);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(width * 0.72, height - 235 + mOffset);
+        ctx.lineTo(width * 0.66, height - 205 + mOffset);
+        ctx.lineTo(width * 0.78, height - 205 + mOffset);
+        ctx.fill();
 
-                drawSimpleHouse(groundY);
-                drawSimpleShop(groundY);
-                drawSimpleFarm(groundY);
-                drawSimpleCasino(groundY);
-              }
+        // Main Ground Strip
+        ctx.fillStyle = lerpHex('#15803d', '#e2e8f0', snowW);
+        ctx.fillRect(0, groundY, width, height - groundY + 120);
+        ctx.fillStyle = lerpHex('#166534', '#cbd5e1', snowW);
+        ctx.fillRect(0, groundY, width, 6);
 
-              function drawLaunchpadAndLandscape(alt) {
-                function drawLaunchpadAndLandscape(alt, weatherBlend) {
-                  if (alt >= 260) return;
-                  const snowW = (weatherBlend || getWeatherBlend()).weights.snowy;
-                  const offset = alt * 1.3;
-                  const groundY = height - 48 + offset;
-
-                  // Distant parallax mountains
-                  ctx.fillStyle = currentWeather.id === 'snowy' ? '#94a3b8' : '#1e3a5f';
-                  ctx.fillStyle = lerpHex('#1e3a5f', '#94a3b8', snowW);
-                  const mOffset = alt * 0.55;
-                  ctx.beginPath();
-                  ctx.moveTo(0, height);
-                  ctx.lineTo(0, height - 130 + mOffset);
-                  ctx.lineTo(width * 0.22, height - 210 + mOffset);
-                  ctx.lineTo(width * 0.45, height - 120 + mOffset);
-                  ctx.lineTo(width * 0.72, height - 235 + mOffset);
-                  ctx.lineTo(width, height - 140 + mOffset);
-                  ctx.lineTo(width, height);
-                  ctx.fill();
-
-                  // Snow caps on peaks
-                  ctx.fillStyle = '#f8fafc';
-                  ctx.beginPath();
-                  ctx.moveTo(width * 0.22, height - 210 + mOffset);
-                  ctx.lineTo(width * 0.17, height - 185 + mOffset);
-                  ctx.lineTo(width * 0.27, height - 185 + mOffset);
-                  ctx.fill();
-                  ctx.beginPath();
-                  ctx.moveTo(width * 0.72, height - 235 + mOffset);
-                  ctx.lineTo(width * 0.66, height - 205 + mOffset);
-                  ctx.lineTo(width * 0.78, height - 205 + mOffset);
-                  ctx.fill();
-
-                  // Main Ground Strip
-                  ctx.fillStyle = currentWeather.id === 'snowy' ? '#e2e8f0' : '#15803d';
-                  ctx.fillStyle = lerpHex('#15803d', '#e2e8f0', snowW);
-                  ctx.fillRect(0, groundY, width, height - groundY + 120);
-                  ctx.fillStyle = currentWeather.id === 'snowy' ? '#cbd5e1' : '#166534';
-                  ctx.fillStyle = lerpHex('#166534', '#cbd5e1', snowW);
-                  ctx.fillRect(0, groundY, width, 6);
-
-                  // Pixel Pine Trees along horizon
-                  const treePositions = [0.06, 0.28, 0.34, 0.68, 0.74, 0.92];
-                  const launchTreeColor = lerpHex('#14532d', '#cbd5e1', snowW);
-                  treePositions.forEach(rx => {
-                    const tx = width * rx;
-                    ctx.fillStyle = '#451a03';
-                    ctx.fillRect(tx - 2, groundY - 8, 4, 8);
-                    ctx.fillStyle = currentWeather.id === 'snowy' ? '#cbd5e1' : '#14532d';
-                    ctx.fillStyle = launchTreeColor;
-                    ctx.fillRect(tx - 10, groundY - 18, 20, 10);
-                    ctx.fillRect(tx - 7, groundY - 27, 14, 9);
-                    ctx.fillRect(tx - 4, groundY - 34, 8, 7);
-                  });
+        // Pixel Pine Trees along horizon
+        const treePositions = [0.06, 0.28, 0.34, 0.68, 0.74, 0.92];
+        const launchTreeColor = lerpHex('#14532d', '#cbd5e1', snowW);
+        treePositions.forEach(rx => {
+          const tx = width * rx;
+          ctx.fillStyle = '#451a03';
+          ctx.fillRect(tx - 2, groundY - 8, 4, 8);
+          ctx.fillStyle = launchTreeColor;
+          ctx.fillRect(tx - 10, groundY - 18, 20, 10);
+          ctx.fillRect(tx - 7, groundY - 27, 14, 9);
+          ctx.fillRect(tx - 4, groundY - 34, 8, 7);
+        });
 
                   // Space Launchpad Complex at center-left
                   const padX = width * 0.5;
@@ -4433,52 +4398,47 @@
                   const cx = skyCruiser.x * width;
                   const cy = skyCruiser.y * height + Math.sin(Date.now() * 0.002) * 6 + (alt - 250) * 0.12;
 
-                  ctx.save();
-                  ctx.globalAlpha = Math.max(0, Math.min(1, alpha));
-                  if (currentWeather.id === 'sunny' || currentWeather.id === 'sunset') {
-                    const blend = getWeatherBlend();
-                    const balloonW = blend.weights.sunny + blend.weights.sunset;
-                    const planeW = blend.weights.rainy + blend.weights.snowy;
-                    const baseAlpha = Math.max(0, Math.min(1, alpha));
+                  const blend = getWeatherBlend();
+                  const balloonW = blend.weights.sunny + blend.weights.sunset;
+                  const planeW = blend.weights.rainy + blend.weights.snowy;
+                  const baseAlpha = Math.max(0, Math.min(1, alpha));
 
-                    if (balloonW > 0.01) {
-                      ctx.save();
-                      ctx.globalAlpha = baseAlpha * balloonW;
-                      // Pixel-art hot air balloon
-                      ctx.fillStyle = '#f43f5e';
-                      ctx.fillRect(cx - 12, cy - 26, 24, 18);
-                      ctx.fillStyle = '#fde047';
-                      ctx.fillRect(cx - 8, cy - 26, 6, 18);
-                      ctx.fillRect(cx + 2, cy - 26, 6, 18);
-                      ctx.fillStyle = '#fb923c';
-                      ctx.fillRect(cx - 8, cy - 8, 16, 6);
-                      ctx.fillStyle = '#cbd5e1';
-                      ctx.fillRect(cx - 5, cy - 2, 2, 6);
-                      ctx.fillRect(cx + 3, cy - 2, 2, 6);
-                      ctx.fillStyle = '#78350f';
-                      ctx.fillRect(cx - 6, cy + 4, 12, 8);
-                    } else {
-                      ctx.restore();
-                    }
-                    if (planeW > 0.01) {
-                      ctx.save();
-                      ctx.globalAlpha = baseAlpha * planeW;
-                      // Pixel-art research plane
-                      ctx.fillStyle = '#e2e8f0';
-                      ctx.fillRect(cx - 16, cy - 3, 32, 6);
-                      ctx.fillStyle = '#38bdf8';
-                      ctx.fillRect(cx + 4, cy - 6, 8, 4);
-                      ctx.fillStyle = '#94a3b8';
-                      ctx.fillRect(cx - 16, cy - 10, 6, 7);
-                      ctx.fillRect(cx - 4, cy + 3, 10, 4);
-                      if (Math.floor(Date.now() / 350) % 2 === 0) {
-                        ctx.fillStyle = '#ef4444';
-                        ctx.fillRect(cx - 16, cy - 11, 3, 3);
-                      }
-                      ctx.restore();
+                  if (balloonW > 0.01) {
+                    ctx.save();
+                    ctx.globalAlpha = baseAlpha * balloonW;
+                    // Pixel-art hot air balloon
+                    ctx.fillStyle = '#f43f5e';
+                    ctx.fillRect(cx - 12, cy - 26, 24, 18);
+                    ctx.fillStyle = '#fde047';
+                    ctx.fillRect(cx - 8, cy - 26, 6, 18);
+                    ctx.fillRect(cx + 2, cy - 26, 6, 18);
+                    ctx.fillStyle = '#fb923c';
+                    ctx.fillRect(cx - 8, cy - 8, 16, 6);
+                    ctx.fillStyle = '#cbd5e1';
+                    ctx.fillRect(cx - 5, cy - 2, 2, 6);
+                    ctx.fillRect(cx + 3, cy - 2, 2, 6);
+                    ctx.fillStyle = '#78350f';
+                    ctx.fillRect(cx - 6, cy + 4, 12, 8);
+                    ctx.restore();
+                  }
+                  if (planeW > 0.01) {
+                    ctx.save();
+                    ctx.globalAlpha = baseAlpha * planeW;
+                    // Pixel-art research plane
+                    ctx.fillStyle = '#e2e8f0';
+                    ctx.fillRect(cx - 16, cy - 3, 32, 6);
+                    ctx.fillStyle = '#38bdf8';
+                    ctx.fillRect(cx + 4, cy - 6, 8, 4);
+                    ctx.fillStyle = '#94a3b8';
+                    ctx.fillRect(cx - 16, cy - 10, 6, 7);
+                    ctx.fillRect(cx - 4, cy + 3, 10, 4);
+                    if (Math.floor(Date.now() / 350) % 2 === 0) {
+                      ctx.fillStyle = '#ef4444';
+                      ctx.fillRect(cx - 16, cy - 11, 3, 3);
                     }
                     ctx.restore();
                   }
+                }
 
 
                   function drawAurora(alt) {
@@ -4883,8 +4843,6 @@
                     let topCol, botCol;
                     if (alt <= 500) {
                       const t = alt / 500;
-                      topCol = lerpColor(currentWeather.topSky, [14, 116, 144], t);
-                      botCol = lerpColor(currentWeather.botSky, [56, 189, 248], t);
                       topCol = lerpColor(blendedTopSky, [14, 116, 144], t);
                       botCol = lerpColor(blendedBotSky, [56, 189, 248], t);
                     } else if (alt <= 1100) {
@@ -4928,80 +4886,60 @@
 
                     if (alt < 1000) {
                       const weatherAlpha = Math.max(0, 1 - alt / 950);
-                      if (currentWeather.id === 'rainy') {
-                        ctx.fillStyle = `rgba(147, 197, 253, ${0.7 * weatherAlpha})`;
-                        const rainyW = weatherBlend.weights.rainy;
-                        const snowyW = weatherBlend.weights.snowy;
-                        const sunsetW = weatherBlend.weights.sunset;
+                      const rainyW = weatherBlend.weights.rainy;
+                      const snowyW = weatherBlend.weights.snowy;
+                      const sunsetW = weatherBlend.weights.sunset;
 
-                        if (rainyW > 0.01) {
-                          ctx.fillStyle = `rgba(147, 197, 253, ${(0.7 * weatherAlpha * rainyW).toFixed(3)})`;
-                          weatherParticles.forEach(p => {
-                            p.y += p.speedY * 2.2;
-                            p.x += p.speedX;
-                            if (p.y > height) { p.y = -20; p.x = Math.random() * width; }
-                            ctx.fillRect(p.x, p.y, 2, 7);
-                          });
-                          if (Math.random() < 0.004) lightningAlpha = 0.7;
-                          if (lightningAlpha > 0) {
-                            ctx.fillStyle = `rgba(255, 255, 255, ${lightningAlpha * weatherAlpha})`;
-                            ctx.fillRect(0, 0, width, height);
-                            lightningAlpha -= 0.06;
-                          }
-                        } else if (currentWeather.id === 'snowy') {
-                          ctx.fillStyle = `rgba(255, 255, 255, ${0.85 * weatherAlpha})`;
-                          weatherParticles.forEach(p => {
-                            p.y += p.speedY * 0.5;
-                            p.x += Math.sin(p.y * 0.02) * 0.6;
-                            if (rainyW > 0.45 && Math.random() < 0.004 * rainyW) lightningAlpha = 0.7;
-                          }
-        if (lightningAlpha > 0) {
-                            ctx.fillStyle = `rgba(255, 255, 255, ${(lightningAlpha * weatherAlpha * Math.max(0.15, rainyW)).toFixed(3)})`;
-                            ctx.fillRect(0, 0, width, height);
-                            lightningAlpha = Math.max(0, lightningAlpha - 0.06);
-                          }
-                          if (snowyW > 0.01) {
-                            ctx.fillStyle = `rgba(255, 255, 255, ${(0.85 * weatherAlpha * snowyW).toFixed(3)})`;
-                            snowParticles.forEach(p => {
-                              p.y += p.speedY * 0.55;
-                              p.x += Math.sin(p.y * 0.02 + p.phase) * 0.6;
-                              if (p.y > height) { p.y = -10; p.x = Math.random() * width; }
-                              ctx.fillRect(p.x, p.y, p.size, p.size);
-                            });
-                          } else if (currentWeather.id === 'sunset') {
-                            ctx.fillStyle = `rgba(254, 215, 170, ${0.6 * weatherAlpha})`;
-                            weatherParticles.slice(0, 35).forEach(p => {
-                            }
-        if (sunsetW > 0.01) {
-                              ctx.fillStyle = `rgba(254, 215, 170, ${(0.6 * weatherAlpha * sunsetW).toFixed(3)})`;
-                              sunsetParticles.forEach(p => {
-                                p.x += p.speedX * 1.5;
-                                p.y += Math.sin(p.x * 0.01) * 0.5;
-                                if (p.x > width) p.x = -10;
-                                ctx.fillRect(p.x, p.y % height, 2, 2);
-                                ctx.fillRect(p.x, p.y % height, p.size, p.size);
-                              });
-                            }
+                      if (rainyW > 0.01) {
+                        ctx.fillStyle = `rgba(147, 197, 253, ${(0.7 * weatherAlpha * rainyW).toFixed(3)})`;
+                        weatherParticles.forEach(p => {
+                          p.y += p.speedY * 2.2;
+                          p.x += p.speedX;
+                          if (p.y > height) { p.y = -20; p.x = Math.random() * width; }
+                          ctx.fillRect(p.x, p.y, 2, 7);
+                        });
+                        if (rainyW > 0.45 && Math.random() < 0.004 * rainyW) lightningAlpha = 0.7;
+                      }
+                      if (lightningAlpha > 0) {
+                        ctx.fillStyle = `rgba(255, 255, 255, ${(lightningAlpha * weatherAlpha * Math.max(0.15, rainyW)).toFixed(3)})`;
+                        ctx.fillRect(0, 0, width, height);
+                        lightningAlpha = Math.max(0, lightningAlpha - 0.06);
+                      }
+                      if (snowyW > 0.01) {
+                        ctx.fillStyle = `rgba(255, 255, 255, ${(0.85 * weatherAlpha * snowyW).toFixed(3)})`;
+                        snowParticles.forEach(p => {
+                          p.y += p.speedY * 0.55;
+                          p.x += Math.sin(p.y * 0.02 + p.phase) * 0.6;
+                          if (p.y > height) { p.y = -10; p.x = Math.random() * width; }
+                          ctx.fillRect(p.x, p.y, p.size, p.size);
+                        });
+                      }
+                      if (sunsetW > 0.01) {
+                        ctx.fillStyle = `rgba(254, 215, 170, ${(0.6 * weatherAlpha * sunsetW).toFixed(3)})`;
+                        sunsetParticles.forEach(p => {
+                          p.x += p.speedX * 1.5;
+                          p.y += Math.sin(p.x * 0.01) * 0.5;
+                          if (p.x > width) p.x = -10;
+                          ctx.fillRect(p.x, p.y % height, p.size, p.size);
+                        });
+                      }
 
-                            const cloudColor = currentWeather.id === 'rainy' ? 'rgba(71, 85, 105, 0.7)' : 'rgba(255, 255, 255, 0.65)';
-                            const cloudColor = lerpRgba([255, 255, 255], 0.65, [71, 85, 105], 0.7, rainyW);
-                            ctx.fillStyle = cloudColor;
-                            clouds.forEach(c => {
-                              c.x += c.speed;
-                              if (c.x > width + 150) c.x = -150;
-                              ctx.fillRect(c.x, c.y, c.w, 24);
-                              ctx.fillRect(c.x + 12, c.y - 12, c.w - 24, 12);
-                            });
+                      const cloudColor = lerpRgba([255, 255, 255], 0.65, [71, 85, 105], 0.7, rainyW);
+                      ctx.fillStyle = cloudColor;
+                      clouds.forEach(c => {
+                        c.x += c.speed;
+                        if (c.x > width + 150) c.x = -150;
+                        ctx.fillRect(c.x, c.y, c.w, 24);
+                        ctx.fillRect(c.x + 12, c.y - 12, c.w - 24, 12);
+                      });
 
-                            if (isHomeYardScreen) {
-                              drawHomeYardLandscape();
-                              drawHomeYardLandscape(weatherBlend);
-                            } else {
-                              drawLaunchpadAndLandscape(alt);
-                              drawLaunchpadAndLandscape(alt, weatherBlend);
-                            }
-                            drawSkyCruiser(alt);
-                          }
+                      if (isHomeYardScreen) {
+                        drawHomeYardLandscape(weatherBlend);
+                      } else {
+                        drawLaunchpadAndLandscape(alt, weatherBlend);
+                      }
+                      drawSkyCruiser(alt);
+                    }
 
                           drawAurora(alt);
                           drawMilkyWay(alt);
