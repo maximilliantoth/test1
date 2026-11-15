@@ -2950,11 +2950,6 @@
     let isHouseHovered = false;
 
     function drawSimpleHouse(groundY) {
-      const isMobileMode = document.body.dataset.device === 'mobile';
-      const scale = isMobileMode ? 0.72 : 1;
-      const hx = isMobileMode
-        ? Math.max(52, Math.min(width * 0.16, 150))
-        : Math.max(76, Math.min(width * 0.18, 220));
       const layout = getYardBuildingLayout();
       const scale = layout.houseScale;
       const hx = layout.hx;
@@ -3047,14 +3042,6 @@
     let shopHitbox = null;
 
     function drawSimpleShop(groundY) {
-      const isMobileMode = document.body.dataset.device === 'mobile';
-      const scale = isMobileMode ? 0.72 : 1;
-      const hx = isMobileMode
-        ? Math.max(52, Math.min(width * 0.16, 150))
-        : Math.max(76, Math.min(width * 0.18, 220));
-      const sx = isMobileMode
-        ? Math.min(width - 44, hx + 126)
-        : Math.min(width - 58, hx + 166);
       const layout = getYardBuildingLayout();
       const scale = layout.shopScale;
       const sx = layout.sx;
@@ -3129,17 +3116,6 @@
     let isFarmHovered = false;
 
     function drawSimpleFarm(groundY) {
-      const isMobileMode = document.body.dataset.device === 'mobile';
-      const scale = isMobileMode ? 0.64 : 1;
-      const hx = isMobileMode
-        ? Math.max(52, Math.min(width * 0.16, 150))
-        : Math.max(76, Math.min(width * 0.18, 220));
-      const sx = isMobileMode
-        ? Math.min(width - 44, hx + 126)
-        : Math.min(width - 58, hx + 166);
-      const fx = isMobileMode
-        ? Math.min(width - 44, sx + 102)
-        : Math.min(width - 78, sx + 158);
       const layout = getYardBuildingLayout();
       const scale = layout.farmScale;
       const fx = layout.fx;
