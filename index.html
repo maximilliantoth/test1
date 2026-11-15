@@ -6265,55 +6265,51 @@ Vráť VÝHRADNE JSON objekt s poľom "results":
       document.getElementById('giftcodeBtn')?.addEventListener('click', openGiftcodeModal);
       document.getElementById('closeGiftcodeBtn')?.addEventListener('click', closeGiftcodeModal);
       document.getElementById('cancelGiftcodeBtn')?.addEventListener('click', closeGiftcodeModal);
+
+      const isGiftcodeRedeemedOnDevice = (code) => {
+        try {
+          const parsed = JSON.parse(localStorage.getItem(REDEEMED_GIFTCODES_KEY) || '[]');
+          if (Array.isArray(parsed) && parsed.includes(code)) return true;
+        } catch { }
+        return document.cookie.split(';').some(c => c.trim() === `pointless_gc_${code}=1`);
+      };
+      const markGiftcodeRedeemedOnDevice = (code) => {
+        try {
+          const parsed = JSON.parse(localStorage.getItem(REDEEMED_GIFTCODES_KEY) || '[]');
+          const redeemed = Array.isArray(parsed) ? parsed : [];
+          if (!redeemed.includes(code)) {
+            redeemed.push(code);
+            localStorage.setItem(REDEEMED_GIFTCODES_KEY, JSON.stringify(redeemed));
+          }
+        } catch { }
+        document.cookie = `pointless_gc_${code}=1; max-age=315360000; path=/; SameSite=Lax`;
+      };
+
       document.getElementById('giftcodeForm')?.addEventListener('submit', (e) => {
         e.preventDefault();
         const code = (giftcodeInput?.value || '').trim().toLowerCase();
-        let redeemed = [];
-        const isGiftcodeRedeemedOnDevice = (code) => {
-          try {
-            const parsed = JSON.parse(localStorage.getItem(REDEEMED_GIFTCODES_KEY) || '[]');
-            if (Array.isArray(parsed)) redeemed = parsed;
-            if (Array.isArray(parsed) && parsed.includes(code)) return true;
-          } catch { }
-          return document.cookie.split(';').some(c => c.trim() === `pointless_gc_${code}=1`);
-        };
-        const markGiftcodeRedeemedOnDevice = (code) => {
-          try {
-            const parsed = JSON.parse(localStorage.getItem(REDEEMED_GIFTCODES_KEY) || '[]');
-            const redeemed = Array.isArray(parsed) ? parsed : [];
-            if (!redeemed.includes(code)) {
-              redeemed.push(code);
-              localStorage.setItem(REDEEMED_GIFTCODES_KEY, JSON.stringify(redeemed));
+        const gift = GIFTCODES[code];
+        if (gift) {
+          if (!gift.reusable && isGiftcodeRedeemedOnDevice(code)) {
+            if (giftcodeMsg) {
+              giftcodeMsg.textContent = '⚠️ Tento giftcode už bol na tomto zariadení použitý!';
+              giftcodeMsg.className = 'text-[11px] font-bold text-amber-300';
             }
-          } catch { }
-          document.cookie = `pointless_gc_${code}=1; max-age=315360000; path=/; SameSite=Lax`;
-        };
-
-                          document.getElementById('giftcodeForm')?.addEventListener('submit', (e) => {
-                            e.preventDefault();
-                            const code = (giftcodeInput?.value || '').trim().toLowerCase();
-                            const gift = GIFTCODES[code];
-                            if (gift) {
-                              if (!gift.reusable && isGiftcodeRedeemedOnDevice(code)) {
-                                if (giftcodeMsg) {
-                                  giftcodeMsg.textContent = '⚠️ Tento giftcode už bol na tomto zariadení použitý!';
-                                  giftcodeMsg.className = 'text-[11px] font-bold text-amber-300';
-                                }
-                                return;
-                              }
-                              if (!gift.reusable) {
-                                markGiftcodeRedeemedOnDevice(code);
-                              }
-                              addCoins(gift.reward);
-                              closeGiftcodeModal();
-                              showToast(gift.toast || `🎁 Giftcode uplatnený! ${gift.label} 🪙`);
-                            } else {
-                              if (giftcodeMsg) {
-                                giftcodeMsg.textContent = '❌ Neplatný giftcode!';
-                                giftcodeMsg.className = 'text-[11px] font-bold text-red-400';
-                              }
-                            }
-                          });
+            return;
+          }
+          if (!gift.reusable) {
+            markGiftcodeRedeemedOnDevice(code);
+          }
+          addCoins(gift.reward);
+          closeGiftcodeModal();
+          showToast(gift.toast || `🎁 Giftcode uplatnený! ${gift.label} 🪙`);
+        } else {
+          if (giftcodeMsg) {
+            giftcodeMsg.textContent = '❌ Neplatný giftcode!';
+            giftcodeMsg.className = 'text-[11px] font-bold text-red-400';
+          }
+        }
+      });
 
         const farmCanvas = document.getElementById('farmInteriorCanvas');
         if (farmCanvas) {
