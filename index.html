@@ -697,7 +697,7 @@
   <div id="toastMsg" class="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 bg-red-950/95 border-2 border-red-500 text-red-200 px-4 py-2 text-xs font-bold shadow-xl hidden"></div>
 
   <script src="questions.js?v=20261114"></script>
-  <script src="shop.js?v=20261115"></script>
+  <script src="shop.js?v=20261115b"></script>
   <script src="animals.js?v=20261114"></script>
   <script>
     // --- CONSTANTS & CONFIG ---
@@ -926,7 +926,8 @@
         knight_suit:  { suit: '#cbd5e1', shade: '#64748b', highlight: '#f8fafc', visor: '#334155', trim: '#facc15' },
         messi_suit:     { suit: '#f8fafc', shade: '#38bdf8', highlight: '#ffffff', visor: '#0284c7', trim: '#38bdf8' },
         ronaldo_suit:   { suit: '#dc2626', shade: '#991b1b', highlight: '#f87171', visor: '#15803d', trim: '#facc15' },
-        neymar_suit:    { suit: '#1d4ed8', shade: '#1e3a8a', highlight: '#60a5fa', visor: '#facc15', trim: '#facc15' },
+        neymar_suit:    { suit: '#fde047', shade: '#eab308', highlight: '#fef9c3', visor: '#16a34a', trim: '#16a34a' },
+        mbappe_suit:    { suit: '#1e3a8a', shade: '#172554', highlight: '#3b82f6', visor: '#ef4444', trim: '#f8fafc' },
         halloween_suit: { suit: '#1e1b4b', shade: '#0f0a29', highlight: '#7c3aed', visor: '#f97316', trim: '#f97316' },
         diamond_suit:   { suit: '#2dd4bf', shade: '#0d9488', highlight: '#ccfbf1', visor: '#f0f9ff', trim: '#a5f3fc' }
       };
@@ -1158,29 +1159,30 @@
       const isR9 = cosmetics.suit === 'r9_suit';
       const isRonaldo = cosmetics.suit === 'ronaldo_suit';
       const isNeymar = cosmetics.suit === 'neymar_suit';
+      const isMbappe = cosmetics.suit === 'mbappe_suit';
       const isMessi = cosmetics.suit === 'messi_suit';
       const isHalloween = cosmetics.suit === 'halloween_suit';
-      const isFootballer = isR9 || isRonaldo || isNeymar || isMessi;
+      const isFootballer = isR9 || isRonaldo || isNeymar || isMbappe || isMessi;
       const legShade = palette.shade;
       if (hasMiniUfo) {
         // Sitting legs tucked forward on UFO
-        pctx.fillStyle = isFootballer ? (isRonaldo ? '#15803d' : isNeymar ? '#f8fafc' : isMessi ? '#0f172a' : '#1e40af') : palette.suit;
+        pctx.fillStyle = isFootballer ? (isRonaldo ? '#15803d' : (isNeymar || isMbappe) ? '#f8fafc' : isMessi ? '#0f172a' : '#1e40af') : palette.suit;
         pctx.fillRect(-28, 44, 24, 18);
         pctx.fillRect(6, 44, 24, 18);
         pctx.fillStyle = isFootballer ? '#f8fafc' : '#334155';
         pctx.fillRect(-24, 58, 22, 12);
         pctx.fillRect(10, 58, 22, 12);
       } else if (isFootballer) {
-        // Shorts (R9: blue, Ronaldo: Portugal green, Neymar: white, Messi: Argentina navy)
-        const shortsCol = isRonaldo ? '#15803d' : isNeymar ? '#f8fafc' : isMessi ? '#0f172a' : '#1e40af';
-        const shortsShade = isRonaldo ? '#14532d' : isNeymar ? '#cbd5e1' : isMessi ? '#020617' : '#1e3a8a';
+        // Shorts
+        const shortsCol = isRonaldo ? '#15803d' : (isNeymar || isMbappe) ? '#f8fafc' : isMessi ? '#0f172a' : '#1e40af';
+        const shortsShade = isRonaldo ? '#14532d' : (isNeymar || isMbappe) ? '#cbd5e1' : isMessi ? '#020617' : '#1e3a8a';
         pctx.fillStyle = shortsCol;
         pctx.fillRect(-34, 46, 30, 22);
         pctx.fillRect(4, 46, 30, 22);
         pctx.fillStyle = shortsShade;
         pctx.fillRect(-34, 46, 8, 22);
         // Socks
-        pctx.fillStyle = isRonaldo ? '#dc2626' : isNeymar ? '#1d4ed8' : '#f8fafc';
+        pctx.fillStyle = isRonaldo ? '#dc2626' : isNeymar ? '#1d4ed8' : isMbappe ? '#dc2626' : '#f8fafc';
         pctx.fillRect(-30, 68, 22, 26);
         pctx.fillRect(8, 68, 22, 26);
         if (isMessi) {
@@ -1189,7 +1191,7 @@
           pctx.fillRect(8, 68, 22, 5);
         }
         // Football cleats
-        pctx.fillStyle = (isRonaldo || isMessi) ? '#facc15' : '#94a3b8';
+        pctx.fillStyle = isNeymar ? '#f43f5e' : isMbappe ? '#38bdf8' : (isRonaldo || isMessi) ? '#facc15' : '#94a3b8';
         pctx.fillRect(-32, 94, 26, 8);
         pctx.fillRect(6, 94, 26, 8);
         pctx.fillStyle = '#0f172a';
@@ -1260,17 +1262,29 @@
         pctx.textAlign = 'center';
         pctx.fillText('7', 0, 28);
       } else if (isNeymar) {
-        // Neymar Jr. Brazil royal blue jersey with yellow collar, green trim & 10
-        pctx.fillStyle = '#facc15';
-        pctx.fillRect(-16, -24, 32, 6);
+        // Neymar Jr. canary-yellow Brazil jersey with green V-collar & 10
         pctx.fillStyle = '#16a34a';
-        pctx.fillRect(-36, -6, 8, 42);
-        pctx.fillRect(28, -6, 8, 42);
-        pctx.fillStyle = '#facc15';
+        pctx.fillRect(-16, -24, 32, 6);
+        pctx.fillRect(-10, -18, 20, 4);
+        pctx.fillRect(-36, -6, 6, 42);
+        pctx.fillRect(30, -6, 6, 42);
+        pctx.fillStyle = '#1d4ed8';
         pctx.fillRect(14, -12, 10, 10);
+        pctx.fillStyle = '#16a34a';
         pctx.font = 'bold 18px "Press Start 2P", monospace';
         pctx.textAlign = 'center';
         pctx.fillText('10', 0, 26);
+      } else if (isMbappe) {
+        // Mbappé France royal blue jersey with white/red tricolor band & gold 10
+        pctx.fillStyle = '#f8fafc';
+        pctx.fillRect(-36, -4, 72, 6);
+        pctx.fillStyle = '#ef4444';
+        pctx.fillRect(-36, 2, 72, 6);
+        pctx.fillStyle = '#facc15';
+        pctx.fillRect(14, -14, 10, 8);
+        pctx.font = 'bold 18px "Press Start 2P", monospace';
+        pctx.textAlign = 'center';
+        pctx.fillText('10', 0, 30);
       } else if (isMessi) {
         // Messi Argentina white & sky-blue striped jersey with gold crest & 10
         pctx.fillStyle = '#38bdf8';
@@ -1381,7 +1395,7 @@
 
       // --- ARMS & GLOVES ---
       const armBob = Math.sin(t * 1.3) * 3;
-      const skinCol = isRonaldo ? '#d99b72' : isNeymar ? '#b87a52' : isMessi ? '#e0ac8b' : '#c68662';
+      const skinCol = isRonaldo ? '#d99b72' : isNeymar ? '#d49b72' : isMbappe ? '#9c6137' : isMessi ? '#e0ac8b' : '#c68662';
       // Left arm
       pctx.fillStyle = palette.suit;
       pctx.fillRect(-52, -18 + armBob, 16, isFootballer ? 22 : 48);
@@ -1413,7 +1427,7 @@
       }
 
       // --- NECK RING ---
-      pctx.fillStyle = isFootballer ? (isRonaldo ? '#b97b54' : isNeymar ? '#975e3c' : isMessi ? '#c89472' : '#a66846') : '#475569';
+      pctx.fillStyle = isFootballer ? (isRonaldo ? '#b97b54' : isNeymar ? '#b37b54' : isMbappe ? '#7d4a26' : isMessi ? '#c89472' : '#a66846') : '#475569';
       pctx.fillRect(-26, -32, 52, 10);
       if (!isFootballer) {
         pctx.fillStyle = '#94a3b8';
@@ -1476,33 +1490,60 @@
         pctx.fillStyle = '#e2e8f0';
         pctx.fillRect(-6, -47, 28, 3);
       } else if (isNeymar) {
-        // Neymar Jr. detailed pixel head & blonde-tipped mohawk + headband
-        pctx.fillStyle = '#b87a52';
+        // Neymar Jr. warm tan skin, dark undercut + blonde swept hair (no headband!)
+        pctx.fillStyle = '#d49b72';
         pctx.fillRect(-38, -98, 76, 68);
         pctx.fillRect(-30, -106, 60, 10);
-        pctx.fillStyle = '#975e3c';
+        pctx.fillStyle = '#b37b54';
         pctx.fillRect(-38, -98, 12, 68);
         pctx.fillRect(-44, -68, 6, 12);
-        // Dark hair base + iconic blonde curls on top
-        pctx.fillStyle = '#1c1917';
-        pctx.fillRect(-38, -104, 76, 12);
-        pctx.fillRect(-38, -94, 10, 20);
+        // Dark undercut sides + bright blonde spiky/swept top
+        pctx.fillStyle = '#29170b';
+        pctx.fillRect(-38, -100, 12, 24);
+        pctx.fillRect(28, -100, 10, 18);
         pctx.fillStyle = '#fde047';
-        pctx.fillRect(-24, -118, 48, 14);
-        pctx.fillRect(-14, -124, 28, 8);
-        // White/blue headband
-        pctx.fillStyle = '#f8fafc';
-        pctx.fillRect(-38, -92, 76, 7);
-        // Eyebrows, eyes & light beard
+        pctx.fillRect(-28, -116, 58, 16);
+        pctx.fillRect(-16, -124, 34, 10);
+        pctx.fillStyle = '#facc15';
+        pctx.fillRect(-20, -106, 46, 6);
+        // Eyebrows, eyes & light goatee
+        pctx.fillStyle = '#1c1917';
+        pctx.fillRect(-16, -80, 18, 4);
+        pctx.fillRect(14, -80, 18, 4);
+        pctx.fillRect(-12, -70, 7, 7);
+        pctx.fillRect(18, -70, 7, 7);
+        pctx.fillStyle = '#ffffff';
+        pctx.fillRect(-11, -69, 2, 2);
+        pctx.fillRect(19, -69, 2, 2);
+        pctx.fillStyle = '#44403c';
+        pctx.fillRect(-4, -38, 22, 6);
+        pctx.fillStyle = '#ffffff';
+        pctx.fillRect(-8, -53, 28, 9);
+      } else if (isMbappe) {
+        // Kylian Mbappé warm brown skin, short crisp buzzcut/fade & confident grin
+        pctx.fillStyle = '#9c6137';
+        pctx.fillRect(-38, -98, 76, 68);
+        pctx.fillRect(-30, -106, 60, 10);
+        pctx.fillStyle = '#7d4a26';
+        pctx.fillRect(-38, -98, 12, 68);
+        pctx.fillRect(-44, -68, 6, 12);
+        // Short crisp black buzzcut
+        pctx.fillStyle = '#1c1917';
+        pctx.fillRect(-38, -106, 76, 14);
+        pctx.fillRect(-28, -110, 56, 6);
+        pctx.fillRect(-38, -94, 8, 18);
+        // Eyebrows, expressive eyes & clean grin
         pctx.fillStyle = '#0f172a';
         pctx.fillRect(-16, -80, 18, 4);
         pctx.fillRect(14, -80, 18, 4);
         pctx.fillRect(-12, -70, 7, 7);
         pctx.fillRect(18, -70, 7, 7);
-        pctx.fillStyle = '#44403c';
-        pctx.fillRect(-18, -42, 46, 10);
         pctx.fillStyle = '#ffffff';
-        pctx.fillRect(-8, -53, 28, 9);
+        pctx.fillRect(-11, -69, 2, 2);
+        pctx.fillRect(19, -69, 2, 2);
+        pctx.fillRect(-8, -54, 30, 10);
+        pctx.fillStyle = '#e2e8f0';
+        pctx.fillRect(-8, -48, 30, 3);
       } else if (isMessi) {
         // Messi detailed pixel head, swept dark-brown hair & iconic trimmed beard
         pctx.fillStyle = '#e0ac8b';
@@ -3488,9 +3529,10 @@
       const isR9 = cosmetics.suit === 'r9_suit';
       const isRonaldo = cosmetics.suit === 'ronaldo_suit';
       const isNeymar = cosmetics.suit === 'neymar_suit';
+      const isMbappe = cosmetics.suit === 'mbappe_suit';
       const isMessi = cosmetics.suit === 'messi_suit';
       const isHalloween = cosmetics.suit === 'halloween_suit';
-      const isFootballer = isR9 || isRonaldo || isNeymar || isMessi;
+      const isFootballer = isR9 || isRonaldo || isNeymar || isMbappe || isMessi;
       const isClimbing = (p.altitude - p.visualAltitude) > 2;
       const isCelebrating = (p.celebrateTimer || 0) > 0;
       if (isCelebrating) p.celebrateTimer--;
@@ -3584,11 +3626,19 @@
         ctx.fillRect(-3, -4, 6, 2);
         ctx.fillRect(-8, 3, 16, 1);
       } else if (isNeymar) {
-        ctx.fillStyle = '#facc15';
-        ctx.fillRect(-4, -4, 8, 2);
         ctx.fillStyle = '#16a34a';
+        ctx.fillRect(-4, -4, 8, 2);
         ctx.fillRect(-8, 0, 2, 10);
         ctx.fillRect(6, 0, 2, 10);
+        ctx.fillStyle = '#1d4ed8';
+        ctx.fillRect(3, 0, 3, 3);
+      } else if (isMbappe) {
+        ctx.fillStyle = '#f8fafc';
+        ctx.fillRect(-8, 0, 16, 2);
+        ctx.fillStyle = '#ef4444';
+        ctx.fillRect(-8, 2, 16, 2);
+        ctx.fillStyle = '#facc15';
+        ctx.fillRect(3, -3, 3, 2);
       } else if (isMessi) {
         ctx.fillStyle = '#38bdf8';
         ctx.fillRect(-6, -4, 3, 18);
@@ -3679,13 +3729,24 @@
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(-1, -10, 6, 2);
       } else if (isNeymar) {
-        ctx.fillStyle = '#b87a52';
+        ctx.fillStyle = '#d49b72';
         ctx.fillRect(-9, -20, 18, 16);
         ctx.fillRect(-7, -22, 14, 2);
+        ctx.fillStyle = '#29170b';
+        ctx.fillRect(-9, -20, 3, 5);
         ctx.fillStyle = '#fde047';
-        ctx.fillRect(-6, -25, 12, 4);
-        ctx.fillStyle = '#f8fafc';
-        ctx.fillRect(-9, -20, 18, 2);
+        ctx.fillRect(-6, -25, 13, 5);
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(-2, -14, 2, 2);
+        ctx.fillRect(4, -14, 2, 2);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(-1, -10, 6, 2);
+      } else if (isMbappe) {
+        ctx.fillStyle = '#9c6137';
+        ctx.fillRect(-9, -20, 18, 16);
+        ctx.fillRect(-7, -22, 14, 2);
+        ctx.fillStyle = '#1c1917';
+        ctx.fillRect(-9, -23, 18, 4);
         ctx.fillStyle = '#0f172a';
         ctx.fillRect(-2, -14, 2, 2);
         ctx.fillRect(4, -14, 2, 2);
@@ -3779,14 +3840,14 @@
       ctx.fillRect(-11, -2 + armWave, 4, isFootballer ? 5 : 12);
       ctx.fillRect(7, -2 - armWave, 4, isFootballer ? 5 : 12);
       if (isFootballer) {
-        ctx.fillStyle = isRonaldo ? '#d99b72' : isNeymar ? '#b87a52' : isMessi ? '#e0ac8b' : '#c68662';
+        ctx.fillStyle = isRonaldo ? '#d99b72' : isNeymar ? '#d49b72' : isMbappe ? '#9c6137' : isMessi ? '#e0ac8b' : '#c68662';
         ctx.fillRect(-11, 3 + armWave, 4, 7);
         ctx.fillRect(7, 3 - armWave, 4, 7);
       }
 
       if (hasMiniUfo) {
         // Sitting legs + Mini UFO saucer underneath
-        ctx.fillStyle = isFootballer ? (isRonaldo ? '#15803d' : isNeymar ? '#f8fafc' : isMessi ? '#0f172a' : '#1e40af') : palette.suit;
+        ctx.fillStyle = isFootballer ? (isRonaldo ? '#15803d' : (isNeymar || isMbappe) ? '#f8fafc' : isMessi ? '#0f172a' : '#1e40af') : palette.suit;
         ctx.fillRect(-7, 12, 6, 5);
         ctx.fillRect(1, 12, 6, 5);
         ctx.fillStyle = 'rgba(56, 189, 248, 0.35)';
@@ -3806,10 +3867,10 @@
         ctx.fillRect(-8, 22, 16, 2);
       } else if (isFootballer) {
         // Footballer shorts, socks, cleats
-        ctx.fillStyle = isRonaldo ? '#15803d' : isNeymar ? '#f8fafc' : isMessi ? '#0f172a' : '#1e40af';
+        ctx.fillStyle = isRonaldo ? '#15803d' : (isNeymar || isMbappe) ? '#f8fafc' : isMessi ? '#0f172a' : '#1e40af';
         ctx.fillRect(-7, 14 - leftLegLift, 6, 4);
         ctx.fillRect(1, 14 - rightLegLift, 6, 4);
-        ctx.fillStyle = isRonaldo ? '#dc2626' : isNeymar ? '#1d4ed8' : '#f8fafc';
+        ctx.fillStyle = isRonaldo ? '#dc2626' : isNeymar ? '#1d4ed8' : isMbappe ? '#dc2626' : '#f8fafc';
         ctx.fillRect(-7, 18 - leftLegLift, 6, 4);
         ctx.fillRect(1, 18 - rightLegLift, 6, 4);
         ctx.fillStyle = '#0f172a';
