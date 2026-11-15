@@ -6115,7 +6115,6 @@ Vráť VÝHRADNE JSON pole objektov:
       document.getElementById('cancelGiftcodeBtn')?.addEventListener('click', closeGiftcodeModal);
       document.getElementById('giftcodeForm')?.addEventListener('submit', (e) => {
         e.preventDefault();
-        const code = (giftcodeInput?.value || '').trim();
         const code = (giftcodeInput?.value || '').trim().toLowerCase();
         let redeemed = [];
         try {
