@@ -170,6 +170,15 @@
       margin-bottom: auto;
     }
 
+    body[data-device="mobile"] main>#modeScreen {
+      margin-bottom: 0;
+    }
+
+    body[data-device="desktop"] #myCityBar,
+    body[data-device="ipad"] #myCityBar {
+      display: none !important;
+    }
+
     body[data-device="mobile"] #houseHeaderBtn {
       display: inline-flex;
     }
@@ -382,6 +391,15 @@
         </div>
         <div id="lobbyError" class="text-[11px] text-red-400 font-semibold hidden"></div>
       </div>
+    </div>
+
+    <!-- Mobile-only "Moje mesto" button below main Pointless window -->
+    <div id="myCityBar" class="w-full max-w-md mt-3 sm:hidden hidden">
+      <button id="myCityBtn" type="button"
+        class="pixel-btn w-full py-3 text-xs tracking-wider bg-emerald-700 border-emerald-400 flex items-center justify-center gap-2 shadow-lg">
+        <span>🏘️</span>
+        <span>MOJE MESTO</span>
+      </button>
     </div>
 
     <!-- Screen 1.5: Multiplayer Waiting Room (Lobby) -->
@@ -796,6 +814,62 @@
         <p>⏱️ <b>Limit 30 sekúnd:</b> Ak nestihneš odpovedať včas, dostávaš 0 bodov („Hlupák 0 bodov“).</p>
       </div>
       <button id="confirmRulesBtn" class="pixel-btn py-2 text-xs w-full mt-1">ROZUMIEM</button>
+    </div>
+  </div>
+
+  <!-- Modal: Moje mesto (Mobile Hub for all houses) -->
+  <div id="myCityModal"
+    class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="w-full max-w-md pixel-box bg-slate-950 p-5 flex flex-col gap-3 text-left border-2 border-emerald-400 max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center border-b border-emerald-800/70 pb-2">
+        <span class="pixel-font text-xs text-emerald-300">🏘️ MOJE MESTO</span>
+        <button id="closeMyCityBtn" class="text-emerald-300 hover:text-white font-bold text-base px-2">✕</button>
+      </div>
+      <p class="text-[11px] text-slate-300 leading-relaxed">
+        Všetky budovy tvojho vesmírneho mestečka na jednom mieste:
+      </p>
+      <div class="grid grid-cols-1 gap-2.5">
+        <button id="cityHouseBtn" type="button"
+          class="w-full text-left p-3 bg-slate-900/90 hover:bg-emerald-950/60 border-2 border-emerald-500/50 flex items-center gap-3 transition-colors">
+          <div class="text-2xl shrink-0">🏠</div>
+          <div class="min-w-0 flex-1">
+            <div class="pixel-font text-[10px] text-emerald-300">DOMČEK KOZMONAUTA</div>
+            <div class="text-[11px] text-slate-400 mt-0.5">Skafandre, čiapky, stopy a vzhľad postavy</div>
+          </div>
+          <span class="text-emerald-400 text-xs font-bold shrink-0">▶</span>
+        </button>
+
+        <button id="cityShopBtn" type="button"
+          class="w-full text-left p-3 bg-slate-900/90 hover:bg-yellow-950/60 border-2 border-yellow-500/50 flex items-center gap-3 transition-colors">
+          <div class="text-2xl shrink-0">🛒</div>
+          <div class="min-w-0 flex-1">
+            <div class="pixel-font text-[10px] text-yellow-300">KOZMICKÝ OBCHOD</div>
+            <div class="text-[11px] text-slate-400 mt-0.5">Nákup kozmetiky, budov a vylepšení</div>
+          </div>
+          <span class="text-yellow-400 text-xs font-bold shrink-0">▶</span>
+        </button>
+
+        <button id="cityFarmBtn" type="button"
+          class="w-full text-left p-3 bg-slate-900/90 hover:bg-amber-950/60 border-2 border-amber-500/50 flex items-center gap-3 transition-colors">
+          <div class="text-2xl shrink-0">🐄</div>
+          <div class="min-w-0 flex-1">
+            <div class="pixel-font text-[10px] text-amber-300">FARMA ZVIERATIEK</div>
+            <div class="text-[11px] text-slate-400 mt-0.5">Starostlivosť o zvieratá, trh a zárobok</div>
+          </div>
+          <span class="text-amber-400 text-xs font-bold shrink-0">▶</span>
+        </button>
+
+        <button id="cityCasinoBtn" type="button"
+          class="w-full text-left p-3 bg-slate-900/90 hover:bg-purple-950/60 border-2 border-purple-500/50 flex items-center gap-3 transition-colors">
+          <div class="text-2xl shrink-0">🎰</div>
+          <div class="min-w-0 flex-1">
+            <div class="pixel-font text-[10px] text-purple-300">LUXUSNÉ KASÍNO</div>
+            <div id="cityCasinoStatus" class="text-[11px] text-slate-400 mt-0.5">Odomkne sa po 20 odohraných hrách</div>
+          </div>
+          <span class="text-purple-400 text-xs font-bold shrink-0">▶</span>
+        </button>
+      </div>
+      <button id="confirmMyCityBtn" class="pixel-btn py-2 text-xs w-full mt-1">ZAVRIEŤ</button>
     </div>
   </div>
 
@@ -2852,6 +2926,10 @@
       target.classList.remove('panel-pop');
       void target.offsetWidth;
       target.classList.add('panel-pop');
+      const myCityBar = document.getElementById('myCityBar');
+      if (myCityBar) {
+        myCityBar.classList.toggle('hidden', screenId !== 'modeScreen');
+      }
     }
 
     function getNickname() {
@@ -3857,10 +3935,18 @@
         ctx.fillRect(tx - 4, groundY - 40, 8, 8);
       });
 
-      drawSimpleHouse(groundY);
-      drawSimpleShop(groundY);
-      drawSimpleFarm(groundY);
-      drawSimpleCasino(groundY);
+      const isMobileYard = width < 640 || document.body.dataset.device === 'mobile';
+      if (isMobileYard) {
+        houseHitbox = null;
+        shopHitbox = null;
+        farmHitbox = null;
+        casinoHitbox = null;
+      } else {
+        drawSimpleHouse(groundY);
+        drawSimpleShop(groundY);
+        drawSimpleFarm(groundY);
+        drawSimpleCasino(groundY);
+      }
     }
 
     function drawLaunchpadAndLandscape(alt, weatherBlend) {
@@ -6255,6 +6341,41 @@ Vráť VÝHRADNE JSON objekt s poľom "results":
 
       document.getElementById('shopBtn').addEventListener('click', openShopModal);
       document.getElementById('houseHeaderBtn').addEventListener('click', openAstronautModal);
+      const myCityModal = document.getElementById('myCityModal');
+      const openMyCityModal = () => {
+        const casinoStatus = document.getElementById('cityCasinoStatus');
+        if (casinoStatus) {
+          casinoStatus.textContent = isCasinoUnlocked()
+            ? '✅ Odomknuté! Pripravené na hru'
+            : `🔒 Odomkne sa po ${CASINO_REQUIRED_GAMES} hrách (${gamesPlayed}/${CASINO_REQUIRED_GAMES})`;
+        }
+        if (myCityModal) myCityModal.classList.remove('hidden');
+      };
+      const closeMyCityModal = () => {
+        if (myCityModal) myCityModal.classList.add('hidden');
+      };
+      document.getElementById('myCityBtn')?.addEventListener('click', openMyCityModal);
+      document.getElementById('closeMyCityBtn')?.addEventListener('click', closeMyCityModal);
+      document.getElementById('confirmMyCityBtn')?.addEventListener('click', closeMyCityModal);
+      document.getElementById('cityHouseBtn')?.addEventListener('click', () => {
+        closeMyCityModal();
+        openAstronautModal();
+      });
+      document.getElementById('cityShopBtn')?.addEventListener('click', () => {
+        closeMyCityModal();
+        openShopModal();
+      });
+      document.getElementById('cityFarmBtn')?.addEventListener('click', () => {
+        closeMyCityModal();
+        openFarmModal();
+      });
+      document.getElementById('cityCasinoBtn')?.addEventListener('click', () => {
+        if (!isCasinoUnlocked()) {
+          showToast(`🔒 Kasíno sa otvorí až po ${CASINO_REQUIRED_GAMES} odohraných hrách! (${gamesPlayed}/${CASINO_REQUIRED_GAMES})`);
+        } else {
+          showToast('🎰 Luxusné Kasíno je otvorené! (Interiér už čoskoro)');
+        }
+      });
       document.getElementById('headerGamesPlayed')?.addEventListener('click', () => {
         const remaining = Math.max(0, CASINO_REQUIRED_GAMES - gamesPlayed);
         if (remaining > 0) {
@@ -6450,6 +6571,7 @@ Vráť VÝHRADNE JSON objekt s poľom "results":
           if (!document.getElementById('giftcodeModal').classList.contains('hidden')) return;
           if (!document.getElementById('coinsOfferModal').classList.contains('hidden')) return;
           if (!document.getElementById('deviceSelectModal').classList.contains('hidden')) return;
+          if (!document.getElementById('myCityModal').classList.contains('hidden')) return;
           if (isPointInBox(shopHitbox, e.clientX, e.clientY)) {
             openShopModal();
           } else if (isPointInBox(houseHitbox, e.clientX, e.clientY)) {
