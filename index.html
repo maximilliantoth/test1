@@ -2937,8 +2937,14 @@
       return yardWalkerState[id];
     }
 
+    const CASINO_REQUIRED_GAMES = 20;
+
     function isCasinoBuilt() {
       return ownedItems.includes('casino') && equippedCosmetics.building === 'casino';
+    }
+
+    function isCasinoUnlocked() {
+      return ownedItems.includes('casino') && gamesPlayed >= CASINO_REQUIRED_GAMES;
     }
 
     function getYardBuildingLayout() {
@@ -3508,19 +3514,20 @@
       ctx.fillRect(cx + doorW / 2 + 1, groundY - 8, 3, 8);
 
       if (isCasinoHovered) {
-        const badgeW = 128;
+        const unlocked = isCasinoUnlocked();
+        const badgeW = unlocked ? 128 : 138;
         const badgeH = 18;
         const badgeY = wallTop - (isMobileMode ? 48 : 54);
         ctx.fillStyle = 'rgba(2, 6, 23, 0.92)';
         ctx.fillRect(cx - badgeW / 2, badgeY, badgeW, badgeH);
-        ctx.strokeStyle = '#fbbf24';
+        ctx.strokeStyle = unlocked ? '#fbbf24' : '#f87171';
         ctx.lineWidth = 1.5;
         ctx.strokeRect(cx - badgeW / 2, badgeY, badgeW, badgeH);
         ctx.font = 'bold 9px Inter, sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillStyle = '#fde047';
-        ctx.fillText('🎰 LUXUSNÉ KASÍNO', cx, badgeY + badgeH / 2 + 0.5);
+        ctx.fillStyle = unlocked ? '#fde047' : '#fca5a5';
+        ctx.fillText(unlocked ? '🎰 LUXUSNÉ KASÍNO' : `🔒 KASÍNO (${gamesPlayed}/${CASINO_REQUIRED_GAMES})`, cx, badgeY + badgeH / 2 + 0.5);
         ctx.textBaseline = 'alphabetic';
       }
 
@@ -5892,6 +5899,9 @@ Vráť VÝHRADNE JSON pole objektov:
       gamesPlayed += 1;
       localStorage.setItem(GAMES_PLAYED_KEY, String(gamesPlayed));
       updateGamesPlayedDisplay();
+      if (gamesPlayed === CASINO_REQUIRED_GAMES && ownedItems.includes('casino')) {
+        showToast('🎰 Dosiahol si 20 odohraných hier! Kasíno je teraz otvorené!');
+      }
       addCoins(25);
       showScreen('endScreen');
       const pList = Object.values(players).sort((a, b) => b.altitude - a.altitude);
@@ -6219,7 +6229,11 @@ Vráť VÝHRADNE JSON pole objektov:
         } else if (isPointInBox(farmHitbox, e.clientX, e.clientY)) {
           openFarmModal();
         } else if (isPointInBox(casinoHitbox, e.clientX, e.clientY)) {
-          showToast('🎰 Luxusné Kasíno je otvorené! (Interiér už čoskoro)');
+          if (!isCasinoUnlocked()) {
+            showToast(`🔒 Kasíno sa otvorí až po ${CASINO_REQUIRED_GAMES} odohraných hrách! (${gamesPlayed}/${CASINO_REQUIRED_GAMES})`);
+          } else {
+            showToast('🎰 Luxusné Kasíno je otvorené! (Interiér už čoskoro)');
+          }
         }
       });
     });
