@@ -6305,7 +6305,7 @@
           if (!userApiKey) {
             throw new Error("Chýba Gemini API kľúč!");
           }
-          const models = ["gemini-2.5-flash", "gemini-2.5-flash-lite", "gemini-2.0-flash", "gemini-2.0-flash-lite"];
+          const models = ["gemini-2.5-flash", "gemini-2.5-flash-lite", "gemini-flash-latest", "gemini-2.0-flash"];
           const modelErrors = [];
 
           async function requestModel(model, withSchema) {
@@ -6313,27 +6313,36 @@
             const timeoutId = setTimeout(() => controller.abort(), 15000);
             try {
               const generationConfig = {
-                responseMimeType: "application/json",
                 temperature: 0.1,
                 maxOutputTokens: 2048
               };
-              if (withSchema && (model === "gemini-2.5-flash" || model === "gemini-2.5-flash-lite")) {
-                generationConfig.thinkingConfig = { thinkingBudget: 0 };
-              }
-              if (withSchema && responseSchema) {
-                generationConfig.responseSchema = responseSchema;
+              const payload = {
+                contents: [{
+                  parts: [{
+                    text: withSchema
+                      ? promptText
+                      : `Odpovedaj VÝHRADNE platným JSON-om bez akéhokoľvek sprievodného textu.\n\n${promptText}`
+                  }]
+                }],
+                generationConfig
+              };
+              if (withSchema) {
+                generationConfig.responseMimeType = "application/json";
+                payload.systemInstruction = {
+                  parts: [{ text: "Odpovedaj VÝHRADNE platným JSON-om bez akéhokoľvek sprievodného textu." }]
+                };
+                if (model.startsWith("gemini-2.5-")) {
+                  generationConfig.thinkingConfig = { thinkingBudget: 0 };
+                }
+                if (responseSchema) {
+                  generationConfig.responseSchema = responseSchema;
+                }
               }
               const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(userApiKey)}`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 signal: controller.signal,
-                body: JSON.stringify({
-                  systemInstruction: {
-                    parts: [{ text: "Odpovedaj VÝHRADNE platným JSON-om bez akéhokoľvek sprievodného textu." }]
-                  },
-                  contents: [{ parts: [{ text: promptText }] }],
-                  generationConfig
-                })
+                body: JSON.stringify(payload)
               });
               clearTimeout(timeoutId);
               return response;
@@ -6360,7 +6369,7 @@
                 if (rawText) {
                   return extractJsonFromText(rawText);
                 }
-                const finishReason = data?.candidates?.[0]?.finishReason;
+                const finishReason = data?.candidates?.[0]?.finishReason || data?.promptFeedback?.blockReason;
                 modelErrors.push(`${model}: ${finishReason ? `Prázdna odpoveď (${finishReason})` : 'Prázdna odpoveď'}`);
               } else {
                 const errData = await response.json().catch(() => ({}));
@@ -6368,6 +6377,9 @@
                 modelErrors.push(`${model}: ${apiMsg}`);
                 if (response.status === 401 || response.status === 403 || /API_KEY_INVALID|API key not valid/i.test(apiMsg)) {
                   throw new Error(`Neplatný alebo zablokovaný API kľúč (${apiMsg}). Skontroluj ho cez 🔑 KĽÚČ.`);
+                }
+                if (response.status === 429) {
+                  await new Promise(r => setTimeout(r, 400));
                 }
               }
             } catch (err) {
@@ -6427,12 +6439,14 @@ JSON: {"valid":true,"people":12,"comment":"1 krátka veta SK"}`;
             displaySoloResult(res);
           } catch (err) {
             loader.classList.add('hidden');
-            showToast(`⚠️ AI nedostupné (${err.message}) – vyhodnotené lokálne.`);
-            displaySoloResult(evaluateOfflineAnswer(answerText, 'AI nedostupné'));
+            const shortErr = (err.message || 'Chyba API').slice(0, 90);
+            showToast(`⚠️ AI nedostupné (${shortErr}) – vyhodnotené lokálne.`);
+            displaySoloResult(evaluateOfflineAnswer(answerText, shortErr));
           }
         }
 
-        function displaySoloResult(res) {
+        function displaySoloResult(rawRes) {
+          const res = Array.isArray(rawRes) ? (rawRes[0] || { valid: false, people: 100, comment: 'Neplatná odpoveď AI' }) : rawRes;
           document.getElementById('answerForm').classList.add('hidden');
           const scoreArea = document.getElementById('scoreArea');
           scoreArea.classList.remove('hidden');
@@ -6542,9 +6556,10 @@ Vráť VÝHRADNE JSON objekt s poľom "results":
                   throw new Error('Neplatná štruktúra odpovede AI');
                 }
               } catch (err) {
-                showToast(`⚠️ AI nedostupné (${err.message}) – vyhodnotené lokálne.`);
+                const shortErr = (err.message || 'Chyba API').slice(0, 90);
+                showToast(`⚠️ AI nedostupné (${shortErr}) – vyhodnotené lokálne.`);
                 activeSubs.forEach(s => {
-                  aiMap[s.id] = evaluateOfflineAnswer(s.answer, 'AI nedostupné');
+                  aiMap[s.id] = evaluateOfflineAnswer(s.answer, shortErr);
                 });
               }
             }
