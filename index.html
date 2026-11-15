@@ -817,59 +817,21 @@
     </div>
   </div>
 
-  <!-- Modal: Moje mesto (Mobile Hub for all houses) -->
+  <!-- Modal: Moje mesto (Mobile Interactive Hub) -->
   <div id="myCityModal"
-    class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
-    <div class="w-full max-w-md pixel-box bg-slate-950 p-5 flex flex-col gap-3 text-left border-2 border-emerald-400 max-h-[90vh] overflow-y-auto">
+    class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 hidden">
+    <div class="w-full max-w-md pixel-box bg-slate-950 p-4 flex flex-col gap-3 text-left border-2 border-emerald-400">
       <div class="flex justify-between items-center border-b border-emerald-800/70 pb-2">
         <span class="pixel-font text-xs text-emerald-300">🏘️ MOJE MESTO</span>
         <button id="closeMyCityBtn" class="text-emerald-300 hover:text-white font-bold text-base px-2">✕</button>
       </div>
-      <p class="text-[11px] text-slate-300 leading-relaxed">
-        Všetky budovy tvojho vesmírneho mestečka na jednom mieste:
-      </p>
-      <div class="grid grid-cols-1 gap-2.5">
-        <button id="cityHouseBtn" type="button"
-          class="w-full text-left p-3 bg-slate-900/90 hover:bg-emerald-950/60 border-2 border-emerald-500/50 flex items-center gap-3 transition-colors">
-          <div class="text-2xl shrink-0">🏠</div>
-          <div class="min-w-0 flex-1">
-            <div class="pixel-font text-[10px] text-emerald-300">DOMČEK KOZMONAUTA</div>
-            <div class="text-[11px] text-slate-400 mt-0.5">Skafandre, čiapky, stopy a vzhľad postavy</div>
-          </div>
-          <span class="text-emerald-400 text-xs font-bold shrink-0">▶</span>
-        </button>
-
-        <button id="cityShopBtn" type="button"
-          class="w-full text-left p-3 bg-slate-900/90 hover:bg-yellow-950/60 border-2 border-yellow-500/50 flex items-center gap-3 transition-colors">
-          <div class="text-2xl shrink-0">🛒</div>
-          <div class="min-w-0 flex-1">
-            <div class="pixel-font text-[10px] text-yellow-300">KOZMICKÝ OBCHOD</div>
-            <div class="text-[11px] text-slate-400 mt-0.5">Nákup kozmetiky, budov a vylepšení</div>
-          </div>
-          <span class="text-yellow-400 text-xs font-bold shrink-0">▶</span>
-        </button>
-
-        <button id="cityFarmBtn" type="button"
-          class="w-full text-left p-3 bg-slate-900/90 hover:bg-amber-950/60 border-2 border-amber-500/50 flex items-center gap-3 transition-colors">
-          <div class="text-2xl shrink-0">🐄</div>
-          <div class="min-w-0 flex-1">
-            <div class="pixel-font text-[10px] text-amber-300">FARMA ZVIERATIEK</div>
-            <div class="text-[11px] text-slate-400 mt-0.5">Starostlivosť o zvieratá, trh a zárobok</div>
-          </div>
-          <span class="text-amber-400 text-xs font-bold shrink-0">▶</span>
-        </button>
-
-        <button id="cityCasinoBtn" type="button"
-          class="w-full text-left p-3 bg-slate-900/90 hover:bg-purple-950/60 border-2 border-purple-500/50 flex items-center gap-3 transition-colors">
-          <div class="text-2xl shrink-0">🎰</div>
-          <div class="min-w-0 flex-1">
-            <div class="pixel-font text-[10px] text-purple-300">LUXUSNÉ KASÍNO</div>
-            <div id="cityCasinoStatus" class="text-[11px] text-slate-400 mt-0.5">Odomkne sa po 20 odohraných hrách</div>
-          </div>
-          <span class="text-purple-400 text-xs font-bold shrink-0">▶</span>
-        </button>
+      <canvas id="myCityCanvas" width="420" height="260"
+        class="w-full h-auto block border-2 border-sky-500/50 bg-slate-900 cursor-pointer"
+        style="image-rendering: pixelated;"></canvas>
+      <div class="text-[11px] text-center text-sky-200/90 font-medium">
+        👆 Ťukni na domček, obchod, farmu alebo kasíno na obrázku!
       </div>
-      <button id="confirmMyCityBtn" class="pixel-btn py-2 text-xs w-full mt-1">ZAVRIEŤ</button>
+      <button id="confirmMyCityBtn" class="pixel-btn py-2 text-xs w-full">ZAVRIEŤ</button>
     </div>
   </div>
 
@@ -3095,9 +3057,40 @@
       return ownedItems.includes('casino') && gamesPlayed >= CASINO_REQUIRED_GAMES;
     }
 
+    let isCityModalRendering = false;
+    let cityModalHitboxes = { house: null, shop: null, farm: null, casino: null };
+
     function getYardBuildingLayout() {
       const isMobileMode = document.body.dataset.device === 'mobile';
       const casinoBuilt = isCasinoBuilt();
+      if (isCityModalRendering) {
+        if (casinoBuilt) {
+          return {
+            isMobileMode: true,
+            casinoBuilt,
+            hx: width * 0.13,
+            sx: width * 0.35,
+            fx: width * 0.56,
+            cx: width * 0.82,
+            houseScale: 0.72,
+            shopScale: 0.72,
+            farmScale: 0.66,
+            casinoScale: 0.74
+          };
+        }
+        return {
+          isMobileMode: true,
+          casinoBuilt,
+          hx: width * 0.18,
+          sx: width * 0.48,
+          fx: width * 0.78,
+          cx: 0,
+          houseScale: 0.85,
+          shopScale: 0.85,
+          farmScale: 0.78,
+          casinoScale: 0.74
+        };
+      }
       if (isMobileMode) {
         if (casinoBuilt) {
           const hx = Math.max(34, Math.min(width * 0.11, 90));
@@ -5032,6 +5025,11 @@
         drawSkyCruiser(alt);
       }
 
+      const cityModalEl = document.getElementById('myCityModal');
+      if (cityModalEl && !cityModalEl.classList.contains('hidden') && typeof window.renderMyCityCanvas === 'function') {
+        window.renderMyCityCanvas(weatherBlend);
+      }
+
       drawAurora(alt);
       drawMilkyWay(alt);
       drawEarthCurvature(alt);
@@ -6342,14 +6340,87 @@ Vráť VÝHRADNE JSON objekt s poľom "results":
       document.getElementById('shopBtn').addEventListener('click', openShopModal);
       document.getElementById('houseHeaderBtn').addEventListener('click', openAstronautModal);
       const myCityModal = document.getElementById('myCityModal');
-      const openMyCityModal = () => {
-        const casinoStatus = document.getElementById('cityCasinoStatus');
-        if (casinoStatus) {
-          casinoStatus.textContent = isCasinoUnlocked()
-            ? '✅ Odomknuté! Pripravené na hru'
-            : `🔒 Odomkne sa po ${CASINO_REQUIRED_GAMES} hrách (${gamesPlayed}/${CASINO_REQUIRED_GAMES})`;
+      const myCityCanvas = document.getElementById('myCityCanvas');
+      const renderMyCityCanvas = (weatherBlendArg) => {
+        if (!myCityCanvas) return;
+        const cCtx = myCityCanvas.getContext('2d');
+        if (!cCtx) return;
+        const savedCtx = ctx;
+        const savedW = width;
+        const savedH = height;
+        const savedBoxes = { house: houseHitbox, shop: shopHitbox, farm: farmHitbox, casino: casinoHitbox };
+        try {
+          isCityModalRendering = true;
+          ctx = cCtx;
+          width = myCityCanvas.width;
+          height = myCityCanvas.height;
+
+          const blend = weatherBlendArg || getWeatherBlend();
+          const topCol = lerpColor(blend.from.topSky, blend.to.topSky, blend.t);
+          const botCol = lerpColor(blend.from.botSky, blend.to.botSky, blend.t);
+          const grad = ctx.createLinearGradient(0, 0, 0, height);
+          grad.addColorStop(0, topCol);
+          grad.addColorStop(1, botCol);
+          ctx.fillStyle = grad;
+          ctx.fillRect(0, 0, width, height);
+
+          ctx.fillStyle = lerpRgba([255, 255, 255], 0.65, [71, 85, 105], 0.7, blend.weights.rainy);
+          clouds.forEach(c => {
+            const cx = ((c.x % (savedW + 150)) / Math.max(1, savedW + 150)) * (width + 80) - 40;
+            const cy = (c.y / Math.max(1, savedH)) * (height * 0.45);
+            const cw = Math.max(36, c.w * 0.45);
+            ctx.fillRect(cx, cy, cw, 12);
+            ctx.fillRect(cx + 6, cy - 6, cw - 12, 6);
+          });
+
+          const groundY = height - 46;
+          drawDetailedMountains(groundY, blend);
+
+          const snowW = blend.weights.snowy;
+          ctx.fillStyle = lerpHex('#16a34a', '#e2e8f0', snowW);
+          ctx.fillRect(0, groundY, width, height - groundY);
+          ctx.fillStyle = lerpHex('#22c55e', '#cbd5e1', snowW);
+          ctx.fillRect(0, groundY, width, 4);
+
+          const tuftColor = lerpHex('#15803d', '#cbd5e1', snowW);
+          for (let gx = 10; gx < width; gx += 24) {
+            ctx.fillStyle = tuftColor;
+            ctx.fillRect(gx, groundY - 3, 2, 3);
+            ctx.fillRect(gx + 4, groundY - 5, 2, 5);
+          }
+
+          houseHitbox = null;
+          shopHitbox = null;
+          farmHitbox = null;
+          casinoHitbox = null;
+          drawSimpleHouse(groundY);
+          drawSimpleShop(groundY);
+          drawSimpleFarm(groundY);
+          drawSimpleCasino(groundY);
+          cityModalHitboxes = {
+            house: houseHitbox,
+            shop: shopHitbox,
+            farm: farmHitbox,
+            casino: casinoHitbox
+          };
+        } finally {
+          isCityModalRendering = false;
+          ctx = savedCtx;
+          width = savedW;
+          height = savedH;
+          houseHitbox = savedBoxes.house;
+          shopHitbox = savedBoxes.shop;
+          farmHitbox = savedBoxes.farm;
+          casinoHitbox = savedBoxes.casino;
         }
-        if (myCityModal) myCityModal.classList.remove('hidden');
+      };
+      window.renderMyCityCanvas = renderMyCityCanvas;
+
+      const openMyCityModal = () => {
+        if (myCityModal) {
+          myCityModal.classList.remove('hidden');
+          renderMyCityCanvas();
+        }
       };
       const closeMyCityModal = () => {
         if (myCityModal) myCityModal.classList.add('hidden');
@@ -6357,23 +6428,26 @@ Vráť VÝHRADNE JSON objekt s poľom "results":
       document.getElementById('myCityBtn')?.addEventListener('click', openMyCityModal);
       document.getElementById('closeMyCityBtn')?.addEventListener('click', closeMyCityModal);
       document.getElementById('confirmMyCityBtn')?.addEventListener('click', closeMyCityModal);
-      document.getElementById('cityHouseBtn')?.addEventListener('click', () => {
-        closeMyCityModal();
-        openAstronautModal();
-      });
-      document.getElementById('cityShopBtn')?.addEventListener('click', () => {
-        closeMyCityModal();
-        openShopModal();
-      });
-      document.getElementById('cityFarmBtn')?.addEventListener('click', () => {
-        closeMyCityModal();
-        openFarmModal();
-      });
-      document.getElementById('cityCasinoBtn')?.addEventListener('click', () => {
-        if (!isCasinoUnlocked()) {
-          showToast(`🔒 Kasíno sa otvorí až po ${CASINO_REQUIRED_GAMES} odohraných hrách! (${gamesPlayed}/${CASINO_REQUIRED_GAMES})`);
-        } else {
-          showToast('🎰 Luxusné Kasíno je otvorené! (Interiér už čoskoro)');
+      myCityCanvas?.addEventListener('click', (e) => {
+        const rect = myCityCanvas.getBoundingClientRect();
+        const cx = (e.clientX - rect.left) * (myCityCanvas.width / rect.width);
+        const cy = (e.clientY - rect.top) * (myCityCanvas.height / rect.height);
+        const hit = (box) => box && cx >= box.x && cx <= box.x + box.w && cy >= box.y && cy <= box.y + box.h;
+        if (hit(cityModalHitboxes.house)) {
+          closeMyCityModal();
+          openAstronautModal();
+        } else if (hit(cityModalHitboxes.shop)) {
+          closeMyCityModal();
+          openShopModal();
+        } else if (hit(cityModalHitboxes.farm)) {
+          closeMyCityModal();
+          openFarmModal();
+        } else if (hit(cityModalHitboxes.casino)) {
+          if (!isCasinoUnlocked()) {
+            showToast(`🔒 Kasíno sa otvorí až po ${CASINO_REQUIRED_GAMES} odohraných hrách! (${gamesPlayed}/${CASINO_REQUIRED_GAMES})`);
+          } else {
+            showToast('🎰 Luxusné Kasíno je otvorené! (Interiér už čoskoro)');
+          }
         }
       });
       document.getElementById('headerGamesPlayed')?.addEventListener('click', () => {
