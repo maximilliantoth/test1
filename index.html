@@ -5619,9 +5619,6 @@
       if (!userApiKey) {
         throw new Error("Chýba Gemini API kľúč!");
       }
-      // Disable thinking on 2.5 models so they don't burn maxOutputTokens or hit timeout
-      const models = ["gemini-2.5-flash", "gemini-2.5-flash-lite", "gemini-2.0-flash"];
-      let lastError = "Nepodarilo sa spojiť s API.";
       // Disable thinking on gemini-2.5-flash so it doesn't burn maxOutputTokens or hit timeout
       const models = ["gemini-2.5-flash", "gemini-2.5-flash-lite", "gemini-3-flash-preview"];
       const modelErrors = [];
@@ -5635,63 +5632,58 @@
             temperature: 0.1,
             maxOutputTokens: 2048
           };
-          if (model.startsWith("gemini-2.5")) {
-            if (model === "gemini-2.5-flash") {
-              generationConfig.thinkingConfig = { thinkingBudget: 0 };
-            }
-            if (responseSchema) {
-              generationConfig.responseSchema = responseSchema;
-            }
-            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(userApiKey)}`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              signal: controller.signal,
-              body: JSON.stringify({
-                systemInstruction: {
-                  parts: [{ text: "Odpovedaj VÝHRADNE platným JSON-om bez akéhokoľvek sprievodného textu." }]
-                },
-                contents: [{ parts: [{ text: promptText }] }],
-                generationConfig
-              })
-            });
-            clearTimeout(timeoutId);
-
-            if (response.ok) {
-              const data = await response.json();
-              const parts = data?.candidates?.[0]?.content?.parts || [];
-              const rawText = parts
-                .filter(p => !p.thought && typeof p.text === 'string')
-                .map(p => p.text)
-                .join('\n');
-              if (rawText) {
-                return extractJsonFromText(rawText);
-              }
-              const finishReason = data?.candidates?.[0]?.finishReason;
-              lastError = finishReason ? `Prázdna odpoveď z API (${finishReason}).` : "Prázdna odpoveď z API.";
-              modelErrors.push(`${model}: ${finishReason ? `Prázdna odpoveď (${finishReason})` : 'Prázdna odpoveď'}`);
-            } else {
-              const errData = await response.json().catch(() => ({}));
-              const apiMsg = errData?.error?.message || `HTTP ${response.status}`;
-              lastError = apiMsg;
-              modelErrors.push(`${model}: ${apiMsg}`);
-              if (response.status === 401 || response.status === 403 || /API_KEY_INVALID|API key not valid/i.test(apiMsg)) {
-                throw new Error(`Neplatný alebo zablokovaný API kľúč (${apiMsg}). Skontroluj ho cez 🔑 KĽÚČ.`);
-              }
-            }
-          } catch (err) {
-            clearTimeout(timeoutId);
-            if (/Neplatný alebo zablokovaný API kľúč/.test(err.message)) {
-              throw err;
-            }
-            lastError = err.name === 'AbortError' ? 'Časový limit spojenia vypršal' : (err.message || lastError);
-            const msg = err.name === 'AbortError' ? 'Časový limit spojenia vypršal' : (err.message || 'Nepodarilo sa spojiť s API.');
-            modelErrors.push(`${model}: ${msg}`);
+          if (model === "gemini-2.5-flash") {
+            generationConfig.thinkingConfig = { thinkingBudget: 0 };
           }
+          if (responseSchema) {
+            generationConfig.responseSchema = responseSchema;
+          }
+          const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(userApiKey)}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            signal: controller.signal,
+            body: JSON.stringify({
+              systemInstruction: {
+                parts: [{ text: "Odpovedaj VÝHRADNE platným JSON-om bez akéhokoľvek sprievodného textu." }]
+              },
+              contents: [{ parts: [{ text: promptText }] }],
+              generationConfig
+            })
+          });
+          clearTimeout(timeoutId);
+
+          if (response.ok) {
+            const data = await response.json();
+            const parts = data?.candidates?.[0]?.content?.parts || [];
+            const rawText = parts
+              .filter(p => !p.thought && typeof p.text === 'string')
+              .map(p => p.text)
+              .join('\n');
+            if (rawText) {
+              return extractJsonFromText(rawText);
+            }
+            const finishReason = data?.candidates?.[0]?.finishReason;
+            modelErrors.push(`${model}: ${finishReason ? `Prázdna odpoveď (${finishReason})` : 'Prázdna odpoveď'}`);
+          } else {
+            const errData = await response.json().catch(() => ({}));
+            const apiMsg = errData?.error?.message || `HTTP ${response.status}`;
+            modelErrors.push(`${model}: ${apiMsg}`);
+            if (response.status === 401 || response.status === 403 || /API_KEY_INVALID|API key not valid/i.test(apiMsg)) {
+              throw new Error(`Neplatný alebo zablokovaný API kľúč (${apiMsg}). Skontroluj ho cez 🔑 KĽÚČ.`);
+            }
+          }
+        } catch (err) {
+          clearTimeout(timeoutId);
+          if (/Neplatný alebo zablokovaný API kľúč/.test(err.message)) {
+            throw err;
+          }
+          const msg = err.name === 'AbortError' ? 'Časový limit spojenia vypršal' : (err.message || 'Nepodarilo sa spojiť s API.');
+          modelErrors.push(`${model}: ${msg}`);
         }
-      throw new Error(lastError);
-        console.error('Gemini AI zlyhalo pre všetky modely:', modelErrors);
-        throw new Error(modelErrors[0] || "Nepodarilo sa spojiť s API.");
       }
+      console.error('Gemini AI zlyhalo pre všetky modely:', modelErrors);
+      throw new Error(modelErrors[0] || "Nepodarilo sa spojiť s API.");
+    }
 
       async function evaluateSoloAnswer(answerText) {
         isEvaluating = true;
@@ -5789,29 +5781,40 @@ PRAVIDLÁ:
 1. Over pre každého hráča, či je odpoveď SKUTOČNE správna (alebo ide o jasnú pop-kultúrnu referenciu k téme). Nezmysly alebo nesprávne odpovede označ "valid": false.
 2. Odhadni počet zo 100 Slovákov, ktorí by odpoveď povedali (známa = 50-90, stredná = 15-49, obscure/raritná = 0-5). Rovnaké odpovede viacerých hráčov musia dostať rovnaký počet ľudí.
 
-Vráť VÝHRADNE JSON pole objektov:
-[
-  { "id": "id_hraca", "valid": true/false, "people": číslo_0_100, "comment": "krátky komentár" }
-]`;
+Vráť VÝHRADNE JSON objekt s poľom "results":
+{
+  "results": [
+    { "id": "id_hraca", "valid": true/false, "people": číslo_0_100, "comment": "krátky komentár" }
+  ]
+}`;
 
           const multiSchema = {
-            type: "ARRAY",
-            items: {
-              type: "OBJECT",
-              properties: {
-                id: { type: "STRING" },
-                valid: { type: "BOOLEAN" },
-                people: { type: "INTEGER" },
-                comment: { type: "STRING" }
-              },
-              required: ["id", "valid", "people", "comment"]
-            }
+            type: "OBJECT",
+            properties: {
+              results: {
+                type: "ARRAY",
+                items: {
+                  type: "OBJECT",
+                  properties: {
+                    id: { type: "STRING" },
+                    valid: { type: "BOOLEAN" },
+                    people: { type: "INTEGER" },
+                    comment: { type: "STRING" }
+                  },
+                  required: ["id", "valid", "people", "comment"]
+                }
+              }
+            },
+            required: ["results"]
           };
 
           try {
-            const arr = await callGeminiAI(prompt, multiSchema);
+            const res = await callGeminiAI(prompt, multiSchema);
+            const arr = Array.isArray(res) ? res : res?.results;
             if (Array.isArray(arr)) {
               arr.forEach(item => { aiMap[item.id] = item; });
+            } else {
+              throw new Error('Neplatná štruktúra odpovede AI');
             }
           } catch (err) {
             activeSubs.forEach(s => {
