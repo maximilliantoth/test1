@@ -492,10 +492,11 @@
         </div>
         <button id="closeShopBtn" class="text-yellow-300 hover:text-white font-bold text-base px-2">✕</button>
       </div>
-      <div id="shopPageTabs" class="grid grid-cols-3 gap-1.5 shrink-0">
+      <div id="shopPageTabs" class="grid grid-cols-2 sm:grid-cols-4 gap-1.5 shrink-0">
         <button type="button" data-shop-page="suit" class="shop-tab-btn py-1.5 px-1 text-[9px] pixel-font border-2 border-yellow-400 bg-yellow-500/20 text-yellow-200">1. SKINY</button>
         <button type="button" data-shop-page="hat" class="shop-tab-btn py-1.5 px-1 text-[9px] pixel-font border-2 border-slate-700 bg-slate-900 text-slate-400 hover:text-white">2. NA HLAVU</button>
         <button type="button" data-shop-page="trail" class="shop-tab-btn py-1.5 px-1 text-[9px] pixel-font border-2 border-slate-700 bg-slate-900 text-slate-400 hover:text-white">3. JETPACK</button>
+        <button type="button" data-shop-page="building" class="shop-tab-btn py-1.5 px-1 text-[9px] pixel-font border-2 border-slate-700 bg-slate-900 text-slate-400 hover:text-white">4. BUDOVY</button>
       </div>
       <div id="shopItemsGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y pr-1.5 py-1"></div>
       <p class="text-[10px] text-slate-400 leading-snug border-t border-slate-800 pt-2 shrink-0">
@@ -695,9 +696,9 @@
   <!-- Custom In-App Alert Banner (replaces alert()) -->
   <div id="toastMsg" class="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 bg-red-950/95 border-2 border-red-500 text-red-200 px-4 py-2 text-xs font-bold shadow-xl hidden"></div>
 
-  <script src="questions.js"></script>
-  <script src="shop.js"></script>
-  <script src="animals.js"></script>
+  <script src="questions.js?v=20261114"></script>
+  <script src="shop.js?v=20261115"></script>
+  <script src="animals.js?v=20261114"></script>
   <script>
     // --- CONSTANTS & CONFIG ---
     const STORAGE_KEY = 'pointless_gemini_api_key';
@@ -762,8 +763,8 @@
     let equippedCosmetics = (() => {
       try {
         const parsed = JSON.parse(localStorage.getItem(EQUIPPED_KEY) || '{}');
-        return { hat: parsed.hat || null, suit: parsed.suit || null, trail: parsed.trail || null };
-      } catch { return { hat: null, suit: null, trail: null }; }
+        return { hat: parsed.hat || null, suit: parsed.suit || null, trail: parsed.trail || null, building: parsed.building || null };
+      } catch { return { hat: null, suit: null, trail: null, building: null }; }
     })();
 
     function saveShopState() {
@@ -848,7 +849,7 @@
           </div>
           <div class="flex items-center justify-between pt-1 border-t border-slate-800/80">
             <span class="text-[10px] pixel-font ${isOwned ? 'text-emerald-400' : 'text-yellow-300'}">
-              ${isOwned ? (isEquipped ? 'NASADENÉ' : 'VLASTNENÉ') : `${item.price} 🪙`}
+              ${isOwned ? (isEquipped ? (item.slot === 'building' ? 'POSTAVENÉ' : 'NASADENÉ') : 'VLASTNENÉ') : `${item.price} 🪙`}
             </span>
             <button type="button" class="shop-action-btn px-2.5 py-1 text-[9px] pixel-font border ${
               isOwned
@@ -859,7 +860,7 @@
                     ? 'bg-yellow-600 border-yellow-300 text-slate-950 hover:bg-yellow-500'
                     : 'bg-slate-800 border-slate-700 text-slate-500 cursor-not-allowed')
             }">
-              ${isOwned ? (isEquipped ? 'ZLOŽIŤ' : 'NASADIŤ') : 'KÚPIŤ'}
+              ${isOwned ? (isEquipped ? (item.slot === 'building' ? 'SKRYŤ' : 'ZLOŽIŤ') : (item.slot === 'building' ? 'POSTAVIŤ' : 'NASADIŤ')) : 'KÚPIŤ'}
             </button>
           </div>
         `;

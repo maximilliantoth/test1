@@ -9,7 +9,7 @@
 window.SHOP_TEXT = `
 # Zoznam položiek v Kozmickom obchode pre hru Pointless
 # Formát každého riadka: ID | SLOT | IKONA | NÁZOV | POPIS | CENA
-# Povolené sloty: hat, suit, trail
+# Povolené sloty: hat, suit, trail, building
 # Prázdne riadky a riadky začínajúce na # alebo // sa ignorujú.
 
 # ČIAPKY A DOPLNKY NA PRILBU (hat)
@@ -43,5 +43,8 @@ diamond_suit | suit | 💎 | Diamantový oblek | Trblietavý tyrkysový prémiov
 rainbow_trail | trail | 🌈 | Dúhová stopa | Farebné častice z jetpacku | 1000
 plasma_trail | trail | 🔥 | Plazmová stopa | Fialovo-ružová plazma | 700
 mini_ufo | trail | 🛸 | Mini UFO | Lietajúci tanier na ktorom kozmonaut sedí | 2000
+
+# BUDOVY (building)
+casino | building | 🎰 | Casino | Luxusná herňa s hracími automatmi | 10000
 `;
 
