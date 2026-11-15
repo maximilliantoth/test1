@@ -779,9 +779,7 @@
         Zadaj tajný giftcode a získaj odmenu v podobe kamienkov 🪙!
       </p>
       <form id="giftcodeForm" class="flex flex-col gap-2.5">
-        <input type="text" id="giftcodeInput" placeholder="Zadaj kód..." autocomplete="off" <input type="text"
-          id="giftcodeInput" placeholder="Zadaj kód..." autocomplete="off" autocapitalize="none" autocorrect="off"
-          spellcheck="false" <input type="text" id="giftcodeInput" placeholder="Zadaj kód..." autocomplete="off"
+        <input type="text" id="giftcodeInput" placeholder="Zadaj kód..." autocomplete="off"
           autocapitalize="none" autocorrect="off" spellcheck="false"
           class="w-full bg-slate-900 border-2 border-pink-500/60 px-3 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-pink-400 text-xs font-mono rounded-none" />
         <div id="giftcodeMsg" class="text-[11px] font-bold hidden"></div>
@@ -7093,7 +7091,6 @@ Vráť VÝHRADNE JSON objekt s poľom "results":
           if (!gift.reusable) {
             markGiftcodeRedeemedOnDevice(code);
           }
-          addCoins(gift.reward);
           if (gift.reward) addCoins(gift.reward);
           if (gift.unlockBuildingsMs) {
             unlockTempBuildings(gift.unlockBuildingsMs);
