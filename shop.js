@@ -45,7 +45,7 @@ rainbow_trail | trail | 🌈 | Dúhová stopa | Farebné častice z jetpacku | 1
 plasma_trail | trail | 🔥 | Plazmová stopa | Fialovo-ružová plazma | 700
 mini_ufo | trail | 🛸 | Mini UFO | Lietajúci tanier na ktorom kozmonaut sedí | 2000
 
-# BUDOVY (building)
-casino | building | 🎰 | Casino | Luxusná herňa s hracími automatmi | 10000
+# BUDOVY (building) - odomykajú sa automaticky podľa počtu odohraných hier
+
 `;
 

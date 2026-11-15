@@ -578,7 +578,7 @@
         </div>
         <button id="closeShopBtn" class="text-yellow-300 hover:text-white font-bold text-base px-2">✕</button>
       </div>
-      <div id="shopPageTabs" class="grid grid-cols-2 sm:grid-cols-4 gap-1.5 shrink-0">
+      <div id="shopPageTabs" class="grid grid-cols-3 gap-1.5 shrink-0">
         <button type="button" data-shop-page="suit"
           class="shop-tab-btn py-1.5 px-1 text-[9px] pixel-font border-2 border-yellow-400 bg-yellow-500/20 text-yellow-200">1.
           SKINY</button>
@@ -588,9 +588,6 @@
         <button type="button" data-shop-page="trail"
           class="shop-tab-btn py-1.5 px-1 text-[9px] pixel-font border-2 border-slate-700 bg-slate-900 text-slate-400 hover:text-white">3.
           JETPACK</button>
-        <button type="button" data-shop-page="building"
-          class="shop-tab-btn py-1.5 px-1 text-[9px] pixel-font border-2 border-slate-700 bg-slate-900 text-slate-400 hover:text-white">4.
-          BUDOVY</button>
       </div>
       <div id="shopItemsGrid"
         class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y pr-1.5 py-1">
@@ -3049,68 +3046,121 @@
       return yardWalkerState[id];
     }
 
-    const CASINO_REQUIRED_GAMES = 20;
+    const HORNBACH_REQUIRED_GAMES = 20;
+    const CASINO_REQUIRED_GAMES = 30;
 
-    function isCasinoBuilt() {
-      return ownedItems.includes('casino') && equippedCosmetics.building === 'casino';
+    function isHornbachUnlocked() {
+      return gamesPlayed >= HORNBACH_REQUIRED_GAMES;
+    }
+
+    function isHornbachBuilt() {
+      return isHornbachUnlocked();
     }
 
     function isCasinoUnlocked() {
-      return ownedItems.includes('casino') && gamesPlayed >= CASINO_REQUIRED_GAMES;
+      return gamesPlayed >= CASINO_REQUIRED_GAMES;
+    }
+
+    function isCasinoBuilt() {
+      return isCasinoUnlocked();
     }
 
     let isCityModalRendering = false;
-    let cityModalHitboxes = { house: null, shop: null, farm: null, casino: null };
+    let cityModalHitboxes = { house: null, shop: null, farm: null, hornbach: null, casino: null };
 
     function getYardBuildingLayout() {
       const isMobileMode = document.body.dataset.device === 'mobile';
+      const hornbachBuilt = isHornbachBuilt();
       const casinoBuilt = isCasinoBuilt();
       if (isCityModalRendering) {
-        if (casinoBuilt) {
+        if (hornbachBuilt && casinoBuilt) {
           return {
             isMobileMode: true,
+            hornbachBuilt,
             casinoBuilt,
-            hx: width * 0.13,
-            sx: width * 0.35,
-            fx: width * 0.56,
-            cx: width * 0.82,
+            hx: width * 0.09,
+            sx: width * 0.25,
+            fx: width * 0.42,
+            hbx: width * 0.62,
+            cx: width * 0.85,
+            houseScale: 0.62,
+            shopScale: 0.62,
+            farmScale: 0.56,
+            hornbachScale: 0.60,
+            casinoScale: 0.62
+          };
+        }
+        if (hornbachBuilt) {
+          return {
+            isMobileMode: true,
+            hornbachBuilt,
+            casinoBuilt,
+            hx: width * 0.12,
+            sx: width * 0.33,
+            fx: width * 0.55,
+            hbx: width * 0.80,
+            cx: 0,
             houseScale: 0.72,
             shopScale: 0.72,
             farmScale: 0.66,
-            casinoScale: 0.74
+            hornbachScale: 0.70,
+            casinoScale: 0.72
           };
         }
         return {
           isMobileMode: true,
+          hornbachBuilt,
           casinoBuilt,
           hx: width * 0.18,
           sx: width * 0.48,
           fx: width * 0.78,
+          hbx: 0,
           cx: 0,
           houseScale: 0.85,
           shopScale: 0.85,
           farmScale: 0.78,
+          hornbachScale: 0.72,
           casinoScale: 0.74
         };
       }
       if (isMobileMode) {
-        if (casinoBuilt) {
+        if (hornbachBuilt && casinoBuilt) {
+          const hx = Math.max(28, width * 0.09);
+          const sx = width * 0.25;
+          const fx = width * 0.42;
+          const hbx = width * 0.62;
+          const cx = Math.min(width - 44, width * 0.85);
+          return { isMobileMode, hornbachBuilt, casinoBuilt, hx, sx, fx, hbx, cx, houseScale: 0.54, shopScale: 0.54, farmScale: 0.50, hornbachScale: 0.56, casinoScale: 0.58 };
+        }
+        if (hornbachBuilt) {
           const hx = Math.max(34, Math.min(width * 0.11, 90));
           const sx = Math.min(width - 145, hx + 76);
           const fx = Math.min(width - 98, sx + 72);
-          const cx = Math.min(width - 56, Math.max(fx + 96, width * 0.81));
-          return { isMobileMode, casinoBuilt, hx, sx, fx, cx, houseScale: 0.62, shopScale: 0.62, farmScale: 0.56, casinoScale: 0.74 };
+          const hbx = Math.min(width - 56, Math.max(fx + 96, width * 0.80));
+          return { isMobileMode, hornbachBuilt, casinoBuilt, hx, sx, fx, hbx, cx: 0, houseScale: 0.62, shopScale: 0.62, farmScale: 0.56, hornbachScale: 0.66, casinoScale: 0.74 };
         }
         const hx = Math.max(52, Math.min(width * 0.16, 150));
         const sx = Math.min(width - 44, hx + 126);
         const fx = Math.min(width - 44, sx + 102);
-        return { isMobileMode, casinoBuilt, hx, sx, fx, cx: 0, houseScale: 0.72, shopScale: 0.72, farmScale: 0.64, casinoScale: 0.74 };
+        return { isMobileMode, hornbachBuilt, casinoBuilt, hx, sx, fx, hbx: 0, cx: 0, houseScale: 0.72, shopScale: 0.72, farmScale: 0.64, hornbachScale: 0.68, casinoScale: 0.74 };
       }
-      const hx = Math.max(76, Math.min(width * 0.18, 220));
-      const sx = Math.min(width - 58, hx + 166);
-      const fx = Math.min(width - 78, sx + 158);
-      const cx = Math.min(width - 108, Math.max(fx + 195, width * 0.76));
-      return { isMobileMode, casinoBuilt, hx, sx, fx, cx, houseScale: 1, shopScale: 1, farmScale: 1, casinoScale: 1 };
+      const hx = Math.max(70, Math.min(width * 0.13, 185));
+      const sx = Math.min(width - 58, hx + 148);
+      const fx = Math.min(width - 78, sx + 142);
+      const hbx = Math.min(width - 130, Math.max(fx + 178, width * 0.56));
+      const cx = Math.min(width - 108, Math.max(hbx + 195, width * 0.82));
+      const desktopShrink = (hornbachBuilt && casinoBuilt && width < 1180) ? 0.84 : 1;
+      return {
+        isMobileMode,
+        hornbachBuilt,
+        casinoBuilt,
+        hx, sx, fx, hbx, cx,
+        houseScale: desktopShrink,
+        shopScale: desktopShrink,
+        farmScale: desktopShrink,
+        hornbachScale: desktopShrink,
+        casinoScale: desktopShrink
+      };
     }
 
     let houseHitbox = null;
@@ -3416,6 +3466,194 @@
         ctx.textBaseline = 'middle';
         ctx.fillStyle = '#fca5a5';
         ctx.fillText('🏡 MOJA FARMA', fx, badgeY + badgeH / 2 + 0.5);
+        ctx.textBaseline = 'alphabetic';
+      }
+
+      ctx.restore();
+    }
+
+    let hornbachHitbox = null;
+    let isHornbachHovered = false;
+
+    function drawSimpleHornbach(groundY) {
+      const layout = getYardBuildingLayout();
+      if (!layout.hornbachBuilt) {
+        hornbachHitbox = null;
+        isHornbachHovered = false;
+        return;
+      }
+      const isMobileMode = layout.isMobileMode;
+      const scale = layout.hornbachScale;
+      const hbx = layout.hbx;
+      const mainW = isMobileMode ? 96 : 126;
+      const gardenW = isMobileMode ? 34 : 48;
+      const totalW = mainW + gardenW;
+      const wallH = isMobileMode ? 70 : 82;
+      const wallTop = groundY - wallH;
+      const leftX = hbx - totalW / 2;
+
+      hornbachHitbox = {
+        x: hbx - ((totalW + 16) * scale) / 2,
+        y: groundY - (wallH + 34) * scale,
+        w: (totalW + 16) * scale,
+        h: (wallH + 38) * scale
+      };
+
+      ctx.save();
+      ctx.translate(hbx, groundY);
+      ctx.scale(scale, scale);
+      ctx.translate(-hbx, -groundY);
+
+      // Ground concrete apron in front of Hornbach
+      ctx.fillStyle = '#475569';
+      ctx.fillRect(leftX - 8, groundY - 3, totalW + 16, 4);
+
+      // 1. Main Dark Anthracite Warehouse Hall
+      ctx.fillStyle = '#1f2937';
+      ctx.fillRect(leftX, wallTop, mainW, wallH);
+      // Corrugated steel vertical ribs
+      ctx.fillStyle = '#334155';
+      for (let rx = leftX + 4; rx < leftX + mainW - 2; rx += 6) {
+        ctx.fillRect(rx, wallTop + 18, 2, wallH - 18);
+      }
+      // Concrete lower plinth
+      ctx.fillStyle = '#64748b';
+      ctx.fillRect(leftX, groundY - 12, mainW, 12);
+
+      // 2. Signature Hornbach Orange Upper Fascia Band
+      const fasciaH = isMobileMode ? 20 : 24;
+      ctx.fillStyle = '#ea580c';
+      ctx.fillRect(leftX - 2, wallTop - 4, mainW + 4, fasciaH);
+      ctx.fillStyle = '#f97316';
+      ctx.fillRect(leftX - 2, wallTop - 4, mainW + 4, fasciaH - 4);
+      // White thin trim line under orange fascia
+      ctx.fillStyle = '#f8fafc';
+      ctx.fillRect(leftX - 2, wallTop + fasciaH - 5, mainW + 4, 2);
+
+      // Bold "HORNBACH" Signboard
+      ctx.font = `900 ${isMobileMode ? 11 : 13}px "Space Grotesk", sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = '#111827';
+      ctx.fillText('HORNBACH', leftX + mainW / 2 + 1, wallTop + fasciaH / 2 - 4);
+      ctx.fillStyle = '#ffffff';
+      ctx.fillText('HORNBACH', leftX + mainW / 2, wallTop + fasciaH / 2 - 5);
+      ctx.textBaseline = 'alphabetic';
+
+      // Roof HVAC / skylights on top of warehouse
+      ctx.fillStyle = '#475569';
+      ctx.fillRect(leftX + 12, wallTop - 10, 16, 6);
+      ctx.fillRect(leftX + mainW - 34, wallTop - 9, 14, 5);
+      // Orange Hornbach flagpole on left corner
+      if (!isMobileMode) {
+        ctx.fillStyle = '#94a3b8';
+        ctx.fillRect(leftX - 10, wallTop - 26, 2, wallH + 26);
+        ctx.fillStyle = '#f97316';
+        ctx.fillRect(leftX - 8, wallTop - 25, 16, 10);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(leftX - 6, wallTop - 21, 12, 2);
+      }
+
+      // 3. Glass Entrance Vestibule & Orange Entrance Canopy (Left-Center)
+      const entW = isMobileMode ? 36 : 44;
+      const entH = isMobileMode ? 32 : 38;
+      const entX = leftX + 10;
+      const entY = groundY - entH;
+      // Orange protruding canopy
+      ctx.fillStyle = '#ea580c';
+      ctx.fillRect(entX - 4, entY - 6, entW + 8, 6);
+      ctx.fillStyle = '#f97316';
+      ctx.fillRect(entX - 4, entY - 6, entW + 8, 3);
+      // Warm lit interior behind glass sliding doors
+      ctx.fillStyle = '#fef3c7';
+      ctx.fillRect(entX, entY, entW, entH);
+      // Interior orange shelving silhouette
+      ctx.fillStyle = '#fb923c';
+      ctx.fillRect(entX + 4, entY + 8, 10, entH - 10);
+      ctx.fillRect(entX + entW - 14, entY + 8, 10, entH - 10);
+      // Glass door frames & sliding divider
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(entX, entY, 2, entH);
+      ctx.fillRect(entX + entW - 2, entY, 2, entH);
+      ctx.fillRect(entX + entW / 2 - 1, entY, 2, entH);
+      ctx.fillRect(entX, entY, entW, 2);
+      // Glass reflection diagonal
+      ctx.fillStyle = 'rgba(255,255,255,0.45)';
+      ctx.fillRect(entX + 5, entY + 4, 4, entH - 8);
+      ctx.fillRect(entX + entW / 2 + 5, entY + 4, 4, entH - 8);
+
+      // 4. Display Window with Hardware/Tool Silhouettes (Right side of main hall)
+      const winX = entX + entW + 8;
+      const winW = mainW - (entW + 24);
+      if (winW > 14) {
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(winX, entY + 4, winW, 20);
+        ctx.fillStyle = '#fde68a';
+        ctx.fillRect(winX + 2, entY + 6, winW - 4, 16);
+        ctx.fillStyle = '#ea580c';
+        ctx.fillRect(winX + 4, entY + 12, winW - 8, 3);
+        ctx.fillRect(winX + 4, entY + 18, winW - 8, 2);
+      }
+
+      // 5. Outdoor Covered Garden & Lumber Center (Right wing)
+      const gX = leftX + mainW;
+      const gRoofY = wallTop + 26;
+      // Slanted translucent/steel canopy
+      ctx.fillStyle = '#334155';
+      ctx.beginPath();
+      ctx.moveTo(gX, gRoofY - 6);
+      ctx.lineTo(gX + gardenW + 4, gRoofY + 6);
+      ctx.lineTo(gX + gardenW + 4, gRoofY + 11);
+      ctx.lineTo(gX, gRoofY - 1);
+      ctx.closePath();
+      ctx.fill();
+      // Orange steel support pillars
+      ctx.fillStyle = '#f97316';
+      ctx.fillRect(gX + gardenW - 2, gRoofY + 9, 4, groundY - (gRoofY + 9));
+      ctx.fillRect(gX + gardenW / 2 - 1, gRoofY + 4, 3, groundY - (gRoofY + 4));
+
+      // Stacked wooden lumber / pallets & garden plants underneath
+      ctx.fillStyle = '#b45309';
+      ctx.fillRect(gX + 3, groundY - 12, 16, 12);
+      ctx.fillStyle = '#d97706';
+      ctx.fillRect(gX + 4, groundY - 11, 14, 3);
+      ctx.fillRect(gX + 4, groundY - 6, 14, 3);
+      // Green potted garden shrubs
+      ctx.fillStyle = '#9a3412';
+      ctx.fillRect(gX + 22, groundY - 6, 8, 6);
+      ctx.fillStyle = '#16a34a';
+      ctx.fillRect(gX + 20, groundY - 16, 12, 11);
+      ctx.fillStyle = '#22c55e';
+      ctx.fillRect(gX + 22, groundY - 19, 8, 6);
+
+      // 6. Orange Flatbed Trolleys parked outside entrance
+      for (let t = 0; t < 2; t++) {
+        const tx = entX + entW + 10 + t * 14;
+        if (tx + 12 < gX) {
+          ctx.fillStyle = '#f97316';
+          ctx.fillRect(tx, groundY - 8, 10, 2);
+          ctx.fillRect(tx + 8, groundY - 14, 2, 8);
+          ctx.fillStyle = '#0f172a';
+          ctx.fillRect(tx + 1, groundY - 5, 3, 3);
+          ctx.fillRect(tx + 6, groundY - 5, 3, 3);
+        }
+      }
+
+      if (isHornbachHovered) {
+        const label = '🧡 HORNBACH';
+        ctx.font = 'bold 9px "Press Start 2P", monospace';
+        const badgeW = Math.max(106, ctx.measureText(label).width + 18);
+        const badgeH = 20;
+        const badgeY = wallTop - 32;
+        ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
+        ctx.fillRect(hbx - badgeW / 2, badgeY, badgeW, badgeH);
+        ctx.strokeStyle = '#f97316';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(hbx - badgeW / 2, badgeY, badgeW, badgeH);
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = '#fdba74';
+        ctx.fillText(label, hbx, badgeY + badgeH / 2 + 0.5);
         ctx.textBaseline = 'alphabetic';
       }
 
@@ -4165,11 +4403,13 @@
             houseHitbox = null;
             shopHitbox = null;
             farmHitbox = null;
+            hornbachHitbox = null;
             casinoHitbox = null;
           } else {
             drawSimpleHouse(groundY);
             drawSimpleShop(groundY);
             drawSimpleFarm(groundY);
+            drawSimpleHornbach(groundY);
             drawSimpleCasino(groundY);
           }
         }
@@ -6410,8 +6650,11 @@ Vráť VÝHRADNE JSON objekt s poľom "results":
           gamesPlayed += 1;
           localStorage.setItem(GAMES_PLAYED_KEY, String(gamesPlayed));
           updateGamesPlayedDisplay();
-          if (gamesPlayed === CASINO_REQUIRED_GAMES && ownedItems.includes('casino')) {
-            showToast('🎰 Dosiahol si 20 odohraných hier! Kasíno je teraz otvorené!');
+          if (gamesPlayed === HORNBACH_REQUIRED_GAMES) {
+            showToast('🧡 Dosiahol si 20 odohraných hier! HORNBACH je teraz otvorený!');
+          }
+          if (gamesPlayed === CASINO_REQUIRED_GAMES) {
+            showToast('🎰 Dosiahol si 30 odohraných hier! Kasíno je teraz otvorené!');
           }
           const myAltitude = players[myPeerId] ? players[myPeerId].altitude : 0;
           addCoins(myAltitude > 3000 ? 100 : 400);
@@ -6588,7 +6831,7 @@ Vráť VÝHRADNE JSON objekt s poľom "results":
             const savedCtx = ctx;
             const savedW = width;
             const savedH = height;
-            const savedBoxes = { house: houseHitbox, shop: shopHitbox, farm: farmHitbox, casino: casinoHitbox };
+            const savedBoxes = { house: houseHitbox, shop: shopHitbox, farm: farmHitbox, hornbach: hornbachHitbox, casino: casinoHitbox };
             try {
               isCityModalRendering = true;
               ctx = cCtx;
@@ -6632,15 +6875,18 @@ Vráť VÝHRADNE JSON objekt s poľom "results":
               houseHitbox = null;
               shopHitbox = null;
               farmHitbox = null;
+              hornbachHitbox = null;
               casinoHitbox = null;
               drawSimpleHouse(groundY);
               drawSimpleShop(groundY);
               drawSimpleFarm(groundY);
+              drawSimpleHornbach(groundY);
               drawSimpleCasino(groundY);
               cityModalHitboxes = {
                 house: houseHitbox,
                 shop: shopHitbox,
                 farm: farmHitbox,
+                hornbach: hornbachHitbox,
                 casino: casinoHitbox
               };
             } finally {
@@ -6651,6 +6897,7 @@ Vráť VÝHRADNE JSON objekt s poľom "results":
               houseHitbox = savedBoxes.house;
               shopHitbox = savedBoxes.shop;
               farmHitbox = savedBoxes.farm;
+              hornbachHitbox = savedBoxes.hornbach;
               casinoHitbox = savedBoxes.casino;
             }
           };
@@ -6682,6 +6929,12 @@ Vráť VÝHRADNE JSON objekt s poľom "results":
             } else if (hit(cityModalHitboxes.farm)) {
               closeMyCityModal();
               openFarmModal();
+            } else if (hit(cityModalHitboxes.hornbach)) {
+              if (!isHornbachUnlocked()) {
+                showToast(`🔒 HORNBACH sa otvorí až po ${HORNBACH_REQUIRED_GAMES} odohraných hrách! (${gamesPlayed}/${HORNBACH_REQUIRED_GAMES})`);
+              } else {
+                showToast('🧡 HORNBACH je otvorený! Všetko pre tvoje projekty.');
+              }
             } else if (hit(cityModalHitboxes.casino)) {
               if (!isCasinoUnlocked()) {
                 showToast(`🔒 Kasíno sa otvorí až po ${CASINO_REQUIRED_GAMES} odohraných hrách! (${gamesPlayed}/${CASINO_REQUIRED_GAMES})`);
@@ -6691,11 +6944,14 @@ Vráť VÝHRADNE JSON objekt s poľom "results":
             }
           });
           document.getElementById('headerGamesPlayed')?.addEventListener('click', () => {
-            const remaining = Math.max(0, CASINO_REQUIRED_GAMES - gamesPlayed);
-            if (remaining > 0) {
-              showToast(`🎮 Odohrané hry: ${gamesPlayed} (Kasíno sa odomkne po ${CASINO_REQUIRED_GAMES} hrách, chýba ${remaining})`);
+            if (gamesPlayed < HORNBACH_REQUIRED_GAMES) {
+              const remH = HORNBACH_REQUIRED_GAMES - gamesPlayed;
+              showToast(`🎮 Odohrané hry: ${gamesPlayed} (HORNBACH po ${HORNBACH_REQUIRED_GAMES} hrách, chýba ${remH}; Kasíno po ${CASINO_REQUIRED_GAMES})`);
+            } else if (gamesPlayed < CASINO_REQUIRED_GAMES) {
+              const remC = CASINO_REQUIRED_GAMES - gamesPlayed;
+              showToast(`🎮 Odohrané hry: ${gamesPlayed} (HORNBACH otvorený! Kasíno po ${CASINO_REQUIRED_GAMES} hrách, chýba ${remC})`);
             } else {
-              showToast(`🎮 Odohrané hry: ${gamesPlayed} (Kasíno odomknuté!)`);
+              showToast(`🎮 Odohrané hry: ${gamesPlayed} (HORNBACH aj Kasíno sú odomknuté!)`);
             }
           });
           document.getElementById('closeShopBtn').addEventListener('click', closeShopModal);
@@ -6862,6 +7118,7 @@ Vráť VÝHRADNE JSON objekt s poľom "results":
             if (e.target.closest('button, a, input, select, .pixel-box')) {
               isHouseHovered = false;
               isFarmHovered = false;
+              isHornbachHovered = false;
               isCasinoHovered = false;
               document.body.style.cursor = '';
               return;
@@ -6869,12 +7126,13 @@ Vráť VÝHRADNE JSON objekt s poľom "results":
             const overShop = isPointInBox(shopHitbox, e.clientX, e.clientY);
             const overHouse = isPointInBox(houseHitbox, e.clientX, e.clientY);
             const overFarm = isPointInBox(farmHitbox, e.clientX, e.clientY);
+            const overHornbach = isPointInBox(hornbachHitbox, e.clientX, e.clientY);
             const overCasino = isPointInBox(casinoHitbox, e.clientX, e.clientY);
             isHouseHovered = overHouse;
             isFarmHovered = overFarm;
-            document.body.style.cursor = (overShop || overHouse || overFarm) ? 'pointer' : '';
+            isHornbachHovered = overHornbach;
             isCasinoHovered = overCasino;
-            document.body.style.cursor = (overShop || overHouse || overFarm || overCasino) ? 'pointer' : '';
+            document.body.style.cursor = (overShop || overHouse || overFarm || overHornbach || overCasino) ? 'pointer' : '';
           });
 
           document.addEventListener('click', (e) => {
@@ -6892,6 +7150,12 @@ Vráť VÝHRADNE JSON objekt s poľom "results":
               openAstronautModal();
             } else if (isPointInBox(farmHitbox, e.clientX, e.clientY)) {
               openFarmModal();
+            } else if (isPointInBox(hornbachHitbox, e.clientX, e.clientY)) {
+              if (!isHornbachUnlocked()) {
+                showToast(`🔒 HORNBACH sa otvorí až po ${HORNBACH_REQUIRED_GAMES} odohraných hrách! (${gamesPlayed}/${HORNBACH_REQUIRED_GAMES})`);
+              } else {
+                showToast('🧡 HORNBACH je otvorený! Všetko pre tvoje projekty.');
+              }
             } else if (isPointInBox(casinoHitbox, e.clientX, e.clientY)) {
               if (!isCasinoUnlocked()) {
                 showToast(`🔒 Kasíno sa otvorí až po ${CASINO_REQUIRED_GAMES} odohraných hrách! (${gamesPlayed}/${CASINO_REQUIRED_GAMES})`);
