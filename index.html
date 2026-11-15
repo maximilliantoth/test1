@@ -5596,6 +5596,11 @@ Vráť VÝHRADNE JSON pole objektov:
       const closeGiftcodeModal = () => {
         if (giftcodeModal) giftcodeModal.classList.add('hidden');
       };
+      const GIFTCODES = {
+        '6314': { reward: 1000, label: '+1 000 kamienkov' },
+        'admin1': { reward: 20000, label: '+20 000 mesiačikov' }
+      };
+
       document.getElementById('giftcodeBtn')?.addEventListener('click', openGiftcodeModal);
       document.getElementById('closeGiftcodeBtn')?.addEventListener('click', closeGiftcodeModal);
       document.getElementById('cancelGiftcodeBtn')?.addEventListener('click', closeGiftcodeModal);
@@ -5608,19 +5613,20 @@ Vráť VÝHRADNE JSON pole objektov:
           if (Array.isArray(parsed)) redeemed = parsed;
         } catch {}
 
-        if (code === '6314') {
-          if (redeemed.includes('6314')) {
+        const gift = GIFTCODES[code];
+        if (gift) {
+          if (redeemed.includes(code)) {
             if (giftcodeMsg) {
               giftcodeMsg.textContent = '⚠️ Tento giftcode už bol použitý!';
               giftcodeMsg.className = 'text-[11px] font-bold text-amber-300';
             }
             return;
           }
-          redeemed.push('6314');
+          redeemed.push(code);
           localStorage.setItem(REDEEMED_GIFTCODES_KEY, JSON.stringify(redeemed));
-          addCoins(1000);
+          addCoins(gift.reward);
           closeGiftcodeModal();
-          showToast('🎁 Giftcode uplatnený! +1 000 kamienkov 🪙');
+          showToast(`🎁 Giftcode uplatnený! ${gift.label} 🪙`);
         } else {
           if (giftcodeMsg) {
             giftcodeMsg.textContent = '❌ Neplatný giftcode!';
