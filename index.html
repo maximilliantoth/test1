@@ -311,6 +311,10 @@
         <button type="submit" class="pixel-btn w-full py-3 text-xs tracking-wider">
           ULOŽIŤ KĽÚČ ▶
         </button>
+        <button type="button" id="clearApiKeyBtn"
+          class="w-full py-2 text-[10px] pixel-font border border-red-500/60 bg-red-950/60 hover:bg-red-900/70 text-red-300 hover:text-white transition-colors hidden">
+          🗑️ ODSTRÁNIŤ ULOŽENÝ KĽÚČ
+        </button>
       </form>
 
       <div class="w-full flex justify-between items-center pt-2 border-t border-sky-900/60 text-[11px]">
@@ -5831,6 +5835,25 @@ JSON: {"valid":true,"people":12,"comment":"1 krátka veta SK"}`;
         required: ["valid", "people", "comment"]
       };
 
+      function evaluateOfflineAnswer(answer) {
+        const clean = (answer || '').trim();
+        if (clean.length < 2) {
+          return { valid: false, people: 100, comment: 'Odpoveď je príliš krátka!' };
+        }
+        let hash = 0;
+        for (let i = 0; i < clean.length; i++) {
+          hash = ((hash << 5) - hash + clean.charCodeAt(i)) | 0;
+        }
+        const people = 5 + (Math.abs(hash) % 75);
+        return { valid: true, people, comment: 'Vyhodnotené lokálne (bez API kľúča).' };
+      }
+
+      if (!userApiKey) {
+        loader.classList.add('hidden');
+        displaySoloResult(evaluateOfflineAnswer(playerAnswer));
+        return;
+      }
+
       try {
         const res = await callGeminiAI(prompt, soloSchema);
         loader.classList.add('hidden');
@@ -5840,7 +5863,7 @@ JSON: {"valid":true,"people":12,"comment":"1 krátka veta SK"}`;
         displaySoloResult({
           valid: false,
           people: 100,
-          comment: `Chyba API (${err.message}). Skontroluj svoj kľúč cez tlačidlo 🔑 KĽÚČ hore.`
+          comment: `Chyba API (${err.message}).`
         });
       }
     }
@@ -5934,18 +5957,33 @@ Vráť VÝHRADNE JSON objekt s poľom "results":
           required: ["results"]
         };
 
-        try {
-          const res = await callGeminiAI(prompt, multiSchema);
-          const arr = Array.isArray(res) ? res : res?.results;
-          if (Array.isArray(arr)) {
-            arr.forEach(item => { aiMap[item.id] = item; });
-          } else {
-            throw new Error('Neplatná štruktúra odpovede AI');
-          }
-        } catch (err) {
+        if (!userApiKey) {
           activeSubs.forEach(s => {
-            aiMap[s.id] = { valid: false, people: 100, comment: `Chyba AI (${err.message})` };
+            const clean = (s.answer || '').trim();
+            if (clean.length < 2) {
+              aiMap[s.id] = { valid: false, people: 100, comment: 'Odpoveď je príliš krátka!' };
+            } else {
+              let hash = 0;
+              for (let i = 0; i < clean.length; i++) {
+                hash = ((hash << 5) - hash + clean.charCodeAt(i)) | 0;
+              }
+              aiMap[s.id] = { valid: true, people: 5 + (Math.abs(hash) % 75), comment: 'Vyhodnotené lokálne (bez API kľúča).' };
+            }
           });
+        } else {
+          try {
+            const res = await callGeminiAI(prompt, multiSchema);
+            const arr = Array.isArray(res) ? res : res?.results;
+            if (Array.isArray(arr)) {
+              arr.forEach(item => { aiMap[item.id] = item; });
+            } else {
+              throw new Error('Neplatná štruktúra odpovede AI');
+            }
+          } catch (err) {
+            activeSubs.forEach(s => {
+              aiMap[s.id] = { valid: false, people: 100, comment: `Chyba AI (${err.message})` };
+            });
+          }
         }
       }
 
@@ -6122,10 +6160,17 @@ Vráť VÝHRADNE JSON objekt s poľom "results":
       const savedNick = localStorage.getItem(NICK_KEY);
       if (savedNick) document.getElementById('nicknameInput').value = savedNick;
 
+      const updateClearKeyBtn = () => {
+        const btn = document.getElementById('clearApiKeyBtn');
+        if (btn) btn.classList.toggle('hidden', !userApiKey);
+      };
+
       if (userApiKey) {
         document.getElementById('apiKeyInput').value = userApiKey;
+        updateClearKeyBtn();
         showScreen('modeScreen');
       } else {
+        updateClearKeyBtn();
         showScreen('apiKeyScreen');
       }
 
@@ -6141,7 +6186,17 @@ Vráť VÝHRADNE JSON objekt s poľom "results":
         errEl.classList.add('hidden');
         userApiKey = keyVal;
         localStorage.setItem(STORAGE_KEY, userApiKey);
+        updateClearKeyBtn();
         showScreen('modeScreen');
+      });
+
+      document.getElementById('clearApiKeyBtn').addEventListener('click', () => {
+        userApiKey = '';
+        localStorage.removeItem(STORAGE_KEY);
+        document.getElementById('apiKeyInput').value = '';
+        document.getElementById('apiKeyError').classList.add('hidden');
+        updateClearKeyBtn();
+        showToast('🗑️ API kľúč bol odstránený z tohto zariadenia!');
       });
 
       document.getElementById('skipKeyBtn').addEventListener('click', () => {
@@ -6152,6 +6207,7 @@ Vráť VÝHRADNE JSON objekt s poľom "results":
         clearInterval(roundTimerInterval);
         cleanupPeer();
         document.getElementById('apiKeyInput').value = userApiKey;
+        updateClearKeyBtn();
         showScreen('apiKeyScreen');
       });
 
