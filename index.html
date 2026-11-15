@@ -3938,11 +3938,11 @@
       const palettes = {
         sunny: {
           skyHaze: '#93c5fd',
-          farLit: '#7c8ea6', farShadow: '#52657d', farRidge: '#64748b',
-          midLit: '#4b607a', midShadow: '#26354a', midRock: '#1e293b',
-          nearLit: '#334155', nearShadow: '#162032',
+          farLit: '#9ca3af', farShadow: '#6b7280', farRidge: '#9ca3af',
+          midLit: '#6b7280', midShadow: '#4b5563', midRock: '#374151',
+          nearLit: '#4b5563', nearShadow: '#374151',
           snowLit: '#ffffff', snowMid: '#e0f2fe', snowShadow: '#93c5fd',
-          ridgeRock: '#0f172a',
+          ridgeRock: '#1f2937',
           mistRgb: [219, 234, 254], mistAlpha: 0.34,
           hillBack: '#166534', hillFront: '#14532d', treeLit: '#15803d', treeDark: '#052e16',
           waterCol: '#7dd3fc', waterFoam: '#f0f9ff'
@@ -3960,11 +3960,11 @@
         },
         rainy: {
           skyHaze: '#94a3b8',
-          farLit: '#6b7c93', farShadow: '#475569', farRidge: '#57687e',
-          midLit: '#475569', midShadow: '#293548', midRock: '#1e293b',
-          nearLit: '#334155', nearShadow: '#172030',
+          farLit: '#4d7c5b', farShadow: '#365942', farRidge: '#3f6a4d',
+          midLit: '#3a6b48', midShadow: '#1e4229', midRock: '#14301d',
+          nearLit: '#2d5a3b', nearShadow: '#14331f',
           snowLit: '#e2e8f0', snowMid: '#cbd5e1', snowShadow: '#94a3b8',
-          ridgeRock: '#0f172a',
+          ridgeRock: '#0f2417',
           mistRgb: [148, 163, 184], mistAlpha: 0.40,
           hillBack: '#1e3a2f', hillFront: '#132a21', treeLit: '#1e4234', treeDark: '#091913',
           waterCol: '#94a3b8', waterFoam: '#e2e8f0'
@@ -4184,25 +4184,25 @@
         cx: width * 0.13, baseLeft: -width * 0.08, baseRight: width * 0.36,
         peakH: maxH * 0.98, ridgeShift: 24,
         litCol: pal.farLit, shadowCol: pal.farShadow, rockCol: pal.ridgeRock,
-        hasSnow: true, snowRatio: 0.39, seed: 1.2
+        hasSnow: snowW > 0.02, snowRatio: 0.39 * snowW, seed: 1.2
       });
       drawAlpinePeak({
         cx: width * 0.39, baseLeft: width * 0.17, baseRight: width * 0.62,
         peakH: maxH * 0.88, ridgeShift: -18,
         litCol: pal.farLit, shadowCol: pal.farShadow, rockCol: pal.ridgeRock,
-        hasSnow: true, snowRatio: 0.35, seed: 2.5
+        hasSnow: snowW > 0.02, snowRatio: 0.35 * snowW, seed: 2.5
       });
       drawAlpinePeak({
         cx: width * 0.68, baseLeft: width * 0.44, baseRight: width * 0.92,
         peakH: maxH * 1.04, ridgeShift: 26,
         litCol: pal.farLit, shadowCol: pal.farShadow, rockCol: pal.ridgeRock,
-        hasSnow: true, snowRatio: 0.41, seed: 3.8
+        hasSnow: snowW > 0.02, snowRatio: 0.41 * snowW, seed: 3.8
       });
       drawAlpinePeak({
         cx: width * 0.93, baseLeft: width * 0.72, baseRight: width * 1.15,
         peakH: maxH * 0.82, ridgeShift: -14,
         litCol: pal.farLit, shadowCol: pal.farShadow, rockCol: pal.ridgeRock,
-        hasSnow: true, snowRatio: 0.34, seed: 4.9
+        hasSnow: snowW > 0.02, snowRatio: 0.34 * snowW, seed: 4.9
       });
 
       drawMountainMistBand(groundY - maxH * 0.48, 5, 0.14 + snowW * 0.08, 78);
@@ -4216,25 +4216,25 @@
         cx: width * 0.04, baseLeft: -width * 0.12, baseRight: width * 0.24,
         peakH: maxH * 0.66, ridgeShift: 15,
         litCol: pal.midLit, shadowCol: pal.midShadow, rockCol: pal.midRock,
-        hasSnow: true, snowRatio: 0.30, seed: 5.4
+        hasSnow: snowW > 0.02, snowRatio: 0.30 * snowW, seed: 5.4
       });
       drawAlpinePeak({
         cx: width * 0.27, baseLeft: width * 0.08, baseRight: width * 0.48,
         peakH: maxH * 0.76, ridgeShift: 19,
         litCol: pal.midLit, shadowCol: pal.midShadow, rockCol: pal.midRock,
-        hasSnow: true, snowRatio: 0.34, seed: 6.1
+        hasSnow: snowW > 0.02, snowRatio: 0.34 * snowW, seed: 6.1
       });
       drawAlpinePeak({
         cx: width * 0.56, baseLeft: width * 0.36, baseRight: width * 0.78,
         peakH: maxH * 0.71, ridgeShift: -15,
         litCol: pal.midLit, shadowCol: pal.midShadow, rockCol: pal.midRock,
-        hasSnow: true, snowRatio: 0.31, seed: 7.3
+        hasSnow: snowW > 0.02, snowRatio: 0.31 * snowW, seed: 7.3
       });
       drawAlpinePeak({
         cx: width * 0.85, baseLeft: width * 0.65, baseRight: width * 1.08,
         peakH: maxH * 0.74, ridgeShift: 16,
         litCol: pal.midLit, shadowCol: pal.midShadow, rockCol: pal.midRock,
-        hasSnow: true, snowRatio: 0.33, seed: 8.2
+        hasSnow: snowW > 0.02, snowRatio: 0.33 * snowW, seed: 8.2
       });
 
       const wfX = width * 0.545;
@@ -7051,8 +7051,7 @@ Vráť VÝHRADNE JSON objekt s poľom "results":
       const GIFTCODES = {
         '6314': { reward: 1000, label: '+1 000 kamienkov', reusable: false },
         '1111': { reward: 1000, label: '+1 000 mesiačikov', reusable: false, toast: '🎁 Tu máš ty žebrák Teo! +1 000 mesiačikov 🪙' },
-        'admin1': { reward: 20000, label: '+20 000 mesiačikov', reusable: true }
-            'admin1': { reward: 20000, label: '+20 000 mesiačikov', reusable: true },
+        'admin1': { reward: 20000, label: '+20 000 mesiačikov', reusable: true },
         'sixseven': { reward: 0, unlockBuildingsMs: 5 * 60 * 1000, reusable: true, toast: '🎁 Kód SIXSEVEN aktivovaný! HORNBACH aj Kasíno sú odomknuté na 5 minút! 🧡🎰' }
       };
 
