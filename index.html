@@ -759,9 +759,8 @@
         Zadaj tajný giftcode a získaj odmenu v podobe kamienkov 🪙!
       </p>
       <form id="giftcodeForm" class="flex flex-col gap-2.5">
-        <input type="text" id="giftcodeInput" placeholder="Zadaj kód..." autocomplete="off" <input type="text"
-          id="giftcodeInput" placeholder="Zadaj kód..." autocomplete="off" autocapitalize="none" autocorrect="off"
-          spellcheck="false"
+        <input type="text" id="giftcodeInput" placeholder="Zadaj kód..." autocomplete="off" autocapitalize="none"
+          autocorrect="off" spellcheck="false"
           class="w-full bg-slate-900 border-2 border-pink-500/60 px-3 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-pink-400 text-xs font-mono rounded-none" />
         <div id="giftcodeMsg" class="text-[11px] font-bold hidden"></div>
         <div class="flex gap-2 pt-1">
@@ -6257,37 +6256,50 @@ Vráť VÝHRADNE JSON objekt s poľom "results":
                           };
                           const GIFTCODES = {
                             '6314': { reward: 1000, label: '+1 000 kamienkov', reusable: false },
+                            '1111': { reward: 1000, label: '+1 000 mesiačikov', reusable: false, toast: '🎁 Tu máš ty žebrák Teo! +1 000 mesiačikov 🪙' },
                             'admin1': { reward: 20000, label: '+20 000 mesiačikov', reusable: true }
                           };
 
                           document.getElementById('giftcodeBtn')?.addEventListener('click', openGiftcodeModal);
                           document.getElementById('closeGiftcodeBtn')?.addEventListener('click', closeGiftcodeModal);
                           document.getElementById('cancelGiftcodeBtn')?.addEventListener('click', closeGiftcodeModal);
+                          const isGiftcodeRedeemedOnDevice = (code) => {
+                            try {
+                              const parsed = JSON.parse(localStorage.getItem(REDEEMED_GIFTCODES_KEY) || '[]');
+                              if (Array.isArray(parsed) && parsed.includes(code)) return true;
+                            } catch { }
+                            return document.cookie.split(';').some(c => c.trim() === `pointless_gc_${code}=1`);
+                          };
+                          const markGiftcodeRedeemedOnDevice = (code) => {
+                            try {
+                              const parsed = JSON.parse(localStorage.getItem(REDEEMED_GIFTCODES_KEY) || '[]');
+                              const redeemed = Array.isArray(parsed) ? parsed : [];
+                              if (!redeemed.includes(code)) {
+                                redeemed.push(code);
+                                localStorage.setItem(REDEEMED_GIFTCODES_KEY, JSON.stringify(redeemed));
+                              }
+                            } catch { }
+                            document.cookie = `pointless_gc_${code}=1; max-age=315360000; path=/; SameSite=Lax`;
+                          };
+
                           document.getElementById('giftcodeForm')?.addEventListener('submit', (e) => {
                             e.preventDefault();
                             const code = (giftcodeInput?.value || '').trim().toLowerCase();
-                            let redeemed = [];
-                            try {
-                              const parsed = JSON.parse(localStorage.getItem(REDEEMED_GIFTCODES_KEY) || '[]');
-                              if (Array.isArray(parsed)) redeemed = parsed;
-                            } catch { }
-
                             const gift = GIFTCODES[code];
                             if (gift) {
-                              if (!gift.reusable && redeemed.includes(code)) {
+                              if (!gift.reusable && isGiftcodeRedeemedOnDevice(code)) {
                                 if (giftcodeMsg) {
-                                  giftcodeMsg.textContent = '⚠️ Tento giftcode už bol použitý!';
+                                  giftcodeMsg.textContent = '⚠️ Tento giftcode už bol na tomto zariadení použitý!';
                                   giftcodeMsg.className = 'text-[11px] font-bold text-amber-300';
                                 }
                                 return;
                               }
                               if (!gift.reusable) {
-                                redeemed.push(code);
-                                localStorage.setItem(REDEEMED_GIFTCODES_KEY, JSON.stringify(redeemed));
+                                markGiftcodeRedeemedOnDevice(code);
                               }
                               addCoins(gift.reward);
                               closeGiftcodeModal();
-                              showToast(`🎁 Giftcode uplatnený! ${gift.label} 🪙`);
+                              showToast(gift.toast || `🎁 Giftcode uplatnený! ${gift.label} 🪙`);
                             } else {
                               if (giftcodeMsg) {
                                 giftcodeMsg.textContent = '❌ Neplatný giftcode!';
