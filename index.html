@@ -885,8 +885,8 @@
       document.querySelectorAll('.shop-tab-btn').forEach(btn => {
         const isActive = btn.dataset.shopPage === currentShopPage;
         btn.className = `shop-tab-btn py-1.5 px-1 text-[9px] pixel-font border-2 transition-colors ${isActive
-            ? 'border-yellow-400 bg-yellow-500/20 text-yellow-200'
-            : 'border-slate-700 bg-slate-900 text-slate-400 hover:text-white hover:border-slate-500'
+          ? 'border-yellow-400 bg-yellow-500/20 text-yellow-200'
+          : 'border-slate-700 bg-slate-900 text-slate-400 hover:text-white hover:border-slate-500'
           }`;
       });
     }
@@ -922,10 +922,10 @@
 
         const card = document.createElement('div');
         card.className = `p-3 border-2 flex flex-col justify-between gap-2 ${isEquipped
-            ? 'border-emerald-400 bg-emerald-950/30'
-            : isOwned
-              ? 'border-sky-500/60 bg-slate-900/90'
-              : 'border-slate-700 bg-slate-900/70'
+          ? 'border-emerald-400 bg-emerald-950/30'
+          : isOwned
+            ? 'border-sky-500/60 bg-slate-900/90'
+            : 'border-slate-700 bg-slate-900/70'
           }`;
 
         card.innerHTML = `
@@ -1069,8 +1069,8 @@
           const btn = document.createElement('button');
           btn.type = 'button';
           btn.className = `w-full px-2.5 py-1.5 border text-left text-xs flex items-center justify-between gap-2 transition-colors ${isActive
-              ? 'border-emerald-400 bg-emerald-950/60 text-emerald-200'
-              : 'border-slate-700 bg-slate-950/70 hover:border-sky-400 text-slate-200'
+            ? 'border-emerald-400 bg-emerald-950/60 text-emerald-200'
+            : 'border-slate-700 bg-slate-950/70 hover:border-sky-400 text-slate-200'
             }`;
           btn.innerHTML = `
             <span class="flex items-center gap-2 truncate">
@@ -2578,8 +2578,8 @@
 
         const card = document.createElement('div');
         card.className = `p-2.5 border-2 flex items-center justify-between gap-2.5 ${isOwned
-            ? 'border-emerald-500/70 bg-emerald-950/30'
-            : 'border-slate-700 bg-slate-900/90'
+          ? 'border-emerald-500/70 bg-emerald-950/30'
+          : 'border-slate-700 bg-slate-900/90'
           }`;
         card.innerHTML = `
           <div class="flex items-center gap-2.5 min-w-0">
@@ -2919,6 +2919,33 @@
       return yardWalkerState[id];
     }
 
+    function isCasinoBuilt() {
+      return ownedItems.includes('casino') && equippedCosmetics.building === 'casino';
+    }
+
+    function getYardBuildingLayout() {
+      const isMobileMode = document.body.dataset.device === 'mobile';
+      const casinoBuilt = isCasinoBuilt();
+      if (isMobileMode) {
+        if (casinoBuilt) {
+          const hx = Math.max(34, Math.min(width * 0.11, 90));
+          const sx = Math.min(width - 145, hx + 76);
+          const fx = Math.min(width - 98, sx + 72);
+          const cx = Math.min(width - 56, Math.max(fx + 96, width * 0.81));
+          return { isMobileMode, casinoBuilt, hx, sx, fx, cx, houseScale: 0.62, shopScale: 0.62, farmScale: 0.56, casinoScale: 0.74 };
+        }
+        const hx = Math.max(52, Math.min(width * 0.16, 150));
+        const sx = Math.min(width - 44, hx + 126);
+        const fx = Math.min(width - 44, sx + 102);
+        return { isMobileMode, casinoBuilt, hx, sx, fx, cx: 0, houseScale: 0.72, shopScale: 0.72, farmScale: 0.64, casinoScale: 0.74 };
+      }
+      const hx = Math.max(76, Math.min(width * 0.18, 220));
+      const sx = Math.min(width - 58, hx + 166);
+      const fx = Math.min(width - 78, sx + 158);
+      const cx = Math.min(width - 108, Math.max(fx + 195, width * 0.76));
+      return { isMobileMode, casinoBuilt, hx, sx, fx, cx, houseScale: 1, shopScale: 1, farmScale: 1, casinoScale: 1 };
+    }
+
     let houseHitbox = null;
     let isHouseHovered = false;
 
@@ -2928,6 +2955,9 @@
       const hx = isMobileMode
         ? Math.max(52, Math.min(width * 0.16, 150))
         : Math.max(76, Math.min(width * 0.18, 220));
+      const layout = getYardBuildingLayout();
+      const scale = layout.houseScale;
+      const hx = layout.hx;
       const houseW = 84;
       const houseH = 54;
       const wallTop = groundY - houseH;
@@ -3013,6 +3043,7 @@
       ctx.restore();
     }
 
+
     let shopHitbox = null;
 
     function drawSimpleShop(groundY) {
@@ -3024,6 +3055,9 @@
       const sx = isMobileMode
         ? Math.min(width - 44, hx + 126)
         : Math.min(width - 58, hx + 166);
+      const layout = getYardBuildingLayout();
+      const scale = layout.shopScale;
+      const sx = layout.sx;
       const shopW = 92;
       const shopH = 56;
       const wallTop = groundY - shopH;
@@ -3090,6 +3124,7 @@
       ctx.restore();
     }
 
+
     let farmHitbox = null;
     let isFarmHovered = false;
 
@@ -3105,6 +3140,9 @@
       const fx = isMobileMode
         ? Math.min(width - 44, sx + 102)
         : Math.min(width - 78, sx + 158);
+      const layout = getYardBuildingLayout();
+      const scale = layout.farmScale;
+      const fx = layout.fx;
 
       const barnW = 76;
       const barnH = 50;
@@ -3235,6 +3273,260 @@
         ctx.textBaseline = 'middle';
         ctx.fillStyle = '#fca5a5';
         ctx.fillText('🏡 MOJA FARMA', fx, badgeY + badgeH / 2 + 0.5);
+        ctx.textBaseline = 'alphabetic';
+      }
+
+      ctx.restore();
+    }
+
+    let casinoHitbox = null;
+    let isCasinoHovered = false;
+
+    function drawSimpleCasino(groundY) {
+      const layout = getYardBuildingLayout();
+      if (!layout.casinoBuilt) {
+        casinoHitbox = null;
+        isCasinoHovered = false;
+        return;
+      }
+
+      const isMobileMode = layout.isMobileMode;
+      const scale = layout.casinoScale;
+      const cx = layout.cx;
+      const t = Date.now() * 0.004;
+
+      // Mobile uses a taller, narrower Art-Deco tower; Desktop uses a grand wide palace with VIP wings
+      const casinoW = isMobileMode ? 116 : 164;
+      const casinoH = isMobileMode ? 96 : 106;
+      const wallTop = groundY - casinoH;
+      const totalHitW = isMobileMode ? casinoW + 16 : casinoW + 32;
+      const totalHitH = casinoH + (isMobileMode ? 48 : 58);
+
+      casinoHitbox = {
+        x: cx - (totalHitW / 2) * scale,
+        y: groundY - totalHitH * scale,
+        w: totalHitW * scale,
+        h: totalHitH * scale
+      };
+
+      ctx.save();
+      ctx.translate(cx, groundY);
+      ctx.scale(scale, scale);
+      ctx.translate(-cx, -groundY);
+
+      // Sweeping sky spotlights behind the casino (desktop full beams, mobile subtle glow)
+      const beamSwing = Math.sin(t * 0.7) * 0.32;
+      ctx.save();
+      ctx.globalAlpha = isMobileMode ? 0.11 : 0.16;
+      ctx.fillStyle = '#fde047';
+      ctx.beginPath();
+      ctx.moveTo(cx - casinoW * 0.35, wallTop - 10);
+      ctx.lineTo(cx - casinoW * 0.35 - 38 + beamSwing * 60, wallTop - 125);
+      ctx.lineTo(cx - casinoW * 0.35 + 14 + beamSwing * 60, wallTop - 125);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.fillStyle = '#f472b6';
+      ctx.beginPath();
+      ctx.moveTo(cx + casinoW * 0.35, wallTop - 10);
+      ctx.lineTo(cx + casinoW * 0.35 - 14 - beamSwing * 60, wallTop - 125);
+      ctx.lineTo(cx + casinoW * 0.35 + 38 - beamSwing * 60, wallTop - 125);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+
+      // Desktop-only VIP side wings
+      if (!isMobileMode) {
+        const wingW = 24;
+        const wingH = 68;
+        const wingTop = groundY - wingH;
+        // Left wing
+        ctx.fillStyle = '#1e1b4b';
+        ctx.fillRect(cx - casinoW / 2 - wingW, wingTop, wingW, wingH);
+        ctx.fillStyle = '#f59e0b';
+        ctx.fillRect(cx - casinoW / 2 - wingW - 2, wingTop - 4, wingW + 2, 4);
+        ctx.fillStyle = '#a855f7';
+        ctx.fillRect(cx - casinoW / 2 - wingW + 5, wingTop + 14, 12, 22);
+        ctx.fillStyle = '#fde047';
+        ctx.fillRect(cx - casinoW / 2 - wingW + 7, wingTop + 16, 8, 18);
+
+        // Right wing
+        ctx.fillStyle = '#1e1b4b';
+        ctx.fillRect(cx + casinoW / 2, wingTop, wingW, wingH);
+        ctx.fillStyle = '#f59e0b';
+        ctx.fillRect(cx + casinoW / 2, wingTop - 4, wingW + 2, 4);
+        ctx.fillStyle = '#a855f7';
+        ctx.fillRect(cx + casinoW / 2 + 7, wingTop + 14, 12, 22);
+        ctx.fillStyle = '#fde047';
+        ctx.fillRect(cx + casinoW / 2 + 9, wingTop + 16, 8, 18);
+      }
+
+      // Main royal obsidian/purple casino facade
+      ctx.fillStyle = '#1e1b4b';
+      ctx.fillRect(cx - casinoW / 2, wallTop, casinoW, casinoH);
+      // Side shading
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(cx + casinoW / 2 - 8, wallTop, 8, casinoH);
+      ctx.fillStyle = '#312e81';
+      ctx.fillRect(cx - casinoW / 2, wallTop, 8, casinoH);
+
+      // Golden Art-Deco vertical pillars
+      const pillarOffsets = isMobileMode
+        ? [-casinoW / 2 + 4, -22, 18, casinoW / 2 - 8]
+        : [-casinoW / 2 + 4, -44, -22, 18, 40, casinoW / 2 - 8];
+      pillarOffsets.forEach(px => {
+        ctx.fillStyle = '#d97706';
+        ctx.fillRect(cx + px, wallTop + 6, 4, casinoH - 6);
+        ctx.fillStyle = '#fde047';
+        ctx.fillRect(cx + px + 1, wallTop + 6, 1.5, casinoH - 6);
+      });
+
+      // Floor divider & ornate golden cornice
+      const midY = wallTop + Math.floor(casinoH * 0.46);
+      ctx.fillStyle = '#b45309';
+      ctx.fillRect(cx - casinoW / 2 - 3, midY, casinoW + 6, 6);
+      ctx.fillStyle = '#fde047';
+      ctx.fillRect(cx - casinoW / 2 - 3, midY, casinoW + 6, 2);
+
+      // Top roof cornice
+      ctx.fillStyle = '#b45309';
+      ctx.fillRect(cx - casinoW / 2 - 6, wallTop - 8, casinoW + 12, 8);
+      ctx.fillStyle = '#fbbf24';
+      ctx.fillRect(cx - casinoW / 2 - 6, wallTop - 8, casinoW + 12, 3);
+
+      // Rooftop golden crown / dome + pulsing ruby gem
+      const domeW = isMobileMode ? 54 : 74;
+      const domeH = isMobileMode ? 18 : 22;
+      ctx.fillStyle = '#312e81';
+      ctx.beginPath();
+      ctx.moveTo(cx - domeW / 2, wallTop - 8);
+      ctx.lineTo(cx - domeW / 3, wallTop - 8 - domeH);
+      ctx.lineTo(cx + domeW / 3, wallTop - 8 - domeH);
+      ctx.lineTo(cx + domeW / 2, wallTop - 8);
+      ctx.closePath();
+      ctx.fill();
+      ctx.strokeStyle = '#fbbf24';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // Spire & pulsing ruby diamond on top
+      ctx.fillStyle = '#fbbf24';
+      ctx.fillRect(cx - 2, wallTop - 8 - domeH - 12, 4, 12);
+      const gemPulse = 0.65 + 0.35 * Math.sin(t * 2.5);
+      ctx.fillStyle = `rgba(244, 63, 94, ${gemPulse})`;
+      ctx.beginPath();
+      ctx.moveTo(cx, wallTop - 8 - domeH - 22);
+      ctx.lineTo(cx + 6, wallTop - 8 - domeH - 16);
+      ctx.lineTo(cx, wallTop - 8 - domeH - 10);
+      ctx.lineTo(cx - 6, wallTop - 8 - domeH - 16);
+      ctx.closePath();
+      ctx.fill();
+
+      // Giant Neon "CASINO" Marquee Signboard
+      const signW = isMobileMode ? 88 : 112;
+      const signH = isMobileMode ? 22 : 26;
+      const signY = wallTop - 6 - signH / 2 + 12;
+      ctx.fillStyle = '#090d1f';
+      ctx.fillRect(cx - signW / 2, signY, signW, signH);
+      ctx.strokeStyle = '#f59e0b';
+      ctx.lineWidth = 2.5;
+      ctx.strokeRect(cx - signW / 2, signY, signW, signH);
+
+      // Chasing marquee bulbs around the sign
+      const bulbPhase = Math.floor(t * 3) % 3;
+      const bulbStep = 10;
+      let bulbIdx = 0;
+      for (let bx = cx - signW / 2 + 4; bx <= cx + signW / 2 - 4; bx += bulbStep) {
+        const litTop = (bulbIdx % 3) === bulbPhase;
+        const litBot = ((bulbIdx + 1) % 3) === bulbPhase;
+        ctx.fillStyle = litTop ? '#fde047' : '#78350f';
+        ctx.fillRect(bx - 1.5, signY - 1.5, 3, 3);
+        ctx.fillStyle = litBot ? '#f472b6' : '#831843';
+        ctx.fillRect(bx - 1.5, signY + signH - 1.5, 3, 3);
+        bulbIdx++;
+      }
+
+      // Neon CASINO text
+      ctx.font = isMobileMode ? 'bold 10px "Press Start 2P", monospace' : 'bold 13px "Press Start 2P", monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = '#f43f5e';
+      ctx.fillText('CASINO', cx + 1, signY + signH / 2 + 1.5);
+      ctx.fillStyle = '#fde047';
+      ctx.fillText('CASINO', cx, signY + signH / 2 + 0.5);
+      ctx.textBaseline = 'alphabetic';
+
+      // 2nd Floor VIP glowing windows
+      const winPositions = isMobileMode ? [-36, 0, 36] : [-58, -28, 28, 58];
+      winPositions.forEach((wx, idx) => {
+        if (isMobileMode && idx === 1) return; // Keep center clear under marquee on mobile
+        const wy = wallTop + 26;
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(cx + wx - 9, wy, 18, 18);
+        const flicker = (Math.floor(t * 1.5 + idx) % 2 === 0) ? '#fde047' : '#f59e0b';
+        ctx.fillStyle = flicker;
+        ctx.fillRect(cx + wx - 7, wy + 2, 14, 14);
+        ctx.fillStyle = '#9333ea';
+        ctx.fillRect(cx + wx - 7, wy + 2, 4, 14);
+        ctx.fillRect(cx + wx + 3, wy + 2, 4, 14);
+      });
+
+      // 1st Floor Slot/Display windows flanking entrance
+      const lowerWins = isMobileMode ? [-38, 38] : [-56, 56];
+      lowerWins.forEach((wx, idx) => {
+        const wy = midY + 14;
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(cx + wx - 11, wy, 22, 24);
+        ctx.fillStyle = idx === 0 ? '#ec4899' : '#22d3ee';
+        ctx.fillRect(cx + wx - 9, wy + 2, 18, 20);
+        // Little "777" or jackpot bars inside window
+        ctx.fillStyle = '#fef08a';
+        ctx.fillRect(cx + wx - 6, wy + 8, 3, 8);
+        ctx.fillRect(cx + wx - 1, wy + 8, 3, 8);
+        ctx.fillRect(cx + wx + 4, wy + 8, 3, 8);
+      });
+
+      // Grand Golden Entrance & Glass Double Doors
+      const doorW = isMobileMode ? 32 : 40;
+      const doorH = isMobileMode ? 36 : 40;
+      ctx.fillStyle = '#fbbf24';
+      ctx.fillRect(cx - doorW / 2 - 3, groundY - doorH - 3, doorW + 6, doorH + 3);
+      ctx.fillStyle = '#fef08a';
+      ctx.fillRect(cx - doorW / 2, groundY - doorH, doorW, doorH);
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(cx - 1, groundY - doorH, 2, doorH);
+      // Warm interior light reflections on glass doors
+      ctx.fillStyle = '#f59e0b';
+      ctx.fillRect(cx - doorW / 2 + 4, groundY - doorH + 5, 6, doorH - 10);
+      ctx.fillRect(cx + 5, groundY - doorH + 5, 6, doorH - 10);
+
+      // Red VIP Carpet & Golden Stanchions
+      ctx.fillStyle = '#dc2626';
+      ctx.beginPath();
+      ctx.moveTo(cx - doorW / 2, groundY);
+      ctx.lineTo(cx + doorW / 2, groundY);
+      ctx.lineTo(cx + doorW / 2 + 8, groundY + 7);
+      ctx.lineTo(cx - doorW / 2 - 8, groundY + 7);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = '#fde047';
+      ctx.fillRect(cx - doorW / 2 - 4, groundY - 8, 3, 8);
+      ctx.fillRect(cx + doorW / 2 + 1, groundY - 8, 3, 8);
+
+      if (isCasinoHovered) {
+        const badgeW = 128;
+        const badgeH = 18;
+        const badgeY = wallTop - (isMobileMode ? 48 : 54);
+        ctx.fillStyle = 'rgba(2, 6, 23, 0.92)';
+        ctx.fillRect(cx - badgeW / 2, badgeY, badgeW, badgeH);
+        ctx.strokeStyle = '#fbbf24';
+        ctx.lineWidth = 1.5;
+        ctx.strokeRect(cx - badgeW / 2, badgeY, badgeW, badgeH);
+        ctx.font = 'bold 9px Inter, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = '#fde047';
+        ctx.fillText('🎰 LUXUSNÉ KASÍNO', cx, badgeY + badgeH / 2 + 0.5);
         ctx.textBaseline = 'alphabetic';
       }
 
@@ -3475,6 +3767,7 @@
       drawSimpleHouse(groundY);
       drawSimpleShop(groundY);
       drawSimpleFarm(groundY);
+      drawSimpleCasino(groundY);
     }
 
     function drawLaunchpadAndLandscape(alt) {
@@ -3606,6 +3899,7 @@
 
       ctx.restore();
     }
+
 
     function drawSingleAstronaut(p, x, y, inSpace) {
       if (rescueRocket.boarded) return; // Inside the rescue rocket returning to Earth!
@@ -3984,6 +4278,7 @@
       ctx.restore();
     }
 
+
     function updateAltimeterUI(playerArr) {
       const container = document.getElementById('altimeterMarkers');
       if (!container) return;
@@ -4046,6 +4341,7 @@
       ctx.restore();
     }
 
+
     function drawAurora(alt) {
       if (alt < 650 || alt > 1650) return;
       const alpha = alt < 950
@@ -4083,6 +4379,7 @@
       }
       ctx.restore();
     }
+
 
     function drawEarthCurvature(alt) {
       if (alt < 850 || alt > 2600) return;
@@ -4125,6 +4422,7 @@
 
       ctx.restore();
     }
+
 
     function drawAsteroidBelt(alt) {
       if (alt < 2050 || alt > 4650) return;
@@ -4178,6 +4476,7 @@
       });
       ctx.restore();
     }
+
 
     function updateAltitudeLayerAndMilestones(alt) {
       const wBadge = document.getElementById('weatherBadge');
@@ -4255,6 +4554,7 @@
 
       ctx.restore();
     }
+
 
     function drawBlackHole(alt) {
       if (alt < 3800) return;
@@ -4378,6 +4678,7 @@
       ctx.restore();
       ctx.restore();
     }
+
 
     function drawBackground() {
       ctx.save();
@@ -5891,15 +6192,19 @@ Vráť VÝHRADNE JSON pole objektov:
         if (e.target.closest('button, a, input, select, .pixel-box')) {
           isHouseHovered = false;
           isFarmHovered = false;
+          isCasinoHovered = false;
           document.body.style.cursor = '';
           return;
         }
         const overShop = isPointInBox(shopHitbox, e.clientX, e.clientY);
         const overHouse = isPointInBox(houseHitbox, e.clientX, e.clientY);
         const overFarm = isPointInBox(farmHitbox, e.clientX, e.clientY);
+        const overCasino = isPointInBox(casinoHitbox, e.clientX, e.clientY);
         isHouseHovered = overHouse;
         isFarmHovered = overFarm;
         document.body.style.cursor = (overShop || overHouse || overFarm) ? 'pointer' : '';
+        isCasinoHovered = overCasino;
+        document.body.style.cursor = (overShop || overHouse || overFarm || overCasino) ? 'pointer' : '';
       });
 
       document.addEventListener('click', (e) => {
@@ -5916,6 +6221,8 @@ Vráť VÝHRADNE JSON pole objektov:
           openAstronautModal();
         } else if (isPointInBox(farmHitbox, e.clientX, e.clientY)) {
           openFarmModal();
+        } else if (isPointInBox(casinoHitbox, e.clientX, e.clientY)) {
+          showToast('🎰 Luxusné Kasíno je otvorené! (Interiér už čoskoro)');
         }
       });
     });
