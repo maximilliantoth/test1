@@ -767,6 +767,213 @@
     </div>
   </div>
 
+  <!-- Modal: Interiér HORNBACH -->
+  <div id="hornbachModal"
+    class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 hidden">
+    <div
+      class="w-full max-w-2xl pixel-box bg-slate-950 p-3.5 sm:p-5 flex flex-col gap-2.5 sm:gap-3 text-left border-2 border-orange-500 max-h-[90dvh] overflow-y-auto">
+      <div class="flex justify-between items-center border-b border-orange-900/70 pb-2">
+        <div class="flex items-center gap-2">
+          <span class="pixel-font text-[10px] sm:text-xs text-orange-400">🧡 INTERIÉR HORNBACH</span>
+          <span
+            class="text-[9px] sm:text-[10px] pixel-font bg-orange-950/80 text-orange-200 border border-orange-500/50 px-2 py-0.5">Stavebniny & Záhrada</span>
+        </div>
+        <button id="closeHornbachBtn" class="text-orange-300 hover:text-white font-bold text-base px-2">✕</button>
+      </div>
+
+      <div class="relative rounded border-2 border-orange-700/80 bg-slate-900 overflow-hidden shadow-inner">
+        <canvas id="hornbachInteriorCanvas" width="560" height="320" class="block w-full h-auto aspect-[7/4]"></canvas>
+      </div>
+
+      <div id="hornbachItemsBar" class="grid grid-cols-2 sm:grid-cols-4 gap-1.5"></div>
+
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-2 pt-1">
+        <span id="hornbachStatusText" class="text-xs text-slate-300">Klikni na <strong class="text-orange-400">NÁRADIE</strong>, <strong class="text-emerald-400">ZÁHRADU</strong> alebo <strong class="text-amber-300">POKLADŇU</strong> v predajni.</span>
+        <button id="confirmHornbachBtn"
+          class="py-2 px-5 text-[10px] pixel-font border border-slate-600 bg-slate-800 hover:bg-slate-700 text-slate-200 w-full sm:w-auto shrink-0">ZAVRIEŤ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Interiér KASÍNO -->
+  <div id="casinoModal"
+    class="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 hidden">
+    <div
+      class="w-full max-w-2xl pixel-box bg-slate-950 p-3.5 sm:p-5 flex flex-col gap-2.5 sm:gap-3 text-left border-2 border-amber-400 max-h-[92dvh] overflow-y-auto">
+      <div class="flex justify-between items-center border-b border-amber-900/70 pb-2 gap-2">
+        <div class="flex items-center gap-2 flex-wrap">
+          <span class="pixel-font text-[10px] sm:text-xs text-amber-300">🎰 KASÍNO ROYAL</span>
+          <span class="text-[10px] pixel-font bg-amber-950/80 text-yellow-300 border border-amber-500/50 px-2 py-0.5">
+            🪙 <span id="casinoCoinsVal">0</span>
+          </span>
+        </div>
+        <button id="closeCasinoBtn" class="text-amber-300 hover:text-white font-bold text-base px-2">✕</button>
+      </div>
+
+      <!-- Navigation tabs -->
+      <div class="grid grid-cols-3 gap-1.5">
+        <button type="button" data-casino-tab="lobby"
+          class="casino-tab-btn py-1.5 px-2 text-[9px] sm:text-[10px] pixel-font border-2 border-amber-400 bg-amber-500/20 text-amber-200 transition-colors">
+          🏛️ HALA
+        </button>
+        <button type="button" data-casino-tab="roulette"
+          class="casino-tab-btn py-1.5 px-2 text-[9px] sm:text-[10px] pixel-font border-2 border-slate-700 bg-slate-900 text-slate-400 hover:text-white transition-colors">
+          🎡 RULETA
+        </button>
+        <button type="button" data-casino-tab="blackjack"
+          class="casino-tab-btn py-1.5 px-2 text-[9px] sm:text-[10px] pixel-font border-2 border-slate-700 bg-slate-900 text-slate-400 hover:text-white transition-colors">
+          🃏 BLACKJACK
+        </button>
+      </div>
+
+      <!-- View 1: Casino Interior Hall -->
+      <div id="casinoLobbyView" class="flex flex-col gap-2">
+        <div class="relative rounded border-2 border-amber-600/80 bg-slate-900 overflow-hidden shadow-inner">
+          <canvas id="casinoInteriorCanvas" width="560" height="320" class="block w-full h-auto aspect-[7/4]"></canvas>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <button type="button" id="casinoGoRouletteBtn"
+            class="py-2 px-3 border-2 border-emerald-500/70 bg-emerald-950/50 hover:bg-emerald-900/60 text-emerald-200 text-[10px] pixel-font transition-colors">
+            🎡 HRAŤ RULETU
+          </button>
+          <button type="button" id="casinoGoBlackjackBtn"
+            class="py-2 px-3 border-2 border-rose-500/70 bg-rose-950/50 hover:bg-rose-900/60 text-rose-200 text-[10px] pixel-font transition-colors">
+            🃏 HRAŤ BLACKJACK
+          </button>
+        </div>
+      </div>
+
+      <!-- View 2: Interactive Roulette -->
+      <div id="casinoRouletteView" class="hidden flex flex-col gap-2.5">
+        <div class="grid grid-cols-1 sm:grid-cols-[220px_1fr] gap-3 items-center bg-emerald-950/40 border border-emerald-700/60 rounded p-2.5">
+          <div class="flex flex-col items-center gap-1.5">
+            <canvas id="rouletteWheelCanvas" width="210" height="210" class="block w-[180px] h-[180px] sm:w-[210px] sm:h-[210px]"></canvas>
+            <div id="rouletteResultBadge" class="text-[10px] pixel-font text-center px-2 py-1 rounded bg-slate-900/90 border border-amber-500/40 text-amber-200 min-h-[26px] w-full flex items-center justify-center">
+              Vyber stávku a roztoč koleso!
+            </div>
+          </div>
+
+          <div class="flex flex-col gap-2">
+            <!-- Chip selector -->
+            <div class="flex items-center justify-between gap-1 flex-wrap bg-slate-900/80 p-1.5 rounded border border-slate-700">
+              <span class="text-[10px] font-bold text-slate-300">Žetón:</span>
+              <div class="flex items-center gap-1 flex-wrap" id="rouletteChipSelector">
+                <button type="button" data-chip="10" class="rl-chip-btn px-2 py-1 text-[10px] font-bold rounded border border-amber-400 bg-amber-500/30 text-amber-200">10</button>
+                <button type="button" data-chip="25" class="rl-chip-btn px-2 py-1 text-[10px] font-bold rounded border border-slate-600 bg-slate-800 text-slate-300">25</button>
+                <button type="button" data-chip="50" class="rl-chip-btn px-2 py-1 text-[10px] font-bold rounded border border-slate-600 bg-slate-800 text-slate-300">50</button>
+                <button type="button" data-chip="100" class="rl-chip-btn px-2 py-1 text-[10px] font-bold rounded border border-slate-600 bg-slate-800 text-slate-300">100</button>
+              </div>
+            </div>
+
+            <!-- Outside bets -->
+            <div class="grid grid-cols-3 gap-1.5 text-[10px] font-bold">
+              <button type="button" data-rl-bet="red" class="rl-bet-btn py-1.5 px-1 rounded border border-red-500/70 bg-red-900/60 hover:bg-red-800/70 text-white">🔴 Červená (2×)</button>
+              <button type="button" data-rl-bet="black" class="rl-bet-btn py-1.5 px-1 rounded border border-slate-500 bg-slate-900 hover:bg-slate-800 text-white">⚫ Čierna (2×)</button>
+              <button type="button" data-rl-bet="zero" class="rl-bet-btn py-1.5 px-1 rounded border border-emerald-400 bg-emerald-800/70 hover:bg-emerald-700 text-white">🟢 0 (36×)</button>
+              <button type="button" data-rl-bet="even" class="rl-bet-btn py-1.5 px-1 rounded border border-emerald-600/60 bg-emerald-950/60 hover:bg-emerald-900 text-emerald-100">Párne (2×)</button>
+              <button type="button" data-rl-bet="odd" class="rl-bet-btn py-1.5 px-1 rounded border border-emerald-600/60 bg-emerald-950/60 hover:bg-emerald-900 text-emerald-100">Nepárne (2×)</button>
+              <button type="button" data-rl-bet="low" class="rl-bet-btn py-1.5 px-1 rounded border border-emerald-600/60 bg-emerald-950/60 hover:bg-emerald-900 text-emerald-100">1–18 (2×)</button>
+              <button type="button" data-rl-bet="high" class="rl-bet-btn py-1.5 px-1 rounded border border-emerald-600/60 bg-emerald-950/60 hover:bg-emerald-900 text-emerald-100">19–36 (2×)</button>
+              <button type="button" data-rl-bet="dozen1" class="rl-bet-btn py-1.5 px-1 rounded border border-amber-600/60 bg-amber-950/40 hover:bg-amber-900/50 text-amber-100">1–12 (3×)</button>
+              <button type="button" data-rl-bet="dozen2" class="rl-bet-btn py-1.5 px-1 rounded border border-amber-600/60 bg-amber-950/40 hover:bg-amber-900/50 text-amber-100">13–24 (3×)</button>
+            </div>
+            <div class="grid grid-cols-2 gap-1.5 text-[10px] font-bold">
+              <button type="button" data-rl-bet="dozen3" class="rl-bet-btn py-1.5 px-2 rounded border border-amber-600/60 bg-amber-950/40 hover:bg-amber-900/50 text-amber-100">25–36 (3×)</button>
+              <div class="flex items-center gap-1 bg-slate-900/80 border border-slate-700 rounded px-1.5">
+                <input id="rlNumberInput" type="number" min="0" max="36" value="7"
+                  class="w-12 bg-slate-950 border border-slate-600 rounded px-1 py-0.5 text-center text-white text-[11px]" />
+                <button type="button" id="rlBetNumberBtn"
+                  class="flex-1 py-1 text-[10px] font-bold text-amber-300 hover:text-white">Staviť číslo (36×)</button>
+              </div>
+            </div>
+
+            <!-- Active bets summary & Spin -->
+            <div id="rouletteBetsSummary" class="text-[11px] text-slate-300 bg-slate-900/80 border border-slate-700 rounded px-2 py-1.5 min-h-[30px]">
+              Žiadne aktívne stávky.
+            </div>
+            <div class="flex gap-2">
+              <button type="button" id="rouletteClearBtn"
+                class="py-2 px-3 text-[10px] pixel-font border border-slate-600 bg-slate-800 hover:bg-slate-700 text-slate-200">
+                ZRUŠIŤ
+              </button>
+              <button type="button" id="rouletteSpinBtn"
+                class="flex-1 py-2 px-3 text-[10px] pixel-font border-2 border-amber-400 bg-amber-600 hover:bg-amber-500 text-slate-950 font-bold">
+                🎡 ROZTOČIŤ
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- View 3: Interactive Blackjack -->
+      <div id="casinoBlackjackView" class="hidden flex flex-col gap-2.5">
+        <div class="bg-emerald-950/50 border-2 border-emerald-700/70 rounded p-3 flex flex-col gap-3">
+          <!-- Dealer area -->
+          <div class="flex flex-col items-center gap-1.5">
+            <div class="flex items-center gap-2 text-[10px] pixel-font text-slate-300">
+              <span>🎩 KRUPIÉR</span>
+              <span id="bjDealerScore" class="px-2 py-0.5 rounded bg-slate-900 border border-slate-600 text-amber-300">0</span>
+            </div>
+            <div id="bjDealerCards" class="flex items-center justify-center gap-1.5 min-h-[68px] flex-wrap"></div>
+          </div>
+
+          <!-- Center status banner -->
+          <div id="bjStatusBanner"
+            class="text-center text-xs font-bold py-1.5 px-3 rounded bg-slate-950/80 border border-amber-500/40 text-amber-200">
+            Vyber stávku a stlač ROZDAŤ!
+          </div>
+
+          <!-- Player area -->
+          <div class="flex flex-col items-center gap-1.5">
+            <div id="bjPlayerCards" class="flex items-center justify-center gap-1.5 min-h-[68px] flex-wrap"></div>
+            <div class="flex items-center gap-2 text-[10px] pixel-font text-slate-300">
+              <span>🧑‍🚀 TY</span>
+              <span id="bjPlayerScore" class="px-2 py-0.5 rounded bg-slate-900 border border-slate-600 text-emerald-300">0</span>
+              <span id="bjCurrentBetBadge" class="px-2 py-0.5 rounded bg-amber-950/80 border border-amber-500/40 text-yellow-300 hidden">Stávka: 0 🪙</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Blackjack Controls -->
+        <div id="bjBetControls" class="flex flex-col sm:flex-row items-center justify-between gap-2 bg-slate-900/90 border border-slate-700 rounded p-2">
+          <div class="flex items-center gap-1 flex-wrap">
+            <span class="text-[10px] font-bold text-slate-300 mr-1">Stávka:</span>
+            <button type="button" data-bj-bet="10" class="bj-bet-btn px-2 py-1 text-[10px] font-bold rounded border border-amber-400 bg-amber-500/30 text-amber-200">10</button>
+            <button type="button" data-bj-bet="25" class="bj-bet-btn px-2 py-1 text-[10px] font-bold rounded border border-slate-600 bg-slate-800 text-slate-300">25</button>
+            <button type="button" data-bj-bet="50" class="bj-bet-btn px-2 py-1 text-[10px] font-bold rounded border border-slate-600 bg-slate-800 text-slate-300">50</button>
+            <button type="button" data-bj-bet="100" class="bj-bet-btn px-2 py-1 text-[10px] font-bold rounded border border-slate-600 bg-slate-800 text-slate-300">100</button>
+            <button type="button" data-bj-bet="250" class="bj-bet-btn px-2 py-1 text-[10px] font-bold rounded border border-slate-600 bg-slate-800 text-slate-300">250</button>
+          </div>
+          <button type="button" id="bjDealBtn"
+            class="w-full sm:w-auto py-2 px-5 text-[10px] pixel-font border-2 border-amber-400 bg-amber-600 hover:bg-amber-500 text-slate-950 font-bold">
+            🃏 ROZDAŤ
+          </button>
+        </div>
+
+        <div id="bjActionControls" class="hidden grid grid-cols-3 gap-2">
+          <button type="button" id="bjHitBtn"
+            class="py-2.5 px-2 text-[10px] pixel-font border-2 border-emerald-400 bg-emerald-700 hover:bg-emerald-600 text-white">
+            ➕ KARTA (HIT)
+          </button>
+          <button type="button" id="bjStandBtn"
+            class="py-2.5 px-2 text-[10px] pixel-font border-2 border-rose-400 bg-rose-700 hover:bg-rose-600 text-white">
+            ✋ STÁŤ (STAND)
+          </button>
+          <button type="button" id="bjDoubleBtn"
+            class="py-2.5 px-2 text-[10px] pixel-font border-2 border-amber-400 bg-amber-600 hover:bg-amber-500 text-slate-950 font-bold">
+            2× DOUBLE
+          </button>
+        </div>
+      </div>
+
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-2 pt-1">
+        <span id="casinoStatusText" class="text-xs text-slate-300">Klikni na <strong class="text-emerald-400">RULETU</strong>, <strong class="text-rose-400">BLACKJACK</strong> alebo <strong class="text-amber-300">POKLADŇU</strong> v kasíne.</span>
+        <button id="confirmCasinoBtn"
+          class="py-2 px-5 text-[10px] pixel-font border border-slate-600 bg-slate-800 hover:bg-slate-700 text-slate-200 w-full sm:w-auto shrink-0">ZAVRIEŤ</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Modal: Giftcode -->
   <div id="giftcodeModal"
     class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
@@ -2616,6 +2823,1062 @@
         cancelAnimationFrame(farmInteriorRaf);
         farmInteriorRaf = null;
       }
+    }
+
+    // --- HORNBACH INTERIOR ---
+    const HORNBACH_ITEMS_KEY = 'pointless_hornbach_items';
+    const HORNBACH_CATALOG = [
+      { id: 'drill', icon: '🔩', name: 'Aku vŕtačka', price: 350 },
+      { id: 'mower', icon: '🚜', name: 'Kosačka', price: 650 },
+      { id: 'gnome', icon: '🧙', name: 'Záhradný trpaslík', price: 250 },
+      { id: 'grill', icon: '🔥', name: 'Záhradný gril', price: 500 }
+    ];
+    let ownedHornbachItems = (() => {
+      try {
+        const parsed = JSON.parse(localStorage.getItem(HORNBACH_ITEMS_KEY) || '[]');
+        return Array.isArray(parsed) ? parsed : [];
+      } catch { return []; }
+    })();
+    let hornbachInteriorRaf = null;
+    let hornbachHoveredZone = null;
+    const hornbachZones = [
+      { id: 'tools', label: '🔨 NÁRADIE', x: 18, y: 82, w: 165, h: 138 },
+      { id: 'pallets', label: '🪵 DREVO & PALETY', x: 198, y: 82, w: 165, h: 138 },
+      { id: 'garden', label: '🌿 ZÁHRADA', x: 378, y: 82, w: 164, h: 138 },
+      { id: 'checkout', label: '🛒 POKLADŇA 1', x: 24, y: 232, w: 136, h: 72 }
+    ];
+
+    function renderHornbachItemsBar() {
+      const bar = document.getElementById('hornbachItemsBar');
+      if (!bar) return;
+      bar.innerHTML = '';
+      HORNBACH_CATALOG.forEach(item => {
+        const isOwned = ownedHornbachItems.includes(item.id);
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = `px-2 py-1.5 border text-left transition-colors ${isOwned
+          ? 'border-emerald-500/70 bg-emerald-950/40 text-emerald-200'
+          : 'border-orange-700/60 bg-slate-900 hover:bg-orange-950/40 text-slate-200'}`;
+        btn.innerHTML = `
+          <div class="flex items-center justify-between gap-1 text-[10px] font-bold">
+            <span class="truncate">${item.icon} ${item.name}</span>
+            <span class="shrink-0 ${isOwned ? 'text-emerald-400' : 'text-amber-300'}">${isOwned ? '✓' : `${item.price} 🪙`}</span>
+          </div>`;
+        btn.addEventListener('click', () => {
+          if (isOwned) {
+            showToast(`${item.icon} ${item.name} už máš v dielni!`);
+            return;
+          }
+          if (playerCoins < item.price) {
+            showToast(`Potrebuješ ešte ${item.price - playerCoins} 🪙!`);
+            return;
+          }
+          playerCoins -= item.price;
+          ownedHornbachItems.push(item.id);
+          localStorage.setItem(HORNBACH_ITEMS_KEY, JSON.stringify(ownedHornbachItems));
+          saveShopState();
+          renderHornbachItemsBar();
+          showToast(`🧡 Kúpil si ${item.icon} ${item.name} v HORNBACHu!`);
+        });
+        bar.appendChild(btn);
+      });
+    }
+
+    function drawHornbachInterior() {
+      const canvas = document.getElementById('hornbachInteriorCanvas');
+      const modal = document.getElementById('hornbachModal');
+      if (!canvas || !modal || modal.classList.contains('hidden')) {
+        hornbachInteriorRaf = null;
+        return;
+      }
+      const hctx = canvas.getContext('2d');
+      const W = canvas.width;
+      const H = canvas.height;
+      const t = Date.now() * 0.002;
+
+      // 1. Industrial warehouse walls & ceiling
+      hctx.fillStyle = '#1e293b';
+      hctx.fillRect(0, 0, W, 62);
+      hctx.fillStyle = '#334155';
+      hctx.fillRect(0, 62, W, 162);
+
+      // Steel ceiling trusses
+      hctx.fillStyle = '#0f172a';
+      for (let tx = 0; tx < W; tx += 70) {
+        hctx.fillRect(tx, 0, 6, 62);
+        hctx.fillRect(tx, 18, 70, 4);
+      }
+
+      // Hanging bright LED warehouse light panels + subtle light cones
+      [95, 280, 465].forEach(lx => {
+        hctx.fillStyle = 'rgba(254, 249, 195, 0.08)';
+        hctx.beginPath();
+        hctx.moveTo(lx - 26, 48);
+        hctx.lineTo(lx + 26, 48);
+        hctx.lineTo(lx + 72, 230);
+        hctx.lineTo(lx - 72, 230);
+        hctx.closePath();
+        hctx.fill();
+
+        hctx.fillStyle = '#fef9c3';
+        hctx.fillRect(lx - 26, 42, 52, 6);
+      });
+
+      // Signature Hornbach Orange aisle banner strip across the upper wall
+      hctx.fillStyle = '#ea580c';
+      hctx.fillRect(0, 62, W, 20);
+      hctx.fillStyle = '#f97316';
+      hctx.fillRect(0, 62, W, 17);
+      hctx.font = 'bold 9px "Space Grotesk", sans-serif';
+      hctx.textAlign = 'center';
+      hctx.textBaseline = 'middle';
+      hctx.fillStyle = '#ffffff';
+      hctx.fillText('🔨 NÁRADIE & STROJE', 100, 71);
+      hctx.fillText('🪵 DREVO & STAVEBNINY', 280, 71);
+      hctx.fillText('🌿 ZÁHRADNÉ CENTRUM', 460, 71);
+      hctx.textBaseline = 'alphabetic';
+
+      // 2. Polished Concrete Warehouse Floor + safety stripes
+      hctx.fillStyle = '#64748b';
+      hctx.fillRect(0, 224, W, H - 224);
+      hctx.fillStyle = '#475569';
+      hctx.fillRect(0, 224, W, 5);
+      hctx.fillStyle = '#f97316';
+      for (let sx = 12; sx < W; sx += 28) {
+        hctx.fillRect(sx, 232, 16, 3);
+      }
+
+      // 3. Left Rack: Tool Wall & Orange Pallet Racking
+      const drawRackFrame = (rx, rw) => {
+        hctx.fillStyle = '#ea580c';
+        hctx.fillRect(rx, 86, 5, 138);
+        hctx.fillRect(rx + rw - 5, 86, 5, 138);
+        hctx.fillRect(rx + rw / 2 - 2, 86, 4, 138);
+        [124, 166, 208].forEach(sy => {
+          hctx.fillStyle = '#f97316';
+          hctx.fillRect(rx, sy, rw, 5);
+        });
+      };
+
+      // Tools rack (left)
+      drawRackFrame(20, 160);
+      // Pegboard with hanging tools on middle shelf
+      hctx.fillStyle = '#0f172a';
+      hctx.fillRect(27, 130, 70, 35);
+      hctx.fillStyle = '#e2e8f0';
+      for (let i = 0; i < 5; i++) {
+        hctx.fillRect(33 + i * 13, 135, 3, 18);
+        hctx.fillStyle = i % 2 === 0 ? '#f97316' : '#ef4444';
+        hctx.fillRect(31 + i * 13, 152, 7, 6);
+        hctx.fillStyle = '#e2e8f0';
+      }
+      // Paint buckets & toolboxes
+      ['#f97316', '#38bdf8', '#22c55e', '#facc15'].forEach((col, i) => {
+        hctx.fillStyle = col;
+        hctx.fillRect(108 + i * 16, 146, 12, 19);
+        hctx.fillStyle = '#ffffff';
+        hctx.fillRect(107 + i * 16, 144, 14, 3);
+      });
+      // Upper boxes
+      hctx.fillStyle = '#d97706';
+      hctx.fillRect(28, 96, 34, 27);
+      hctx.fillRect(68, 98, 28, 25);
+      hctx.fillStyle = '#dc2626';
+      hctx.fillRect(108, 100, 36, 23);
+      // Lower heavy drills/boxes
+      hctx.fillStyle = '#1e293b';
+      hctx.fillRect(28, 178, 42, 28);
+      hctx.fillStyle = '#f97316';
+      hctx.fillRect(32, 184, 18, 12);
+      hctx.fillStyle = '#94a3b8';
+      hctx.fillRect(108, 178, 60, 28);
+
+      // 4. Center Rack: Lumber, Pallets & Building Materials
+      drawRackFrame(200, 160);
+      // Stacked wooden beams & planks
+      hctx.fillStyle = '#b45309';
+      hctx.fillRect(208, 178, 70, 28);
+      hctx.fillStyle = '#d97706';
+      for (let py = 180; py < 204; py += 6) {
+        hctx.fillRect(210, py, 66, 4);
+      }
+      // Cement / mortar bags
+      hctx.fillStyle = '#cbd5e1';
+      for (let by = 182; by < 206; by += 8) {
+        hctx.fillRect(290, by, 58, 6);
+      }
+      // Wooden pallets on upper shelves
+      hctx.fillStyle = '#92400e';
+      hctx.fillRect(208, 156, 68, 9);
+      hctx.fillRect(288, 156, 64, 9);
+      hctx.fillStyle = '#b45309';
+      hctx.fillRect(212, 134, 58, 22);
+      hctx.fillStyle = '#f97316';
+      hctx.fillRect(294, 136, 52, 20);
+      hctx.fillStyle = '#78350f';
+      hctx.fillRect(210, 96, 64, 27);
+      hctx.fillRect(290, 100, 56, 23);
+
+      // 5. Right Section: Garden Center with Glass Skylight
+      hctx.fillStyle = '#0ea5e9';
+      hctx.globalAlpha = 0.22;
+      hctx.fillRect(382, 86, 158, 72);
+      hctx.globalAlpha = 1;
+      // Plant display tables
+      hctx.fillStyle = '#475569';
+      hctx.fillRect(384, 186, 154, 8);
+      hctx.fillRect(390, 194, 6, 30);
+      hctx.fillRect(526, 194, 6, 30);
+      // Potted plants & flowers
+      for (let px = 392; px < 530; px += 28) {
+        hctx.fillStyle = '#9a3412';
+        hctx.fillRect(px, 174, 14, 12);
+        hctx.fillStyle = '#16a34a';
+        hctx.fillRect(px - 3, 154, 20, 20);
+        hctx.fillStyle = '#22c55e';
+        hctx.fillRect(px, 146, 14, 12);
+        if (px % 56 === 0) {
+          hctx.fillStyle = '#f43f5e';
+          hctx.fillRect(px + 4, 150, 5, 5);
+        }
+      }
+      // Purchased Hornbach items displayed on floor/bench!
+      if (ownedHornbachItems.includes('gnome')) {
+        hctx.fillStyle = '#ef4444';
+        hctx.fillRect(496, 208, 10, 10);
+        hctx.fillStyle = '#3b82f6';
+        hctx.fillRect(494, 218, 14, 12);
+      }
+      if (ownedHornbachItems.includes('grill')) {
+        hctx.fillStyle = '#0f172a';
+        hctx.fillRect(442, 210, 22, 14);
+        hctx.fillStyle = '#f97316';
+        hctx.fillRect(446, 206, 14, 4);
+      }
+      if (ownedHornbachItems.includes('mower')) {
+        hctx.fillStyle = '#ea580c';
+        hctx.fillRect(394, 212, 24, 12);
+        hctx.fillStyle = '#0f172a';
+        hctx.fillRect(396, 222, 6, 6);
+        hctx.fillRect(410, 222, 6, 6);
+      }
+
+      // 6. Front-Left Checkout Counter (POKLADŇA 1) + Clerk in Orange Vest
+      hctx.fillStyle = '#1e293b';
+      hctx.fillRect(28, 256, 124, 42);
+      hctx.fillStyle = '#f97316';
+      hctx.fillRect(28, 256, 124, 7);
+      // Register screen
+      hctx.fillStyle = '#0f172a';
+      hctx.fillRect(48, 238, 22, 18);
+      hctx.fillStyle = '#38bdf8';
+      hctx.fillRect(51, 241, 16, 10);
+      // Clerk in Hornbach orange vest
+      hctx.fillStyle = '#fde68a';
+      hctx.fillRect(92, 234, 14, 14);
+      hctx.fillStyle = '#f97316';
+      hctx.fillRect(89, 248, 20, 10);
+      // "1" checkout sign
+      hctx.fillStyle = '#ea580c';
+      hctx.fillRect(126, 224, 18, 18);
+      hctx.fillStyle = '#ffffff';
+      hctx.font = 'bold 10px monospace';
+      hctx.textAlign = 'center';
+      hctx.fillText('1', 135, 237);
+
+      // 7. Rolling Orange Shopping Cart / Pallet Jack moving gently in aisle
+      const cartX = 250 + Math.sin(t * 0.7) * 55;
+      hctx.fillStyle = '#f97316';
+      hctx.fillRect(cartX, 266, 38, 14);
+      hctx.fillRect(cartX + 34, 248, 4, 22);
+      hctx.fillStyle = '#0f172a';
+      hctx.fillRect(cartX + 4, 280, 7, 7);
+      hctx.fillRect(cartX + 26, 280, 7, 7);
+
+      // Hover highlight on interactive zones
+      if (hornbachHoveredZone) {
+        const z = hornbachZones.find(item => item.id === hornbachHoveredZone);
+        if (z) {
+          hctx.strokeStyle = '#fb923c';
+          hctx.lineWidth = 2.5;
+          hctx.strokeRect(z.x, z.y, z.w, z.h);
+          hctx.fillStyle = 'rgba(249, 115, 22, 0.12)';
+          hctx.fillRect(z.x, z.y, z.w, z.h);
+        }
+      }
+
+      hornbachInteriorRaf = requestAnimationFrame(drawHornbachInterior);
+    }
+
+    function openHornbachModal() {
+      renderHornbachItemsBar();
+      document.getElementById('hornbachModal').classList.remove('hidden');
+      if (!hornbachInteriorRaf) {
+        drawHornbachInterior();
+      }
+    }
+
+    function closeHornbachModal() {
+      document.getElementById('hornbachModal').classList.add('hidden');
+      hornbachHoveredZone = null;
+      if (hornbachInteriorRaf) {
+        cancelAnimationFrame(hornbachInteriorRaf);
+        hornbachInteriorRaf = null;
+      }
+    }
+
+    // --- CASINO INTERIOR (HALA + RULETA + BLACKJACK) ---
+    let casinoInteriorRaf = null;
+    let casinoHoveredZone = null;
+    let currentCasinoTab = 'lobby';
+    const casinoZones = [
+      { id: 'roulette', label: '🎡 RULETA', x: 24, y: 112, w: 204, h: 158 },
+      { id: 'blackjack', label: '🃏 BLACKJACK', x: 332, y: 112, w: 204, h: 158 },
+      { id: 'cashier', label: '🪙 POKLADŇA & BAR', x: 236, y: 82, w: 88, h: 110 }
+    ];
+
+    function updateCasinoCoinsUI() {
+      const el = document.getElementById('casinoCoinsVal');
+      if (el) el.textContent = playerCoins;
+    }
+
+    function setCasinoTab(tab) {
+      if (rouletteState.spinning) {
+        showToast('🎡 Počkaj, kým sa koleso rulety dotočí!');
+        return;
+      }
+      currentCasinoTab = tab;
+      document.querySelectorAll('.casino-tab-btn').forEach(btn => {
+        const active = btn.dataset.casinoTab === tab;
+        btn.className = `casino-tab-btn py-1.5 px-2 text-[9px] sm:text-[10px] pixel-font border-2 transition-colors ${active
+          ? 'border-amber-400 bg-amber-500/20 text-amber-200'
+          : 'border-slate-700 bg-slate-900 text-slate-400 hover:text-white'}`;
+      });
+      document.getElementById('casinoLobbyView')?.classList.toggle('hidden', tab !== 'lobby');
+      document.getElementById('casinoRouletteView')?.classList.toggle('hidden', tab !== 'roulette');
+      document.getElementById('casinoBlackjackView')?.classList.toggle('hidden', tab !== 'blackjack');
+
+      const statusEl = document.getElementById('casinoStatusText');
+      if (statusEl) {
+        if (tab === 'lobby') {
+          statusEl.innerHTML = 'Klikni na <strong class="text-emerald-400">RULETU</strong>, <strong class="text-rose-400">BLACKJACK</strong> alebo <strong class="text-amber-300">POKLADŇU</strong> v kasíne.';
+        } else if (tab === 'roulette') {
+          statusEl.innerHTML = '🎡 <strong>Európska ruleta:</strong> Vyber žetón, stav na farbu/číslo a roztoč koleso!';
+        } else if (tab === 'blackjack') {
+          statusEl.innerHTML = '🃏 <strong>Blackjack:</strong> Dostaň sa čo najbližšie k <strong>21</strong> bez prekročenia. Blackjack vypláca <strong>2.5×</strong>!';
+        }
+      }
+
+      if (tab === 'lobby' && !casinoInteriorRaf) {
+        drawCasinoInterior();
+      }
+      if (tab === 'roulette') {
+        drawRouletteWheel(rouletteState.wheelAngle, rouletteState.ballAngle, rouletteState.ballRadius);
+      }
+    }
+
+    function drawCasinoInterior() {
+      const canvas = document.getElementById('casinoInteriorCanvas');
+      const modal = document.getElementById('casinoModal');
+      if (!canvas || !modal || modal.classList.contains('hidden') || currentCasinoTab !== 'lobby') {
+        casinoInteriorRaf = null;
+        return;
+      }
+      const cctx = canvas.getContext('2d');
+      const W = canvas.width;
+      const H = canvas.height;
+      const t = Date.now() * 0.003;
+
+      // 1. Luxurious dark mahogany & burgundy walls
+      cctx.fillStyle = '#1a0b16';
+      cctx.fillRect(0, 0, W, 62);
+      cctx.fillStyle = '#3b0d1e';
+      cctx.fillRect(0, 62, W, 155);
+
+      // Gold trim & wainscoting panels
+      cctx.fillStyle = '#fbbf24';
+      cctx.fillRect(0, 60, W, 3);
+      cctx.fillRect(0, 214, W, 3);
+      cctx.fillStyle = '#260813';
+      for (let px = 14; px < W; px += 68) {
+        cctx.fillRect(px, 72, 48, 134);
+        cctx.strokeStyle = '#92400e';
+        cctx.lineWidth = 1;
+        cctx.strokeRect(px, 72, 48, 134);
+      }
+
+      // 2. Chandeliers & warm golden light cones
+      [126, 280, 434].forEach((lx, idx) => {
+        const pulse = 0.08 + Math.sin(t + idx) * 0.02;
+        cctx.fillStyle = `rgba(251, 191, 36, ${pulse})`;
+        cctx.beginPath();
+        cctx.moveTo(lx - 18, 38);
+        cctx.lineTo(lx + 18, 38);
+        cctx.lineTo(lx + 85, 255);
+        cctx.lineTo(lx - 85, 255);
+        cctx.closePath();
+        cctx.fill();
+
+        // Chandelier body
+        cctx.fillStyle = '#b45309';
+        cctx.fillRect(lx - 2, 0, 4, 24);
+        cctx.fillStyle = '#fbbf24';
+        cctx.fillRect(lx - 20, 22, 40, 6);
+        cctx.fillStyle = '#fef08a';
+        [-16, -6, 6, 16].forEach(dx => {
+          cctx.fillRect(lx + dx - 2, 16, 4, 6);
+        });
+      });
+
+      // 3. Neon "CASINO ROYAL" sign at center top
+      cctx.fillStyle = '#090d16';
+      cctx.fillRect(212, 14, 136, 30);
+      cctx.strokeStyle = Math.sin(t * 2) > 0 ? '#f59e0b' : '#f43f5e';
+      cctx.lineWidth = 2;
+      cctx.strokeRect(212, 14, 136, 30);
+      cctx.fillStyle = '#fde047';
+      cctx.font = 'bold 12px monospace';
+      cctx.textAlign = 'center';
+      cctx.fillText('★ CASINO ROYAL ★', 280, 33);
+
+      // 4. Red velvet carpet floor with gold diamond pattern
+      cctx.fillStyle = '#7f1d1d';
+      cctx.fillRect(0, 217, W, H - 217);
+      cctx.fillStyle = '#991b1b';
+      for (let fy = 224; fy < H; fy += 24) {
+        for (let fx = (fy % 48 === 0 ? 0 : 18); fx < W; fx += 36) {
+          cctx.fillRect(fx, fy, 14, 10);
+        }
+      }
+      // Gold carpet runner down the middle
+      cctx.fillStyle = '#b91c1c';
+      cctx.fillRect(245, 217, 70, H - 217);
+      cctx.fillStyle = '#f59e0b';
+      cctx.fillRect(245, 217, 3, H - 217);
+      cctx.fillRect(312, 217, 3, H - 217);
+
+      // 5. Center Cashier / VIP Bar (x: 236..324, y: 82..192)
+      cctx.fillStyle = '#451a03';
+      cctx.fillRect(240, 145, 80, 44);
+      cctx.fillStyle = '#fbbf24';
+      cctx.fillRect(238, 142, 84, 5);
+      // Cashier clerk
+      cctx.fillStyle = '#fde68a';
+      cctx.fillRect(273, 114, 14, 14);
+      cctx.fillStyle = '#0f172a';
+      cctx.fillRect(270, 128, 20, 14);
+      cctx.fillStyle = '#ef4444';
+      cctx.fillRect(278, 130, 4, 3); // bow tie
+      // Gold coin stacks on counter
+      cctx.fillStyle = '#facc15';
+      cctx.fillRect(248, 134, 10, 8);
+      cctx.fillRect(302, 136, 10, 6);
+      cctx.fillStyle = '#fde047';
+      cctx.font = 'bold 9px monospace';
+      cctx.fillText('POKLADŇA', 280, 174);
+
+      // 6. Left Zone: ROULETTE TABLE (x: 24..228, y: 112..270)
+      // Mahogany table base
+      cctx.fillStyle = '#451a03';
+      cctx.fillRect(34, 148, 184, 104);
+      cctx.strokeStyle = '#d97706';
+      cctx.lineWidth = 2;
+      cctx.strokeRect(34, 148, 184, 104);
+      // Green felt
+      cctx.fillStyle = '#065f46';
+      cctx.fillRect(42, 156, 168, 88);
+      // Spinning pixel roulette wheel on left side of table
+      const wx = 84, wy = 200;
+      cctx.fillStyle = '#78350f';
+      cctx.beginPath();
+      cctx.arc(wx, wy, 32, 0, Math.PI * 2);
+      cctx.fill();
+      cctx.strokeStyle = '#fbbf24';
+      cctx.lineWidth = 2;
+      cctx.stroke();
+      for (let s = 0; s < 12; s++) {
+        const a0 = t * 0.9 + (s * Math.PI * 2) / 12;
+        const a1 = a0 + (Math.PI * 2) / 12;
+        cctx.fillStyle = s === 0 ? '#10b981' : (s % 2 === 0 ? '#dc2626' : '#111827');
+        cctx.beginPath();
+        cctx.moveTo(wx, wy);
+        cctx.arc(wx, wy, 25, a0, a1);
+        cctx.closePath();
+        cctx.fill();
+      }
+      cctx.fillStyle = '#fbbf24';
+      cctx.beginPath();
+      cctx.arc(wx, wy, 7, 0, Math.PI * 2);
+      cctx.fill();
+      // White ball orbiting
+      const bx = wx + Math.cos(-t * 2.2) * 20;
+      const by = wy + Math.sin(-t * 2.2) * 20;
+      cctx.fillStyle = '#ffffff';
+      cctx.beginPath();
+      cctx.arc(bx, by, 3, 0, Math.PI * 2);
+      cctx.fill();
+
+      // Betting grid on right side of roulette table
+      for (let r = 0; r < 3; r++) {
+        for (let c = 0; c < 4; c++) {
+          cctx.fillStyle = (r + c) % 2 === 0 ? '#b91c1c' : '#111827';
+          cctx.fillRect(126 + c * 19, 166 + r * 20, 17, 18);
+          cctx.strokeStyle = '#fbbf24';
+          cctx.lineWidth = 0.8;
+          cctx.strokeRect(126 + c * 19, 166 + r * 20, 17, 18);
+        }
+      }
+      // Label banner
+      cctx.fillStyle = '#064e3b';
+      cctx.fillRect(62, 118, 128, 22);
+      cctx.strokeStyle = '#34d399';
+      cctx.lineWidth = 1.5;
+      cctx.strokeRect(62, 118, 128, 22);
+      cctx.fillStyle = '#6ee7b7';
+      cctx.font = 'bold 11px monospace';
+      cctx.fillText('🎡 RULETA', 126, 133);
+
+      // 7. Right Zone: BLACKJACK TABLE (x: 332..536, y: 112..270)
+      // Semicircular/arch table
+      cctx.fillStyle = '#451a03';
+      cctx.fillRect(342, 148, 184, 104);
+      cctx.strokeStyle = '#d97706';
+      cctx.lineWidth = 2;
+      cctx.strokeRect(342, 148, 184, 104);
+      cctx.fillStyle = '#047857';
+      cctx.fillRect(350, 156, 168, 88);
+
+      // Dealer standing behind Blackjack table
+      cctx.fillStyle = '#fde68a';
+      cctx.fillRect(427, 134, 14, 14);
+      cctx.fillStyle = '#111827';
+      cctx.fillRect(423, 148, 22, 10);
+      // Playing cards on table
+      const cardPositions = [
+        { x: 374, y: 186, faceUp: true, txt: 'A♠', red: false },
+        { x: 396, y: 192, faceUp: true, txt: 'K♥', red: true },
+        { x: 454, y: 186, faceUp: true, txt: 'J♦', red: true },
+        { x: 476, y: 192, faceUp: false, txt: '', red: false }
+      ];
+      cardPositions.forEach(cp => {
+        cctx.fillStyle = cp.faceUp ? '#f8fafc' : '#9f1239';
+        cctx.fillRect(cp.x, cp.y, 18, 26);
+        cctx.strokeStyle = '#fbbf24';
+        cctx.lineWidth = 1;
+        cctx.strokeRect(cp.x, cp.y, 18, 26);
+        if (cp.faceUp) {
+          cctx.fillStyle = cp.red ? '#dc2626' : '#0f172a';
+          cctx.font = 'bold 8px monospace';
+          cctx.fillText(cp.txt, cp.x + 9, cp.y + 15);
+        }
+      });
+      // Chips stack
+      cctx.fillStyle = '#ef4444';
+      cctx.fillRect(428, 212, 12, 4);
+      cctx.fillStyle = '#3b82f6';
+      cctx.fillRect(428, 208, 12, 4);
+      cctx.fillStyle = '#fbbf24';
+      cctx.fillRect(428, 204, 12, 4);
+
+      // Label banner
+      cctx.fillStyle = '#4c0519';
+      cctx.fillRect(370, 118, 128, 22);
+      cctx.strokeStyle = '#fb7185';
+      cctx.lineWidth = 1.5;
+      cctx.strokeRect(370, 118, 128, 22);
+      cctx.fillStyle = '#fda4af';
+      cctx.font = 'bold 11px monospace';
+      cctx.fillText('🃏 BLACKJACK', 434, 133);
+
+      // 8. Hover highlight on interactive zones
+      if (casinoHoveredZone) {
+        const z = casinoZones.find(item => item.id === casinoHoveredZone);
+        if (z) {
+          cctx.strokeStyle = '#fde047';
+          cctx.lineWidth = 2.5;
+          cctx.strokeRect(z.x, z.y, z.w, z.h);
+          cctx.fillStyle = 'rgba(250, 204, 21, 0.12)';
+          cctx.fillRect(z.x, z.y, z.w, z.h);
+        }
+      }
+
+      casinoInteriorRaf = requestAnimationFrame(drawCasinoInterior);
+    }
+
+    function openCasinoModal() {
+      updateCasinoCoinsUI();
+      setCasinoTab('lobby');
+      document.getElementById('casinoModal').classList.remove('hidden');
+      if (!casinoInteriorRaf) {
+        drawCasinoInterior();
+      }
+    }
+
+    function closeCasinoModal() {
+      if (rouletteState.spinning) {
+        showToast('🎡 Počkaj, kým sa koleso rulety dotočí!');
+        return;
+      }
+      // Refund any unspun roulette bets
+      if (rouletteState.bets.length > 0) {
+        const refund = rouletteState.bets.reduce((sum, b) => sum + b.amount, 0);
+        playerCoins += refund;
+        rouletteState.bets = [];
+        saveShopState();
+        updateRouletteBetsUI();
+      }
+      document.getElementById('casinoModal').classList.add('hidden');
+      casinoHoveredZone = null;
+      if (casinoInteriorRaf) {
+        cancelAnimationFrame(casinoInteriorRaf);
+        casinoInteriorRaf = null;
+      }
+    }
+
+    // --- ROULETTE GAME ENGINE ---
+    const ROULETTE_ORDER = [
+      0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10,
+      5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26
+    ];
+    const ROULETTE_RED_SET = new Set([1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36]);
+    const rouletteState = {
+      chip: 10,
+      bets: [], // { type, value, label, amount }
+      spinning: false,
+      wheelAngle: 0,
+      ballAngle: 0,
+      ballRadius: 82
+    };
+
+    function drawRouletteWheel(wheelAngle, ballAngle, ballRadius) {
+      const canvas = document.getElementById('rouletteWheelCanvas');
+      if (!canvas) return;
+      const rctx = canvas.getContext('2d');
+      const cx = canvas.width / 2;
+      const cy = canvas.height / 2;
+      const outerR = 96;
+      const innerR = 54;
+      const n = ROULETTE_ORDER.length;
+      const slice = (Math.PI * 2) / n;
+
+      rctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Outer mahogany rim
+      rctx.fillStyle = '#451a03';
+      rctx.beginPath();
+      rctx.arc(cx, cy, outerR + 6, 0, Math.PI * 2);
+      rctx.fill();
+      rctx.strokeStyle = '#f59e0b';
+      rctx.lineWidth = 3;
+      rctx.stroke();
+
+      // Pockets
+      for (let i = 0; i < n; i++) {
+        const num = ROULETTE_ORDER[i];
+        const a0 = wheelAngle + i * slice - slice / 2;
+        const a1 = a0 + slice;
+        rctx.fillStyle = num === 0 ? '#059669' : (ROULETTE_RED_SET.has(num) ? '#dc2626' : '#111827');
+        rctx.beginPath();
+        rctx.moveTo(cx, cy);
+        rctx.arc(cx, cy, outerR - 4, a0, a1);
+        rctx.closePath();
+        rctx.fill();
+        rctx.strokeStyle = '#fbbf24';
+        rctx.lineWidth = 0.6;
+        rctx.stroke();
+
+        // Number text
+        const mid = (a0 + a1) / 2;
+        rctx.save();
+        rctx.translate(cx + Math.cos(mid) * (outerR - 15), cy + Math.sin(mid) * (outerR - 15));
+        rctx.rotate(mid + Math.PI / 2);
+        rctx.fillStyle = '#ffffff';
+        rctx.font = 'bold 7px monospace';
+        rctx.textAlign = 'center';
+        rctx.textBaseline = 'middle';
+        rctx.fillText(String(num), 0, 0);
+        rctx.restore();
+      }
+
+      // Inner turret
+      rctx.fillStyle = '#0f172a';
+      rctx.beginPath();
+      rctx.arc(cx, cy, innerR, 0, Math.PI * 2);
+      rctx.fill();
+      rctx.strokeStyle = '#fbbf24';
+      rctx.lineWidth = 2;
+      rctx.stroke();
+
+      // Brass crossbars
+      for (let k = 0; k < 4; k++) {
+        const ka = wheelAngle + (k * Math.PI) / 2;
+        rctx.strokeStyle = '#f59e0b';
+        rctx.lineWidth = 3;
+        rctx.beginPath();
+        rctx.moveTo(cx, cy);
+        rctx.lineTo(cx + Math.cos(ka) * 26, cy + Math.sin(ka) * 26);
+        rctx.stroke();
+      }
+      rctx.fillStyle = '#fde047';
+      rctx.beginPath();
+      rctx.arc(cx, cy, 8, 0, Math.PI * 2);
+      rctx.fill();
+
+      // Ball
+      const bx = cx + Math.cos(ballAngle) * ballRadius;
+      const by = cy + Math.sin(ballAngle) * ballRadius;
+      rctx.fillStyle = '#ffffff';
+      rctx.beginPath();
+      rctx.arc(bx, by, 4.5, 0, Math.PI * 2);
+      rctx.fill();
+      rctx.strokeStyle = '#cbd5e1';
+      rctx.lineWidth = 1;
+      rctx.stroke();
+    }
+
+    function updateRouletteBetsUI() {
+      const el = document.getElementById('rouletteBetsSummary');
+      if (!el) return;
+      if (rouletteState.bets.length === 0) {
+        el.textContent = 'Žiadne aktívne stávky.';
+        return;
+      }
+      const total = rouletteState.bets.reduce((s, b) => s + b.amount, 0);
+      const parts = rouletteState.bets.map(b => `${b.label}: ${b.amount}🪙`);
+      el.innerHTML = `<span class="text-amber-300 font-bold">Spolu ${total} 🪙:</span> ${parts.join(' · ')}`;
+    }
+
+    function placeRouletteBet(type, value, label) {
+      if (rouletteState.spinning) return;
+      const amount = rouletteState.chip;
+      if (playerCoins < amount) {
+        showToast(`Nemáš dosť mincí! Potrebuješ ${amount} 🪙.`);
+        return;
+      }
+      playerCoins -= amount;
+      saveShopState();
+      updateCasinoCoinsUI();
+      const existing = rouletteState.bets.find(b => b.type === type && b.value === value);
+      if (existing) {
+        existing.amount += amount;
+      } else {
+        rouletteState.bets.push({ type, value, label, amount });
+      }
+      updateRouletteBetsUI();
+    }
+
+    function clearRouletteBets() {
+      if (rouletteState.spinning || rouletteState.bets.length === 0) return;
+      const refund = rouletteState.bets.reduce((s, b) => s + b.amount, 0);
+      playerCoins += refund;
+      rouletteState.bets = [];
+      saveShopState();
+      updateCasinoCoinsUI();
+      updateRouletteBetsUI();
+    }
+
+    function spinRoulette() {
+      if (rouletteState.spinning) return;
+      if (rouletteState.bets.length === 0) {
+        showToast('Najprv umiestni aspoň jednu stávku!');
+        return;
+      }
+      rouletteState.spinning = true;
+      const badge = document.getElementById('rouletteResultBadge');
+      if (badge) badge.textContent = '🎡 Koleso sa točí...';
+
+      const winIdx = Math.floor(Math.random() * ROULETTE_ORDER.length);
+      const winNum = ROULETTE_ORDER[winIdx];
+      const slice = (Math.PI * 2) / ROULETTE_ORDER.length;
+
+      const startWheel = rouletteState.wheelAngle;
+      const targetWheel = startWheel + Math.PI * 6 + Math.random() * Math.PI * 2;
+      const finalPocketAngle = targetWheel + winIdx * slice;
+      const startBall = rouletteState.ballAngle;
+      // Ball spins opposite direction and lands on finalPocketAngle
+      const targetBall = finalPocketAngle - Math.PI * 8;
+
+      const duration = 2600;
+      const startTime = performance.now();
+
+      function step(now) {
+        const p = Math.min(1, (now - startTime) / duration);
+        const ease = 1 - Math.pow(1 - p, 3);
+        rouletteState.wheelAngle = startWheel + (targetWheel - startWheel) * ease;
+        rouletteState.ballAngle = startBall + (targetBall - startBall) * ease;
+        rouletteState.ballRadius = 86 - 18 * Math.pow(ease, 1.6);
+        drawRouletteWheel(rouletteState.wheelAngle, rouletteState.ballAngle, rouletteState.ballRadius);
+
+        if (p < 1) {
+          requestAnimationFrame(step);
+        } else {
+          rouletteState.spinning = false;
+          // Evaluate winnings
+          const isRed = ROULETTE_RED_SET.has(winNum);
+          const isBlack = winNum !== 0 && !isRed;
+          let payout = 0;
+          rouletteState.bets.forEach(b => {
+            if (b.type === 'number' && b.value === winNum) payout += b.amount * 36;
+            else if (b.type === 'zero' && winNum === 0) payout += b.amount * 36;
+            else if (b.type === 'red' && isRed) payout += b.amount * 2;
+            else if (b.type === 'black' && isBlack) payout += b.amount * 2;
+            else if (b.type === 'even' && winNum !== 0 && winNum % 2 === 0) payout += b.amount * 2;
+            else if (b.type === 'odd' && winNum % 2 === 1) payout += b.amount * 2;
+            else if (b.type === 'low' && winNum >= 1 && winNum <= 18) payout += b.amount * 2;
+            else if (b.type === 'high' && winNum >= 19 && winNum <= 36) payout += b.amount * 2;
+            else if (b.type === 'dozen1' && winNum >= 1 && winNum <= 12) payout += b.amount * 3;
+            else if (b.type === 'dozen2' && winNum >= 13 && winNum <= 24) payout += b.amount * 3;
+            else if (b.type === 'dozen3' && winNum >= 25 && winNum <= 36) payout += b.amount * 3;
+          });
+
+          const totalBet = rouletteState.bets.reduce((s, b) => s + b.amount, 0);
+          rouletteState.bets = [];
+          if (payout > 0) {
+            playerCoins += payout;
+          }
+          saveShopState();
+          updateCasinoCoinsUI();
+          updateRouletteBetsUI();
+
+          const colorIcon = winNum === 0 ? '🟢' : (isRed ? '🔴' : '⚫');
+          if (badge) {
+            if (payout > 0) {
+              badge.textContent = `${colorIcon} ${winNum} — VÝHRA +${payout} 🪙!`;
+              badge.className = 'text-[10px] pixel-font text-center px-2 py-1 rounded bg-emerald-950 border border-emerald-400 text-emerald-300 min-h-[26px] w-full flex items-center justify-center';
+              showToast(`🎡 Padlo ${colorIcon} ${winNum}! Vyhrávaš ${payout} 🪙!`);
+            } else {
+              badge.textContent = `${colorIcon} ${winNum} — Prehra (-${totalBet} 🪙)`;
+              badge.className = 'text-[10px] pixel-font text-center px-2 py-1 rounded bg-rose-950/80 border border-rose-500/60 text-rose-300 min-h-[26px] w-full flex items-center justify-center';
+            }
+          }
+        }
+      }
+      requestAnimationFrame(step);
+    }
+
+    // --- BLACKJACK GAME ENGINE ---
+    const bjState = {
+      betAmount: 10,
+      activeBet: 0,
+      deck: [],
+      playerHand: [],
+      dealerHand: [],
+      inRound: false,
+      revealDealer: false
+    };
+
+    function createShuffledDeck() {
+      const suits = ['♠', '♥', '♦', '♣'];
+      const ranks = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+      const deck = [];
+      for (const s of suits) {
+        for (const r of ranks) {
+          deck.push({ suit: s, rank: r, red: s === '♥' || s === '♦' });
+        }
+      }
+      for (let i = deck.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [deck[i], deck[j]] = [deck[j], deck[i]];
+      }
+      return deck;
+    }
+
+    function scoreBlackjackHand(hand) {
+      let total = 0;
+      let aces = 0;
+      for (const card of hand) {
+        if (card.rank === 'A') {
+          total += 11;
+          aces += 1;
+        } else if (['K', 'Q', 'J'].includes(card.rank)) {
+          total += 10;
+        } else {
+          total += Number(card.rank);
+        }
+      }
+      while (total > 21 && aces > 0) {
+        total -= 10;
+        aces -= 1;
+      }
+      return total;
+    }
+
+    function renderBjCardEl(card, hidden = false) {
+      const div = document.createElement('div');
+      if (hidden) {
+        div.className = 'w-11 h-16 rounded border-2 border-amber-400 bg-rose-900 flex items-center justify-center text-lg shadow';
+        div.textContent = '🂠';
+        return div;
+      }
+      div.className = `w-11 h-16 rounded border-2 border-slate-300 bg-slate-50 flex flex-col items-center justify-center font-bold shadow ${card.red ? 'text-red-600' : 'text-slate-900'}`;
+      div.innerHTML = `<span class="text-xs leading-none">${card.rank}</span><span class="text-sm leading-none">${card.suit}</span>`;
+      return div;
+    }
+
+    function renderBlackjackUI(statusMsg = null, statusTone = 'neutral') {
+      const dCards = document.getElementById('bjDealerCards');
+      const pCards = document.getElementById('bjPlayerCards');
+      const dScore = document.getElementById('bjDealerScore');
+      const pScore = document.getElementById('bjPlayerScore');
+      const betBadge = document.getElementById('bjCurrentBetBadge');
+      const betCtrl = document.getElementById('bjBetControls');
+      const actCtrl = document.getElementById('bjActionControls');
+      const banner = document.getElementById('bjStatusBanner');
+      const dblBtn = document.getElementById('bjDoubleBtn');
+
+      if (dCards) {
+        dCards.innerHTML = '';
+        bjState.dealerHand.forEach((c, idx) => {
+          dCards.appendChild(renderBjCardEl(c, idx === 1 && !bjState.revealDealer));
+        });
+      }
+      if (pCards) {
+        pCards.innerHTML = '';
+        bjState.playerHand.forEach(c => pCards.appendChild(renderBjCardEl(c, false)));
+      }
+      if (dScore) {
+        if (bjState.dealerHand.length === 0) {
+          dScore.textContent = '0';
+        } else if (!bjState.revealDealer) {
+          dScore.textContent = `${scoreBlackjackHand([bjState.dealerHand[0]])} + ?`;
+        } else {
+          dScore.textContent = String(scoreBlackjackHand(bjState.dealerHand));
+        }
+      }
+      if (pScore) {
+        pScore.textContent = String(scoreBlackjackHand(bjState.playerHand));
+      }
+      if (betBadge) {
+        if (bjState.inRound || bjState.activeBet > 0) {
+          betBadge.textContent = `Stávka: ${bjState.activeBet} 🪙`;
+          betBadge.classList.remove('hidden');
+        } else {
+          betBadge.classList.add('hidden');
+        }
+      }
+      if (betCtrl) betCtrl.classList.toggle('hidden', bjState.inRound);
+      if (actCtrl) actCtrl.classList.toggle('hidden', !bjState.inRound);
+      if (dblBtn) {
+        const canDouble = bjState.inRound && bjState.playerHand.length === 2 && playerCoins >= bjState.activeBet;
+        dblBtn.disabled = !canDouble;
+        dblBtn.classList.toggle('opacity-40', !canDouble);
+      }
+      if (banner && statusMsg) {
+        banner.textContent = statusMsg;
+        const toneMap = {
+          win: 'bg-emerald-950 border-emerald-400 text-emerald-300',
+          lose: 'bg-rose-950/80 border-rose-500/70 text-rose-300',
+          push: 'bg-sky-950/80 border-sky-400/70 text-sky-200',
+          neutral: 'bg-slate-950/80 border-amber-500/40 text-amber-200'
+        };
+        banner.className = `text-center text-xs font-bold py-1.5 px-3 rounded border ${toneMap[statusTone] || toneMap.neutral}`;
+      }
+    }
+
+    function finishBlackjackRound(outcome, message) {
+      bjState.inRound = false;
+      bjState.revealDealer = true;
+      let payout = 0;
+      if (outcome === 'blackjack') {
+        payout = Math.round(bjState.activeBet * 2.5);
+      } else if (outcome === 'win') {
+        payout = bjState.activeBet * 2;
+      } else if (outcome === 'push') {
+        payout = bjState.activeBet;
+      }
+      if (payout > 0) {
+        playerCoins += payout;
+        saveShopState();
+        updateCasinoCoinsUI();
+      }
+      const tone = (outcome === 'win' || outcome === 'blackjack') ? 'win' : (outcome === 'push' ? 'push' : 'lose');
+      renderBlackjackUI(message, tone);
+    }
+
+    function startBlackjackRound() {
+      if (bjState.inRound) return;
+      if (playerCoins < bjState.betAmount) {
+        showToast(`Nemáš dosť mincí! Potrebuješ ${bjState.betAmount} 🪙.`);
+        return;
+      }
+      playerCoins -= bjState.betAmount;
+      saveShopState();
+      updateCasinoCoinsUI();
+
+      bjState.activeBet = bjState.betAmount;
+      bjState.deck = createShuffledDeck();
+      bjState.playerHand = [bjState.deck.pop(), bjState.deck.pop()];
+      bjState.dealerHand = [bjState.deck.pop(), bjState.deck.pop()];
+      bjState.inRound = true;
+      bjState.revealDealer = false;
+
+      const pTotal = scoreBlackjackHand(bjState.playerHand);
+      const dTotal = scoreBlackjackHand(bjState.dealerHand);
+
+      if (pTotal === 21 && dTotal === 21) {
+        finishBlackjackRound('push', `🤝 Obaja máte Blackjack! Remíza (+${bjState.activeBet} 🪙)`);
+        return;
+      }
+      if (pTotal === 21) {
+        const winAmt = Math.round(bjState.activeBet * 2.5);
+        finishBlackjackRound('blackjack', `🎉 BLACKJACK! Výhra +${winAmt} 🪙!`);
+        showToast(`🃏 BLACKJACK! Vyhrávaš ${winAmt} 🪙!`);
+        return;
+      }
+      renderBlackjackUI('Tvoj ťah: vyber KARTA, STÁŤ alebo DOUBLE.', 'neutral');
+    }
+
+    function bjHit() {
+      if (!bjState.inRound) return;
+      bjState.playerHand.push(bjState.deck.pop());
+      const pTotal = scoreBlackjackHand(bjState.playerHand);
+      if (pTotal > 21) {
+        finishBlackjackRound('lose', `💥 Trop (${pTotal})! Krupiér vyhráva.`);
+        return;
+      }
+      if (pTotal === 21) {
+        bjStand();
+        return;
+      }
+      renderBlackjackUI(`Máš ${pTotal}. Chceš ďalšiu kartu?`, 'neutral');
+    }
+
+    function bjStand() {
+      if (!bjState.inRound) return;
+      bjState.revealDealer = true;
+      while (scoreBlackjackHand(bjState.dealerHand) < 17) {
+        bjState.dealerHand.push(bjState.deck.pop());
+      }
+      const pTotal = scoreBlackjackHand(bjState.playerHand);
+      const dTotal = scoreBlackjackHand(bjState.dealerHand);
+      if (dTotal > 21) {
+        finishBlackjackRound('win', `🎉 Krupiér prepálil (${dTotal})! Výhra +${bjState.activeBet * 2} 🪙!`);
+      } else if (pTotal > dTotal) {
+        finishBlackjackRound('win', `🎉 Vyhrávaš ${pTotal} vs ${dTotal}! (+${bjState.activeBet * 2} 🪙)`);
+      } else if (pTotal < dTotal) {
+        finishBlackjackRound('lose', `😔 Prehra ${pTotal} vs ${dTotal}.`);
+      } else {
+        finishBlackjackRound('push', `🤝 Remíza ${pTotal} vs ${dTotal} (+${bjState.activeBet} 🪙).`);
+      }
+    }
+
+    function bjDouble() {
+      if (!bjState.inRound || bjState.playerHand.length !== 2) return;
+      if (playerCoins < bjState.activeBet) {
+        showToast('Nemáš dosť mincí na zdvojnásobenie!');
+        return;
+      }
+      playerCoins -= bjState.activeBet;
+      bjState.activeBet *= 2;
+      saveShopState();
+      updateCasinoCoinsUI();
+      bjState.playerHand.push(bjState.deck.pop());
+      const pTotal = scoreBlackjackHand(bjState.playerHand);
+      if (pTotal > 21) {
+        finishBlackjackRound('lose', `💥 Trop (${pTotal}) po Double! Krupiér vyhráva.`);
+        return;
+      }
+      bjStand();
     }
 
     function renderAnimalMarket() {
@@ -6958,12 +8221,15 @@ Vráť VÝHRADNE JSON objekt s poľom "results":
             showToast(`🔒 HORNBACH sa otvorí až po ${HORNBACH_REQUIRED_GAMES} odohraných hrách! (${gamesPlayed}/${HORNBACH_REQUIRED_GAMES})`);
           } else {
             showToast('🧡 HORNBACH je otvorený! Všetko pre tvoje projekty.');
+            closeMyCityModal();
+            openHornbachModal();
           }
         } else if (hit(cityModalHitboxes.casino)) {
           if (!isCasinoUnlocked()) {
             showToast(`🔒 Kasíno sa otvorí až po ${CASINO_REQUIRED_GAMES} odohraných hrách! (${gamesPlayed}/${CASINO_REQUIRED_GAMES})`);
           } else {
-            showToast('🎰 Luxusné Kasíno je otvorené! (Interiér už čoskoro)');
+            closeMyCityModal();
+            openCasinoModal();
           }
         }
       });
@@ -7024,6 +8290,132 @@ Vráť VÝHRADNE JSON objekt s poľom "results":
       });
       document.getElementById('closeFarmBtn').addEventListener('click', closeFarmModal);
       document.getElementById('confirmFarmBtn').addEventListener('click', closeFarmModal);
+      document.getElementById('closeHornbachBtn')?.addEventListener('click', closeHornbachModal);
+      document.getElementById('confirmHornbachBtn')?.addEventListener('click', closeHornbachModal);
+
+      const hornbachCanvas = document.getElementById('hornbachInteriorCanvas');
+      if (hornbachCanvas) {
+        const getHbCoords = (clientX, clientY) => {
+          const rect = hornbachCanvas.getBoundingClientRect();
+          return {
+            x: (clientX - rect.left) * (hornbachCanvas.width / rect.width),
+            y: (clientY - rect.top) * (hornbachCanvas.height / rect.height)
+          };
+        };
+        const findHbZone = (pt) => hornbachZones.find(z => pt.x >= z.x && pt.x <= z.x + z.w && pt.y >= z.y && pt.y <= z.y + z.h);
+        hornbachCanvas.addEventListener('mousemove', (e) => {
+          const z = findHbZone(getHbCoords(e.clientX, e.clientY));
+          hornbachHoveredZone = z ? z.id : null;
+          hornbachCanvas.style.cursor = z ? 'pointer' : 'default';
+        });
+        hornbachCanvas.addEventListener('mouseleave', () => {
+          hornbachHoveredZone = null;
+          hornbachCanvas.style.cursor = 'default';
+        });
+        hornbachCanvas.addEventListener('click', (e) => {
+          const z = findHbZone(getHbCoords(e.clientX, e.clientY));
+          if (!z) return;
+          const statusEl = document.getElementById('hornbachStatusText');
+          const msgs = {
+            tools: '🔨 Oddelenie náradia: Kvalitné kladivá, píly a farby pre každý projekt!',
+            pallets: '🪵 Stavebniny & drevo: Čerstvé fošne, palety a stavebný materiál na sklade.',
+            garden: '🌿 Záhradné centrum: Rastliny, trpaslíci a grily pripravené na sezónu!',
+            checkout: `🛒 Pokladňa 1: Máš ${playerCoins} 🪙. Vyber si tovar v lište pod predajňou!`
+          };
+          if (statusEl) statusEl.textContent = msgs[z.id] || '';
+          showToast(msgs[z.id]);
+        });
+      }
+
+      // Casino modal & games event listeners
+      document.getElementById('closeCasinoBtn')?.addEventListener('click', closeCasinoModal);
+      document.getElementById('confirmCasinoBtn')?.addEventListener('click', closeCasinoModal);
+      document.querySelectorAll('.casino-tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => setCasinoTab(btn.dataset.casinoTab));
+      });
+      document.getElementById('casinoGoRouletteBtn')?.addEventListener('click', () => setCasinoTab('roulette'));
+      document.getElementById('casinoGoBlackjackBtn')?.addEventListener('click', () => setCasinoTab('blackjack'));
+
+      const casinoCanvas = document.getElementById('casinoInteriorCanvas');
+      if (casinoCanvas) {
+        const getCasinoCanvasPos = (clientX, clientY) => {
+          const rect = casinoCanvas.getBoundingClientRect();
+          return {
+            x: (clientX - rect.left) * (casinoCanvas.width / rect.width),
+            y: (clientY - rect.top) * (casinoCanvas.height / rect.height)
+          };
+        };
+        const findCasinoZone = (pt) => casinoZones.find(z => pt.x >= z.x && pt.x <= z.x + z.w && pt.y >= z.y && pt.y <= z.y + z.h);
+        casinoCanvas.addEventListener('mousemove', (e) => {
+          const z = findCasinoZone(getCasinoCanvasPos(e.clientX, e.clientY));
+          casinoHoveredZone = z ? z.id : null;
+          casinoCanvas.style.cursor = z ? 'pointer' : 'default';
+        });
+        casinoCanvas.addEventListener('mouseleave', () => {
+          casinoHoveredZone = null;
+          casinoCanvas.style.cursor = 'default';
+        });
+        casinoCanvas.addEventListener('click', (e) => {
+          const z = findCasinoZone(getCasinoCanvasPos(e.clientX, e.clientY));
+          if (!z) return;
+          if (z.id === 'roulette') setCasinoTab('roulette');
+          else if (z.id === 'blackjack') setCasinoTab('blackjack');
+          else if (z.id === 'cashier') {
+            showToast(`🪙 Pokladňa Kasína Royal: Aktuálny zostatok ${playerCoins} 🪙.`);
+          }
+        });
+      }
+
+      // Roulette controls
+      document.querySelectorAll('.rl-chip-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          rouletteState.chip = Number(btn.dataset.chip);
+          document.querySelectorAll('.rl-chip-btn').forEach(b => {
+            const active = Number(b.dataset.chip) === rouletteState.chip;
+            b.className = `rl-chip-btn px-2 py-1 text-[10px] font-bold rounded border ${active
+              ? 'border-amber-400 bg-amber-500/30 text-amber-200'
+              : 'border-slate-600 bg-slate-800 text-slate-300'}`;
+          });
+        });
+      });
+      document.querySelectorAll('.rl-bet-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const type = btn.dataset.rlBet;
+          const labelMap = {
+            red: '🔴 Červená', black: '⚫ Čierna', zero: '🟢 0',
+            even: 'Párne', odd: 'Nepárne', low: '1–18', high: '19–36',
+            dozen1: '1–12', dozen2: '13–24', dozen3: '25–36'
+          };
+          placeRouletteBet(type, type === 'zero' ? 0 : type, labelMap[type] || type);
+        });
+      });
+      document.getElementById('rlBetNumberBtn')?.addEventListener('click', () => {
+        const input = document.getElementById('rlNumberInput');
+        const num = Math.max(0, Math.min(36, Math.floor(Number(input?.value ?? 0))));
+        if (input) input.value = String(num);
+        placeRouletteBet('number', num, `Číslo ${num}`);
+      });
+      document.getElementById('rouletteClearBtn')?.addEventListener('click', clearRouletteBets);
+      document.getElementById('rouletteSpinBtn')?.addEventListener('click', spinRoulette);
+
+      // Blackjack controls
+      document.querySelectorAll('.bj-bet-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          if (bjState.inRound) return;
+          bjState.betAmount = Number(btn.dataset.bjBet);
+          document.querySelectorAll('.bj-bet-btn').forEach(b => {
+            const active = Number(b.dataset.bjBet) === bjState.betAmount;
+            b.className = `bj-bet-btn px-2 py-1 text-[10px] font-bold rounded border ${active
+              ? 'border-amber-400 bg-amber-500/30 text-amber-200'
+              : 'border-slate-600 bg-slate-800 text-slate-300'}`;
+          });
+        });
+      });
+      document.getElementById('bjDealBtn')?.addEventListener('click', startBlackjackRound);
+      document.getElementById('bjHitBtn')?.addEventListener('click', bjHit);
+      document.getElementById('bjStandBtn')?.addEventListener('click', bjStand);
+      document.getElementById('bjDoubleBtn')?.addEventListener('click', bjDouble);
+
       document.getElementById('closeAnimalMarketBtn').addEventListener('click', closeAnimalMarketModal);
       document.getElementById('confirmAnimalMarketBtn').addEventListener('click', closeAnimalMarketModal);
 
@@ -7171,6 +8563,8 @@ Vráť VÝHRADNE JSON objekt s poľom "results":
         if (!document.getElementById('shopModal').classList.contains('hidden')) return;
         if (!document.getElementById('astronautModal').classList.contains('hidden')) return;
         if (!document.getElementById('farmModal').classList.contains('hidden')) return;
+        if (!document.getElementById('hornbachModal').classList.contains('hidden')) return;
+        if (!document.getElementById('casinoModal').classList.contains('hidden')) return;
         if (!document.getElementById('giftcodeModal').classList.contains('hidden')) return;
         if (!document.getElementById('coinsOfferModal').classList.contains('hidden')) return;
         if (!document.getElementById('deviceSelectModal').classList.contains('hidden')) return;
@@ -7186,12 +8580,13 @@ Vráť VÝHRADNE JSON objekt s poľom "results":
             showToast(`🔒 HORNBACH sa otvorí až po ${HORNBACH_REQUIRED_GAMES} odohraných hrách! (${gamesPlayed}/${HORNBACH_REQUIRED_GAMES})`);
           } else {
             showToast('🧡 HORNBACH je otvorený! Všetko pre tvoje projekty.');
+            openHornbachModal();
           }
         } else if (isPointInBox(casinoHitbox, e.clientX, e.clientY)) {
           if (!isCasinoUnlocked()) {
             showToast(`🔒 Kasíno sa otvorí až po ${CASINO_REQUIRED_GAMES} odohraných hrách! (${gamesPlayed}/${CASINO_REQUIRED_GAMES})`);
           } else {
-            showToast('🎰 Luxusné Kasíno je otvorené! (Interiér už čoskoro)');
+            openCasinoModal();
           }
         }
       });
